@@ -6,7 +6,8 @@ import type { Config } from './config';
 import { must, runLogged } from './exec';
 import type { Paths } from './paths';
 
-const OPENMU_REPO = 'https://github.com/MUnique/OpenMU.git';
+// const OPENMU_REPO = 'https://github.com/MUnique/OpenMU.git';
+const OPENMU_REPO = 'https://github.com/luizfelper/OpenMU.git';
 
 /** OpenMU's default branch: as a source ref, every checkout (and `mu update`) takes its newest commit. */
 export const OPENMU_MAIN = 'master';
