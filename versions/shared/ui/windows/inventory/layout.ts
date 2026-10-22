@@ -48,17 +48,18 @@ export const EXIT_BUTTON_X = 13;
 export const REPAIR_BUTTON_X = 50;
 export const SHOP_BUTTON_X = 87;
 export const EXPAND_BUTTON_X = 87 + 37;
-export const REARRANGE_BUTTON_X = 16;
-export const REARRANGE_BUTTON_Y = 28;
-export const REARRANGE_BUTTON_WIDTH = 158;
-export const REARRANGE_BUTTON_HEIGHT = 16;
+/** The footer's first slot, the original's exit button: now the rearrange one. */
+export const REARRANGE_BUTTON_X = EXIT_BUTTON_X;
+export const REARRANGE_BUTTON_Y = BUTTON_Y;
+export const REARRANGE_BUTTON_WIDTH = BUTTON_WIDTH;
+export const REARRANGE_BUTTON_HEIGHT = BUTTON_HEIGHT;
 
-export const EXIT_SPRITE = 'newui_exit_00.OZT';
 export const REPAIR_SPRITE = 'newui_repair_00.OZT';
 export const SHOP_SPRITE = 'newui_Bt_openshop.OZT';
 export const EXPAND_SPRITE = 'newui_expansion_btn.OZT';
+/** The blank MU button sprite, carrying our own icon and tooltip like the HUD's. */
+export const REARRANGE_SPRITE = 'newui_btn_empty.OZT';
 
-export const EXIT_TOOLTIP: TextKey = 'inventory.close';
 export const REPAIR_TOOLTIP: TextKey = 'inventory.repair';
 export const SHOP_TOOLTIP: TextKey = 'inventory.personalShop';
 export const EXPAND_TOOLTIP: TextKey = 'inventory.expand';
@@ -180,9 +181,9 @@ export const HEAD_CLOSE_HEIGHT = 12;
 export const INVENTORY_SPRITES = [
   SQUARE_SPRITE,
   MONEY_SPRITE,
-  EXIT_SPRITE,
   REPAIR_SPRITE,
   SHOP_SPRITE,
   EXPAND_SPRITE,
+  REARRANGE_SPRITE,
   ...EQUIPMENT_SLOTS.map(slot => slot.sprite),
 ];

@@ -13,41 +13,14 @@
     text-shadow: 1px 1px 0 #000;
   }
 
-  .rearrange-button {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 0 4px;
-    border: 1px solid #81724e;
-    border-radius: 2px;
-    background: linear-gradient(#49402f, #211d18);
-    color: #e2d4b2;
-    font: inherit;
-    font-size: 9px;
-    line-height: 14px;
-    white-space: nowrap;
-    cursor: pointer;
-
-    &:hover {
-      border-color: #c5b17b;
-      color: #fff;
-    }
-
-    &:focus-visible {
-      outline: 1px solid #fff;
-      outline-offset: 1px;
-    }
-
-    svg {
-      flex: none;
-      fill: none;
-      stroke: currentColor;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-width: 1.5;
-    }
+  .rearrange-icon {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+    pointer-events: none;
   }
 
   .head-close {

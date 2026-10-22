@@ -48,9 +48,6 @@ import {
   BUTTON_Y,
   COLUMNS,
   EQUIPMENT_SLOTS,
-  EXIT_BUTTON_X,
-  EXIT_SPRITE,
-  EXIT_TOOLTIP,
   EXPAND_BUTTON_X,
   EXPAND_SPRITE,
   EXPAND_TOOLTIP,
@@ -80,6 +77,7 @@ import {
   REARRANGE_BUTTON_X,
   REARRANGE_BUTTON_Y,
   REARRANGE_LABEL,
+  REARRANGE_SPRITE,
   ROWS,
   SHOP_BUTTON_X,
   SHOP_SPRITE,
@@ -549,25 +547,6 @@ export const Inventory = observer(() => {
         {t(TITLE)}
       </div>
 
-      <button
-        type="button"
-        className="rearrange-button"
-        data-no-drag="true"
-        aria-label={t(REARRANGE_LABEL)}
-        onClick={() => InventorySort.start()}
-        style={{
-          left: REARRANGE_BUTTON_X,
-          top: REARRANGE_BUTTON_Y,
-          width: REARRANGE_BUTTON_WIDTH,
-          height: REARRANGE_BUTTON_HEIGHT,
-        }}
-      >
-        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
-          <path d="M3 6a5 5 0 0 1 8.5-3.5L13 4M13 1v3h-3M13 10a5 5 0 0 1-8.5 3.5L3 12m0 3v-3h3" />
-        </svg>
-        <span>{t(REARRANGE_LABEL)}</span>
-      </button>
-
       {}
       <div
         className="head-close"
@@ -689,15 +668,25 @@ export const Inventory = observer(() => {
         {playerData.money.toLocaleString('en-US')}
       </div>
 
-      <div data-no-drag="true" className="window-button" style={{ left: EXIT_BUTTON_X, top: BUTTON_Y }}>
+      {}
+      <div
+        className="window-button"
+        data-no-drag="true"
+        style={{ left: REARRANGE_BUTTON_X, top: REARRANGE_BUTTON_Y }}
+      >
+        {}
         <MuButton
-          file={EXIT_SPRITE}
-          width={BUTTON_WIDTH}
-          height={BUTTON_HEIGHT}
+          file={REARRANGE_SPRITE}
+          width={REARRANGE_BUTTON_WIDTH}
+          height={REARRANGE_BUTTON_HEIGHT}
           frames={BUTTON_FRAMES}
-          onClick={() => (MuWindows.setOpen('inventory', false))}
+          onClick={() => InventorySort.start()}
         >
-          <span className="button-tooltip">{t(EXIT_TOOLTIP)}</span>
+          {}
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" className="rearrange-icon">
+            <path d="M3 6a5 5 0 0 1 8.5-3.5L13 4M13 1v3h-3M13 10a5 5 0 0 1-8.5 3.5L3 12m0 3v-3h3" />
+          </svg>
+          <span className="button-tooltip">{t(REARRANGE_LABEL)}</span>
         </MuButton>
       </div>
       {}
