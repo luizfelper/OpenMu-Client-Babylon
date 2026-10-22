@@ -64,20 +64,25 @@ export const REFERENCE_FPS = 25;
 /** Main-scene pitch, `CameraAngle[0] = -48.5` (`SetCameraAngle`). */
 export const CAMERA_PITCH_DEG = 48.5;
 
-/** `CameraFOV = 30` (`SetCameraFOV`), gluPerspective vertical degrees. */
-export const CAMERA_FOV_DEG = 30;
+/**
+ * `CameraFOV = 30` (`SetCameraFOV`), gluPerspective vertical degrees. Raised
+ * to 45 here so the default frame is wider than the original's; the slider
+ * still offers the 20..60 range around it.
+ */
+export const CAMERA_FOV_DEG = 45;
 
 /**
- * Range the FOV slider offers around the original 30. The eye adds its own
+ * Range the FOV slider offers around the default. The eye adds its own
  * widening on top, so the slider carries first person with it: the innermost
- * step runs 45 to 85 as the slider runs 20 to 60.
+ * step runs 30 to 70 as the slider runs 20 to 60.
  */
 export const CAMERA_FOV_MIN_DEG = 20;
 export const CAMERA_FOV_MAX_DEG = 60;
 
 /**
- * First-person frustum at the slider's default, vertical degrees. 30 is a
- * telephoto lens on a face, so the innermost step opens up.
+ * First-person frustum at the slider's default, vertical degrees. The default
+ * third-person frame (45) is still narrow on a face, so the innermost step
+ * opens up.
  *
  * It opened to 65, the figure the original's own tour camera uses
  * (`SetCameraFOV`). That is a vertical figure and Babylon reads it as one too,

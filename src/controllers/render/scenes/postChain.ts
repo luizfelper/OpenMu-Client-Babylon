@@ -229,8 +229,8 @@ export function createPostChain(
     ip.vignetteWeight = (vignette / SLIDER_MAX) * VIGNETTE_MAX_WEIGHT;
     ip.vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
     ip.vignetteColor.set(0, 0, 0, 0);
-    // The live fov: the camera runs at 30 deg while the pipeline's default
-    // is 0.8 rad, and the falloff is computed against it.
+    // The live fov: the camera runs at CAMERA_FOV_DEG (45 by default) while the
+    // pipeline's default is 0.8 rad, and the falloff is computed against it.
     ip.vignetteCameraFov = camera.fov;
     if (vignette > 0) live.push('vignette');
 

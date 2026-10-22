@@ -13,7 +13,7 @@ const OPTIONS_KEY = 'mu_options';
 // Literals rather than the owners' constants: camera, render and hero all import this
 // controller, so naming theirs here would close an import cycle. limits.test.ts pins them.
 /** `CAMERA_FOV_DEG` / `_MIN_DEG` / `_MAX_DEG` (controllers/camera/recipes.ts). */
-const CAMERA_FOV = { deg: 30, min: 20, max: 60 } as const;
+const CAMERA_FOV = { deg: 45, min: 20, max: 60 } as const;
 /** `RENDER_DISTANCE_MAX` (controllers/render/renderDistance.ts). */
 const RENDER_DISTANCE_TOP = 9;
 /** `RENDER_SCALE_STEP_MAX` (controllers/render/renderScale.ts). */
