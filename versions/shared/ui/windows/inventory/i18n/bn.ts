@@ -8,4 +8,5 @@ export default {
   'inventory.repair': 'মেরামত (L)',
   'inventory.personalShop': 'ব্যক্তিগত দোকান',
   'inventory.expand': 'বর্ধিত ইনভেন্টরি খুলুন (K)',
+  'inventory.rearrange': 'ইনভেন্টরি সাজান',
 } satisfies Partial<Record<keyof typeof en, string>>;

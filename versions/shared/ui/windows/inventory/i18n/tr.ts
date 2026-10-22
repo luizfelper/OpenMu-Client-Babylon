@@ -8,4 +8,5 @@ export default {
   'inventory.repair': 'Onar (L)',
   'inventory.personalShop': 'Kişisel Dükkan',
   'inventory.expand': 'Genişletilmiş Envanteri Aç (K)',
+  'inventory.rearrange': 'Envanteri düzenle',
 } satisfies Partial<Record<keyof typeof en, string>>;

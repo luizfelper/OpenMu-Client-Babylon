@@ -6,6 +6,7 @@ const en = {
   'inventory.repair': 'Repair (L)',
   'inventory.personalShop': 'Personal Shop',
   'inventory.expand': 'Open Expanded Inventory (K)',
+  'inventory.rearrange': 'Rearrange inventory',
 };
 
 export default en;

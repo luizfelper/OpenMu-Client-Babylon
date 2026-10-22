@@ -8,4 +8,5 @@ export default {
   'inventory.repair': 'Javítás (L)',
   'inventory.personalShop': 'Saját bolt',
   'inventory.expand': 'Bővített leltár megnyitása (K)',
+  'inventory.rearrange': 'Leltár rendezése',
 } satisfies Partial<Record<keyof typeof en, string>>;

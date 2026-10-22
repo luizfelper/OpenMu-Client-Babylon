@@ -8,4 +8,5 @@ export default {
   'inventory.repair': '수리(L)',
   'inventory.personalShop': '개인 상점',
   'inventory.expand': '확장 인벤토리 열기(K)',
+  'inventory.rearrange': '인벤토리 정리',
 } satisfies Partial<Record<keyof typeof en, string>>;

@@ -75,6 +75,11 @@ import {
   REPAIR_BUTTON_X,
   REPAIR_SPRITE,
   REPAIR_TOOLTIP,
+  REARRANGE_BUTTON_HEIGHT,
+  REARRANGE_BUTTON_WIDTH,
+  REARRANGE_BUTTON_X,
+  REARRANGE_BUTTON_Y,
+  REARRANGE_LABEL,
   ROWS,
   SHOP_BUTTON_X,
   SHOP_SPRITE,
@@ -543,6 +548,24 @@ export const Inventory = observer(() => {
       <div className="window-title" style={{ top: TITLE_Y }}>
         {t(TITLE)}
       </div>
+
+      <button
+        type="button"
+        className="rearrange-button"
+        data-no-drag="true"
+        aria-label={t(REARRANGE_LABEL)}
+        style={{
+          left: REARRANGE_BUTTON_X,
+          top: REARRANGE_BUTTON_Y,
+          width: REARRANGE_BUTTON_WIDTH,
+          height: REARRANGE_BUTTON_HEIGHT,
+        }}
+      >
+        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+          <path d="M3 6a5 5 0 0 1 8.5-3.5L13 4M13 1v3h-3M13 10a5 5 0 0 1-8.5 3.5L3 12m0 3v-3h3" />
+        </svg>
+        <span>{t(REARRANGE_LABEL)}</span>
+      </button>
 
       {}
       <div

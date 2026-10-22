@@ -8,4 +8,5 @@ export default {
   'inventory.repair': 'Repară (L)',
   'inventory.personalShop': 'Magazin personal',
   'inventory.expand': 'Deschide inventarul extins (K)',
+  'inventory.rearrange': 'Aranjează inventarul',
 } satisfies Partial<Record<keyof typeof en, string>>;

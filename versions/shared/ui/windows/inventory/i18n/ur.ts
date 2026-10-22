@@ -8,4 +8,5 @@ export default {
   'inventory.repair': 'مرمت (L)',
   'inventory.personalShop': 'ذاتی دکان',
   'inventory.expand': 'توسیعی سامان کھولیں (K)',
+  'inventory.rearrange': 'سامان ترتیب دیں',
 } satisfies Partial<Record<keyof typeof en, string>>;

@@ -48,6 +48,10 @@ export const EXIT_BUTTON_X = 13;
 export const REPAIR_BUTTON_X = 50;
 export const SHOP_BUTTON_X = 87;
 export const EXPAND_BUTTON_X = 87 + 37;
+export const REARRANGE_BUTTON_X = 16;
+export const REARRANGE_BUTTON_Y = 28;
+export const REARRANGE_BUTTON_WIDTH = 158;
+export const REARRANGE_BUTTON_HEIGHT = 16;
 
 export const EXIT_SPRITE = 'newui_exit_00.OZT';
 export const REPAIR_SPRITE = 'newui_repair_00.OZT';
@@ -58,6 +62,7 @@ export const EXIT_TOOLTIP: TextKey = 'inventory.close';
 export const REPAIR_TOOLTIP: TextKey = 'inventory.repair';
 export const SHOP_TOOLTIP: TextKey = 'inventory.personalShop';
 export const EXPAND_TOOLTIP: TextKey = 'inventory.expand';
+export const REARRANGE_LABEL: TextKey = 'inventory.rearrange';
 
 type EquipmentSlotInfo = {
   slot: number;

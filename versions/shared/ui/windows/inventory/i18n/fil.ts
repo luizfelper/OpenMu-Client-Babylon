@@ -8,4 +8,5 @@ export default {
   'inventory.repair': 'Ayusin (L)',
   'inventory.personalShop': 'Personal na Tindahan',
   'inventory.expand': 'Buksan ang Pinalawak na Imbentaryo (K)',
+  'inventory.rearrange': 'Ayusin ang imbentaryo',
 } satisfies Partial<Record<keyof typeof en, string>>;
