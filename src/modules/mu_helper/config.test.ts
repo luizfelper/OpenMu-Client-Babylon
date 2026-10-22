@@ -3,13 +3,14 @@ import {
   decodeMuHelperConfig,
   defaultMuHelperConfig,
   encodeMuHelperConfig,
+  MAX_HUNTING_RANGE,
   MU_HELPER_BLOB_SIZE,
   type MuHelperConfig,
 } from './config';
 
 function maximalConfig(): MuHelperConfig {
   return {
-    huntingRange: 4,
+    huntingRange: MAX_HUNTING_RANGE,
     longRangeCounterAttack: true,
     returnToOriginalPosition: true,
     maxSecondsAway: 12,
@@ -83,7 +84,7 @@ describe('MU Helper blob codec', () => {
     const blob = encodeMuHelperConfig(maximalConfig());
     // jewel(3) ancient(4) excellent(5) zen(6) extra(7)
     expect(blob[1]).toBe(0xf8);
-    expect(blob[2]).toBe(4 | (3 << 4));
+    expect(blob[2]).toBe(MAX_HUNTING_RANGE | (3 << 4));
     // potion(0) heal(1) drain(2) longRange(3) origPos(4) combo(5) party(6) partyHeal(7)
     expect(blob[25]).toBe(0xff);
     // durationParty=0, raven(1), duration=0, skill1 timer(3), precon nearby, subcon 1 (>=3)

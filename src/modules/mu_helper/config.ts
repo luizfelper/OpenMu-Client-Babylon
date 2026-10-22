@@ -11,7 +11,11 @@
 
 export const MU_HELPER_BLOB_SIZE = 257;
 
-export const MAX_HUNTING_RANGE = 6;
+/**
+ * Ours: the reference client's slider stops at 6. The blob keeps the range in a
+ * nibble (`out[2]`, 0-15), so 12 still round-trips and the reference client reads it.
+ */
+export const MAX_HUNTING_RANGE = 12;
 export const MAX_OBTAINING_RANGE = 8;
 export const MAX_EXTRA_ITEMS = 12;
 /** 15-byte ANSI slots, NUL-terminated: 14 usable characters. */
