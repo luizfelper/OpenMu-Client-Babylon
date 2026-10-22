@@ -1,16 +1,17 @@
 // Is everything answering? Checked from inside the web (Caddy) container, over the same paths Caddy uses.
 import type { Stack } from './docker';
 import { mailOn } from './render/mail';
-import { HOSTS, PORTS } from './stack';
+import { gamePorts, HOSTS, PORTS } from './stack';
 
 export type Check = { name: string; ok: boolean };
 
-const TCP: [string, string, number][] = [
-  ['OpenMU connect server', HOSTS.openmu, PORTS.connect],
-  ['OpenMU game server', HOSTS.openmu, PORTS.firstGame],
-  ['OpenMU admin panel', HOSTS.openmu, PORTS.admin],
-  ['Proxy (websocket)', HOSTS.openmu, PORTS.proxy],
-  ['Register', HOSTS.register, PORTS.register],
+/** Each entry lists the ports that count as "this service answered"; the game servers moved once already. */
+const TCP: [string, string, number[]][] = [
+  ['OpenMU connect server', HOSTS.openmu, [PORTS.connect]],
+  ['OpenMU game server', HOSTS.openmu, gamePorts()],
+  ['OpenMU admin panel', HOSTS.openmu, [PORTS.admin]],
+  ['Proxy (websocket)', HOSTS.openmu, [PORTS.proxy]],
+  ['Register', HOSTS.register, [PORTS.register]],
 ];
 
 const HTTP: [string, string][] = [
@@ -20,9 +21,9 @@ const HTTP: [string, string][] = [
 
 export async function checks(stack: Stack): Promise<Check[]> {
   // IMAPS answers once the mail server has its certificate (DNS for mail.<domain> must be in place).
-  const tcp = mailOn(stack.config) ? [...TCP, ['Mail server (IMAPS)', 'mailserver', PORTS.imaps] as [string, string, number]] : TCP;
+  const tcp = mailOn(stack.config) ? [...TCP, ['Mail server (IMAPS)', 'mailserver', [PORTS.imaps]] as [string, string, number[]]] : TCP;
   const script = [
-    ...tcp.map(([, host, port]) => `nc -z -w 3 ${host} ${port} && echo 1 || echo 0`),
+    ...tcp.map(([, host, ports]) => `( ${ports.map(p => `nc -z -w 3 ${host} ${p}`).join(' || ')} ) && echo 1 || echo 0`),
     // Any HTTP answer counts: the marketplace says 401 to a caller without a player session.
     ...HTTP.map(([, url]) => `wget -S -T 5 -O /dev/null ${url} 2>&1 | grep -q 'HTTP/' && echo 1 || echo 0`),
   ].join('; ');

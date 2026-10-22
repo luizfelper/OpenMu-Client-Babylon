@@ -14,6 +14,16 @@ import { buildAll, logFile, preflight } from './install';
 import { ensureDkim, printMailDns } from './mail';
 import { GROUPS, ask } from './questions';
 
+/**
+ * Re-renders every generated file (service envs, Caddyfile, serverlist, server.json)
+ * from the saved config. No prompts, no restart: `deploy.sh` runs it after a pull so a
+ * change in `install/` - a port, a host - reaches the files the services actually read.
+ */
+export async function render(c: Config, p: Paths): Promise<void> {
+  saveState(c, p);
+  ui.ok(`Re-rendered the stack files in ${p.state}.`);
+}
+
 /** Changes that are baked into the client or OpenMU image need a rebuild; the rest only a restart. */
 function needsBuild(a: Config, b: Config): boolean {
   return a.mode !== b.mode || a.domain !== b.domain || a.publicIp !== b.publicIp || a.openmuVersion !== b.openmuVersion || a.openmuSourceRef !== b.openmuSourceRef || a.moduleSigningKey !== b.moduleSigningKey || a.liteAssets !== b.liteAssets;

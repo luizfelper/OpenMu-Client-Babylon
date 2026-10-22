@@ -1,6 +1,6 @@
 // Per-service environment, rendered from the config. Secrets go only to the services that use them.
 import { clientOrigin, type Config } from '../config';
-import { DATA, HOSTS, PORTS, WEB_IP, type Service } from '../stack';
+import { DATA, HOSTS, PORTS, WEB_IP, gamePorts, type Service } from '../stack';
 import { moduleSigningKey } from '../validate';
 import { mailHost, mailserverEnv, webmailEnv } from './mail';
 
@@ -13,8 +13,7 @@ export function databaseUrl(c: Config): string {
 
 /** The OpenMU ports the proxy may dial: connect server and game servers, on loopback only. */
 export function allowTargets(): string {
-  const ports = [PORTS.connect, ...Array.from({ length: PORTS.gameServers }, (_, i) => PORTS.firstGame + i)];
-  return ports.map(p => `127.0.0.1:${p}`).join(',');
+  return [PORTS.connect, ...gamePorts()].map(p => `127.0.0.1:${p}`).join(',');
 }
 
 /** Where the cash shop gate checks that the game port is closed to the internet. */

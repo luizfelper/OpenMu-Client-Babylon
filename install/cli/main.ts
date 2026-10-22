@@ -6,7 +6,7 @@ import { install } from './commands/install';
 import { adopt } from './commands/adopt';
 import { mail } from './commands/mail';
 import { mailOn } from './render/mail';
-import { backupNow, configure, logs, restoreBackup, status, uninstall, update } from './commands/manage';
+import { backupNow, configure, logs, render, restoreBackup, status, uninstall, update } from './commands/manage';
 
 const HELP = `mu [command]
   (none)       menu
@@ -14,6 +14,7 @@ const HELP = `mu [command]
   adopt        move an existing hand-made server into this setup
   update       back up, pull from git, rebuild, restart (rolls back on failure)
   config       change address, passwords, features or the OpenMU version
+  render       re-render the stack files from the saved config (after a pull)
   status       what is running and answering
   logs [svc]   follow the logs (proxy, openmu-startup, cashshop, ...)
   backup       back up the database, all service data and the mail server
@@ -66,6 +67,9 @@ try {
       break;
     case 'config':
       await configure(await needsConfig(), p);
+      break;
+    case 'render':
+      await render(await needsConfig(), p);
       break;
     case 'status':
       await status(await needsConfig(), p);

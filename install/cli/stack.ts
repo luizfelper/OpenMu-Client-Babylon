@@ -10,7 +10,9 @@ export const PORTS = {
   marketplace: 3300,
   admin: 8080,
   connect: 44405,
+  /** OpenMU 0.9.x seeds its game servers here; the newer versions seed `newerFirstGame`. */
   firstGame: 55901,
+  newerFirstGame: 45901,
   gameServers: 6,
   /** IP mode only: the register site on its own port. */
   registerSite: 8081,
@@ -46,3 +48,17 @@ export const DATA = {
   ops: '/data/ops/ops.sqlite',
   openmuLogs: '/openmu-logs',
 } as const;
+
+/**
+ * Every port a game server may listen on.
+ *
+ * The port is OpenMU's own setting, seeded into its database: 0.9.x uses
+ * 55901.., the current versions use 45901... An admin-panel update can rewrite
+ * it, so the proxy allows both ranges and the status probes both, instead of
+ * reporting a game server that answers as down.
+ */
+export function gamePorts(): number[] {
+  return [PORTS.firstGame, PORTS.newerFirstGame].flatMap(first =>
+    Array.from({ length: PORTS.gameServers }, (_, i) => first + i)
+  );
+}

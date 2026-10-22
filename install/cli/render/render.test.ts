@@ -28,8 +28,10 @@ describe('service env', () => {
   it('pins the proxy to OpenMU and turns the dev switches off', () => {
     expect(env.proxy).toMatchObject({ LOG_PACKETS: 'off', ADMIN_OPEN: 'off', ADMIN_DEMO: 'off', HOSTNAME: '0.0.0.0' });
     const rules = parseAllowTargets(allowTargets());
-    expect(rules).toHaveLength(7);
+    // The connect server plus both game-server ranges: 0.9.x seeds 55901.., current versions 45901...
+    expect(rules).toHaveLength(1 + 12);
     expect(rules.every(r => r.host === '127.0.0.1' && r.port !== null)).toBe(true);
+    expect(rules.map(r => r.port)).toEqual([44405, 55901, 55902, 55903, 55904, 55905, 55906, 45901, 45902, 45903, 45904, 45905, 45906]);
   });
 
   it('gives each secret only to the services that use it', () => {
