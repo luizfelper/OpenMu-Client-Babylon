@@ -1,5 +1,5 @@
 // Backups: the OpenMU database (pg_dump), every service's SQLite file and the mail server's data, into one dated folder.
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Stack } from './docker';
 import { files } from './paths';
@@ -23,7 +23,8 @@ export function stamp(now = new Date()): string {
 /** Writes a backup and returns its folder. Services keep running. */
 export async function backup(stack: Stack, label = ''): Promise<string> {
   const dir = join(stack.paths.backups, stamp() + (label ? `-${label}` : ''));
-  mkdirSync(join(dir, DATA), { recursive: true, mode: 0o700 });
+  const dataDir = join(dir, DATA);
+  mkdirSync(dataDir, { recursive: true, mode: 0o700 });
 
   const dump = Bun.spawn(['docker', ...stack.command(), 'exec', '-T', 'database', 'pg_dump', '-U', 'postgres', '-Fc', 'openmu'], {
     stdout: Bun.file(join(dir, DUMP)),
@@ -35,8 +36,15 @@ export async function backup(stack: Stack, label = ''): Promise<string> {
   if (roles.code !== 0) throw new Error(`pg_dumpall failed: ${roles.err}`);
   writeFileSync(join(dir, ROLES), withoutPostgresRole(roles.out));
 
-  const copy = await stack.once('register', ['bun', 'tools/sqliteBackup.ts', '/data', '/backup'], { binds: [`${join(dir, DATA)}:/backup`] });
-  if (copy.code !== 0) throw new Error(`SQLite backup failed: ${copy.err}`);
+  try {
+    chmodSync(dataDir, 0o777);
+    const copy = await stack.once('register', ['bun', 'tools/sqliteBackup.ts', '/data', '/backup'], {
+      binds: [`${dataDir}:/backup`],
+    });
+    if (copy.code !== 0) throw new Error(`SQLite backup failed: ${copy.err}`);
+  } finally {
+    chmodSync(dataDir, 0o700);
+  }
 
   if (mailOn(stack.config)) {
     const mail = await stack.once('mailserver', mailBackupCommand(), { binds: [`${dir}:/backup`] });
