@@ -11,6 +11,11 @@ afterEach(() => {
 });
 
 describe('the quality presets', () => {
+  it('a fresh install reads as Classic', () => {
+    for (const key of TOUCHED) setGameOption(key, defaultGameOption(key) as never);
+    expect(activeTierPreset()).toBe(1);
+  });
+
   it('put Low in front of the three tiers', () => {
     expect(TIER_PRESET_LABEL_KEYS).toEqual([
       'options.quality.low',
