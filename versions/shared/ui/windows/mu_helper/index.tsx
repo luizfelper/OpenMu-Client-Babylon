@@ -141,6 +141,40 @@ const Stepper = ({
   </div>
 );
 
+/** A drag control for the hunting range (`<input type=range>`), with the value read out beside it. */
+const RangeSlider = ({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+}) => (
+  <div className="helper-slider">
+    <span className="helper-slider-label">{label}</span>
+    <input
+      className="helper-slider-input"
+      type="range"
+      min={min}
+      max={max}
+      step={1}
+      value={value}
+      aria-label={label}
+      onKeyDown={event => event.stopPropagation()}
+      onChange={event => {
+        const parsed = parseInt(event.target.value, 10);
+        onChange(Math.max(min, Math.min(max, Number.isNaN(parsed) ? min : parsed)));
+      }}
+    />
+    <span className="helper-slider-value">{value}</span>
+  </div>
+);
+
 /** `FilterByAttackSkills`: what an attack slot may hold. */
 function isAttackSkill(def: SkillDefinition): boolean {
   return (
@@ -328,7 +362,7 @@ const HuntTab = observer(
 
     return (
       <>
-        <Stepper
+        <RangeSlider
           label={t('muHelper.huntRange')}
           value={draft.huntingRange}
           min={0}

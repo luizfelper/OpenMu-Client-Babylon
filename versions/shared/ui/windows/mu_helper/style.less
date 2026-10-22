@@ -102,6 +102,70 @@
     }
   }
 
+  .helper-slider {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 18px;
+
+    .helper-slider-label {
+      flex: none;
+    }
+
+    .helper-slider-value {
+      width: 18px;
+      text-align: center;
+      color: #f0d890;
+    }
+  }
+
+  .helper-slider-input {
+    flex: 1;
+    min-width: 0;
+    height: 16px;
+    margin: 0;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+
+    &::-webkit-slider-runnable-track {
+      height: 6px;
+      border: 1px solid #7a6b45;
+      border-radius: 3px;
+      background: linear-gradient(#1c180f, #2a241a);
+    }
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 16px;
+      margin-top: -6px;
+      border: 1px solid #c8b87a;
+      border-radius: 2px;
+      background: linear-gradient(#f0d890, #a8905a);
+    }
+
+    &::-moz-range-track {
+      height: 6px;
+      border: 1px solid #7a6b45;
+      border-radius: 3px;
+      background: linear-gradient(#1c180f, #2a241a);
+    }
+
+    &::-moz-range-thumb {
+      width: 12px;
+      height: 16px;
+      border: 1px solid #c8b87a;
+      border-radius: 2px;
+      background: linear-gradient(#f0d890, #a8905a);
+    }
+
+    &:focus-visible {
+      outline: 1px solid #fff;
+      outline-offset: 1px;
+    }
+  }
+
   .helper-skill-slot {
     width: 24px;
     height: 30px;

@@ -444,6 +444,10 @@ function attack(world: World, hero: Entity, config: MuHelperConfig): void {
   if (!currentTarget) currentTarget = nearestTarget(world, hero, huntDistance);
   if (!currentTarget) {
     comboState = 0;
+    // Nothing in range: stop swinging at whatever was there (a stale plain
+    // target would keep the hero walking at a monster that is already gone).
+    // A cast the player himself issued owns the frame - never step on it.
+    if (!world.castRequest) world.attackTarget = null;
     return;
   }
 
@@ -454,8 +458,21 @@ function attack(world: World, hero: Entity, config: MuHelperConfig): void {
   } else {
     skillNum = selectAttackSkill(world, hero, config);
   }
-  if (skillNum <= 0) return;
 
+  if (world.castRequest) return; // the player's own cast wins (castSkill's rule)
+
+  // No skill is set in the window (or none is learned yet): the original
+  // simply stands there, but that reads as "the helper does nothing". Fall
+  // back to the plain attack a left click uses - `world.attackTarget` makes
+  // the hero walk into weapon reach and swing on his own (attackSystem).
+  if (skillNum <= 0) {
+    world.attackTarget = currentTarget;
+    return;
+  }
+
+  // A skill takes over: the swing engine yields while a cast is being served,
+  // so drop the plain target it would otherwise keep walking to.
+  world.attackTarget = null;
   castSkill(world, skillNum, currentTarget);
 }
 

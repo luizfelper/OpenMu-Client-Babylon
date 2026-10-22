@@ -31,6 +31,10 @@ the two server packets, with its running state and the raw config blob (`MuHelpe
 - It never builds packets. It writes the same seams as the player's clicks: `world.castRequest`,
   `world.pickupTarget`, `hero.playerMoveTo` and the commands a click calls (`HeroSkills.selectSkill`,
   `consumeItemRequest`, `repairItemRequest`, `Pets.sendPetCommand`).
+- The attack step casts a configured skill; with no usable attack skill (empty window slot, or
+  nothing learned) it falls back to the plain attack a left click uses (`world.attackTarget`), so
+  the hero searches and swings on his own instead of standing still. While a skill is the attack
+  the plain target is dropped, since the swing engine yields to a cast being served.
 - Entering a safe zone calls `MuHelper.toggleMuHelper()` (stop). A warp, or a jump of more than 3
   tiles, re-anchors the regroup point.
 - A drop is asked for once: the pickup system marks it `pickupAsked` when the request goes out and the
@@ -82,7 +86,8 @@ the two server packets, with its running state and the raw config blob (`MuHelpe
   away seconds clamp.
 - `loop.test.ts`, `state.test.ts`: nothing runs or starts while the module is off. `loop.test.ts`: switching
   it off lets go of its cast, swing and pickup; a buff is checked by skill number and a skill
-  `BuffTarget` does not list is never cast; a drop already asked for is left alone.
+  `BuffTarget` does not list is never cast; a drop already asked for is left alone; with no attack
+  skill set the hero swings on its own (`attackTarget`) and with a learned skill it casts instead.
 - `itemFilters.test.ts`: each filter, and the whole text put back over the cut slots. `loop.test.ts`:
   extra items match by name only until the filters are on. `state.test.ts`: the typed text survives
   a save only with the filters on.

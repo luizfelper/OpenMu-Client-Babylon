@@ -150,4 +150,54 @@ describe('updateMuHelperLoop', () => {
     expect(extraItemTick('Guardian Shield +Luck', true, true)).toBe(true);
     expect(extraItemTick('Guardian Shield +Luck', false, true)).toBe(false);
   });
+
+  /**
+   * One helper tick with a monster beside the hero and the given config: what
+   * the tick wrote at the swing seam (`attackTarget`) and the cast seam
+   * (`castRequest`).
+   */
+  function attackTick(config: ReturnType<typeof defaultMuHelperConfig>, skills: number[] = []) {
+    on.module = true;
+    on.state.config = config;
+    HeroSkills.setSkillList(skills.map((number, index) => ({ index, number, level: 0 })));
+    const hero = {
+      transform: { pos: { x: 10, z: 10 } },
+      attributeSystem: { isAboveZero: () => false },
+    };
+    const monster = {
+      netId: 7,
+      npcType: 1,
+      transform: { pos: { x: 12, z: 10 } },
+    };
+    const world = {
+      playerEntity: hero,
+      mapIndex: 0,
+      castRequest: null,
+      attackTarget: null,
+      pickupTarget: null,
+      netObjsQuery: { entities: [monster] },
+      playersQuery: { entities: [] },
+      getTerrainFlag: () => 0,
+    } as unknown as World;
+    on.helper.active = true;
+    updateMuHelperLoop(world, 0.3);
+    const result = { attack: world.attackTarget === (monster as unknown), cast: world.castRequest !== null };
+    on.helper.active = false;
+    updateMuHelperLoop(world, 0.3);
+    return result;
+  }
+
+  it('searches and swings on its own when no attack skill is set', () => {
+    // No skill in the window: the hero walks in and swings (attackTarget), like a left click.
+    const result = attackTick(defaultMuHelperConfig());
+    expect(result.attack).toBe(true);
+    expect(result.cast).toBe(false);
+  });
+
+  it('keeps the swing seam clear while a skill is the attack', () => {
+    // A learned basic attack skill: the loop casts it and drops the plain target.
+    const result = attackTick({ ...defaultMuHelperConfig(), skills: [1, 0, 0] }, [1]);
+    expect(result.attack).toBe(false);
+    expect(result.cast).toBe(true);
+  });
 });
