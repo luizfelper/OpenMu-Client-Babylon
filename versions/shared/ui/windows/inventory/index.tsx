@@ -554,6 +554,7 @@ export const Inventory = observer(() => {
         className="rearrange-button"
         data-no-drag="true"
         aria-label={t(REARRANGE_LABEL)}
+        onClick={() => InventorySort.start()}
         style={{
           left: REARRANGE_BUTTON_X,
           top: REARRANGE_BUTTON_Y,
