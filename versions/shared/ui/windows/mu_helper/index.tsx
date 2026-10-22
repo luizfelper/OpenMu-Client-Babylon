@@ -38,18 +38,23 @@ import {
 } from '@/modules/mu_helper/state';
 
 /**
- * `CNewUIMuHelper` (NewUIMuHelper.cpp): the S6 MU Helper settings dialog in
- * the 190 x 429 item-window frame. Two tabs (hunt / obtain); the original's
- * condition sub-window (`CNewUIMuHelperExt`) and skill-list popup
+ * `CNewUIMuHelper` (NewUIMuHelper.cpp): the S6 MU Helper settings dialog. The
+ * original stacks hunt / obtain in two tabs of a 190 x 429 item window; here
+ * the window is drawn wider and both sections sit side by side (hunt left,
+ * obtain right) so nothing is hidden behind a tab. The original's condition
+ * sub-window (`CNewUIMuHelperExt`) and skill-list popup
  * (`CNewUIMuHelperSkillList`) collapse into inline rows and an in-window
- * picker overlay. Class-conditional rows follow `RegisterBoxCharacter`.
- * Save encodes the 257-byte blob and sends `MuHelperSaveDataRequest`.
+ * picker overlay. Class-conditional rows follow `RegisterBoxCharacter`. Save
+ * encodes the 257-byte blob and sends `MuHelperSaveDataRequest`.
  */
 
 const WINDOW_ID = 'mu-helper';
 
-const TAB = { x: 12, y: 48, width: 56, height: 22 };
-const TAB_SPRITE = 'newui_guild_tab04.OZT';
+// Wider than the standard frame: two columns of controls plus the frame's own
+// margins. The frame art stretches to it (`MuItemWindow` width/height).
+const WINDOW_WIDTH = 384;
+const WINDOW_HEIGHT = 429;
+
 const CHECK_SPRITE = 'op2_ch.OZT';
 const CHECK_SIZE = 16;
 const EXIT_BUTTON = { x: 13, y: 392, width: 36, height: 29 };
@@ -702,7 +707,6 @@ const ObtainTab = observer(() => {
 
 export const MuHelperWindow = observer(() => {
   const open = MuHelperState.windowOpen;
-  const [tab, setTab] = useState(0);
   const [picker, setPicker] = useState<PickerTarget | null>(null);
 
   useEventBus('keyPressed', key => {
@@ -725,39 +729,27 @@ export const MuHelperWindow = observer(() => {
       id={WINDOW_ID}
       className="mu-helper-window"
       column={1}
+      width={WINDOW_WIDTH}
+      height={WINDOW_HEIGHT}
       label={t('muHelper.title')}
       onClose={close}
     >
       <div className="helper-title">{t('muHelper.title')}</div>
 
-      {[t('muHelper.tabHunt'), t('muHelper.tabObtain')].map((name, i) => (
-        <div
-          key={name}
-          data-no-drag="true"
-          style={{
-            position: 'absolute',
-            left: TAB.x + i * TAB.width,
-            top: TAB.y,
-          }}
-        >
-          <MuButton
-            file={TAB_SPRITE}
-            width={TAB.width}
-            height={TAB.height}
-            frames={{ up: 0, down: 1, check: 1 }}
-            checked={tab === i}
-            label={name}
-            labelStyle={{ fontSize: 10 }}
-            onClick={() => {
-              setTab(i);
-              setPicker(null);
-            }}
-          />
-        </div>
-      ))}
+      <div className="helper-columns" data-no-drag="true">
+        <section className="helper-section-panel">
+          <div className="helper-section-head">{t('muHelper.tabHunt')}</div>
+          <div className="helper-body">
+            <HuntTab onPick={setPicker} />
+          </div>
+        </section>
 
-      <div className="helper-body" data-no-drag="true">
-        {tab === 0 ? <HuntTab onPick={setPicker} /> : <ObtainTab />}
+        <section className="helper-section-panel">
+          <div className="helper-section-head">{t('muHelper.tabObtain')}</div>
+          <div className="helper-body">
+            <ObtainTab />
+          </div>
+        </section>
       </div>
 
       {picker && (

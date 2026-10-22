@@ -16,7 +16,6 @@ export const WINDOW_HEIGHT = 429;
 
 const TOP_HEIGHT = 64;
 const SIDE_WIDTH = 21;
-const SIDE_HEIGHT = 320;
 const BOTTOM_HEIGHT = 45;
 
 // The main bar's height in 640x480 units; the bar is scaled by the player, so
@@ -34,6 +33,14 @@ type MuItemWindowProps = {
   /** Read by screen readers; defaults to the id. */
   label?: string;
   /**
+   * Frame size. Most windows want the standard 190 x 429 frame; a handful of
+   * wider ones (the MU Helper) pass their own so the whole chrome is drawn at
+   * that size. The strips stretch - the art is a plain bevel, so a wider top
+   * and bottom still read as the same window.
+   */
+  width?: number;
+  height?: number;
+  /**
    * Escape while this is the top window. Without one, Escape falls back to
    * the `keyPressed` broadcast, which closes every window listening for it.
    */
@@ -42,11 +49,23 @@ type MuItemWindowProps = {
 };
 
 export const MuItemWindow = observer(
-  ({ id, column = 0, className, style, label, onClose, children }: MuItemWindowProps) => {
+  ({
+    id,
+    column = 0,
+    className,
+    style,
+    label,
+    width = WINDOW_WIDTH,
+    height = WINDOW_HEIGHT,
+    onClose,
+    children,
+  }: MuItemWindowProps) => {
     const back = useMuSprite(BACK_SPRITE);
+    // The side strips run between the top and the bottom, whatever the height.
+    const sideHeight = Math.max(0, height - TOP_HEIGHT - BOTTOM_HEIGHT);
     const chrome = useWindowChrome(id, {
-      width: WINDOW_WIDTH,
-      height: WINDOW_HEIGHT,
+      width,
+      height,
       onClose,
     });
     const stackRef = chrome.ref as (el: HTMLElement | null) => void;
@@ -69,7 +88,7 @@ export const MuItemWindow = observer(
         className={`mu-item-window${className ? ` ${className}` : ''}`}
         onPointerDown={chrome.onPointerDown}
         style={{
-          right: column * WINDOW_WIDTH * chrome.scale,
+          right: column * width * chrome.scale,
           bottom: bottomBarScreenHeight(),
           backgroundImage: back ? `url(${back.url})` : undefined,
           backgroundSize: '100% 100%',
@@ -79,38 +98,50 @@ export const MuItemWindow = observer(
       >
       <MuSpriteFrame
         file={TOP_SPRITE}
-        width={WINDOW_WIDTH}
+        width={width}
         height={TOP_HEIGHT}
-        style={{ position: 'absolute', left: 0, top: 0 }}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          backgroundSize: '100% 100%',
+        }}
       />
       <MuSpriteFrame
         file={LEFT_SPRITE}
         width={SIDE_WIDTH}
-        height={SIDE_HEIGHT}
-        style={{ position: 'absolute', left: 0, top: TOP_HEIGHT }}
+        height={sideHeight}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: TOP_HEIGHT,
+          backgroundSize: '100% 100%',
+        }}
       />
       <MuSpriteFrame
         file={RIGHT_SPRITE}
         width={SIDE_WIDTH}
-        height={SIDE_HEIGHT}
+        height={sideHeight}
         style={{
           position: 'absolute',
-          left: WINDOW_WIDTH - SIDE_WIDTH,
+          left: width - SIDE_WIDTH,
           top: TOP_HEIGHT,
+          backgroundSize: '100% 100%',
         }}
       />
       <MuSpriteFrame
         file={BOTTOM_SPRITE}
-        width={WINDOW_WIDTH}
+        width={width}
         height={BOTTOM_HEIGHT}
         style={{
           position: 'absolute',
           left: 0,
-          top: WINDOW_HEIGHT - BOTTOM_HEIGHT,
+          top: height - BOTTOM_HEIGHT,
+          backgroundSize: '100% 100%',
         }}
       />
         {children}
-        <MuResizeGrip id={id} width={WINDOW_WIDTH} />
+        <MuResizeGrip id={id} width={width} />
       </div>
     );
   }

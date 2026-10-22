@@ -10,20 +10,45 @@
     text-shadow: 1px 1px 0 #000;
   }
 
-  .helper-body {
+  // Two panels side by side (hunt left, obtain right), each with its own
+  // scroll so a long class-conditional column never pushes the other.
+  .helper-columns {
     position: absolute;
     left: 15px;
     top: 76px;
-    width: 160px;
-    height: 306px;
+    right: 15px;
+    height: 310px;
+    display: flex;
+    gap: 10px;
+    font-size: 10px;
+    color: #e2e2e2;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  .helper-section-panel {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .helper-section-head {
+    flex: none;
+    color: #f0d890;
+    font-size: 11px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #55492e;
+  }
+
+  .helper-body {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 3px;
-    font-size: 10px;
-    color: #e2e2e2;
-    text-shadow: 1px 1px 0 #000;
     scrollbar-width: thin;
     scrollbar-color: #7a6b45 transparent;
   }
@@ -201,9 +226,9 @@
   .helper-picker {
     position: absolute;
     left: 15px;
+    right: 15px;
     top: 76px;
-    width: 160px;
-    height: 306px;
+    height: 310px;
     background: #14100acc;
     border: 1px solid #7a6b45;
     display: flex;
@@ -286,7 +311,10 @@
 
   .helper-actions {
     position: absolute;
-    left: 60px;
+    // Centred beside the bottom-left exit button; the frame is wider than the
+    // standard one, so a fixed offset would leave them off to one side.
+    left: 50%;
+    transform: translateX(-50%);
     top: 394px;
     width: 118px;
     display: flex;

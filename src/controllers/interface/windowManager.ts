@@ -22,6 +22,9 @@ const DEFAULT_SCALES: Record<string, number> = {
   // Laid out at 760x500 rather than the item window's 190x429, so it opens at
   // its own size instead of the 1.5x every small window wants.
   marketplace: 1,
+  // Twice as wide as the standard frame (two sections side by side), so it
+  // opens at its own size too.
+  'mu-helper': 1,
 };
 
 const defaultScaleOf = (id: string): number =>
