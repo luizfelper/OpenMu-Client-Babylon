@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { runInAction } from 'mobx';
-import { FIDELITY_CLASSIC, FIDELITY_DEFAULT, setFidelityChoice } from '@/controllers/fidelity';
+import { FIDELITY_CLASSIC, FIDELITY_DEFAULT } from '@/controllers/fidelity';
+import { setGameOption } from '@/controllers/settings';
 import { ENUM_WORLD } from '@/core/types';
 
 vi.stubGlobal('location', { search: '', hostname: 'localhost', href: 'http://localhost/' });
@@ -23,6 +24,12 @@ function seconds(value: number): void {
   });
 }
 
+/** The HUD reads the stored choice, so a test sets it the way the Fidelity page does. */
+function choice(preset: number, overrides: Record<string, boolean> = {}): void {
+  setGameOption('fidelity', preset);
+  setGameOption('fidelityOverrides', overrides);
+}
+
 describe('the match time at the screen centre (RenderTournamentInterface)', () => {
   afterEach(() => {
     seconds(-1);
@@ -30,11 +37,11 @@ describe('the match time at the screen centre (RenderTournamentInterface)', () =
       Social.battleSoccer = null;
       Ecs.world = null;
     });
-    setFidelityChoice(FIDELITY_DEFAULT, {});
+    choice(FIDELITY_DEFAULT);
   });
 
   it('draws the original lines on Classic, red then yellow under a minute', () => {
-    setFidelityChoice(FIDELITY_CLASSIC, {});
+    choice(FIDELITY_CLASSIC);
     seconds(125);
     let html = renderToStaticMarkup(<MatchTime />);
     expect(html).toContain('Remaining hours 2:05');
@@ -49,7 +56,7 @@ describe('the match time at the screen centre (RenderTournamentInterface)', () =
   });
 
   it('draws nothing at zero, before any time or past ten minutes', () => {
-    setFidelityChoice(FIDELITY_CLASSIC, {});
+    choice(FIDELITY_CLASSIC);
     for (const value of [-1, 0, 11 * 60]) {
       seconds(value);
       expect(renderToStaticMarkup(<MatchTime />)).toBe('');
@@ -59,6 +66,7 @@ describe('the match time at the screen centre (RenderTournamentInterface)', () =
   });
 
   it('moves the time onto the scoreboard with soccerBoardClock', () => {
+    choice(FIDELITY_DEFAULT);
     runInAction(() => {
       Ecs.world = { mapIndex: ENUM_WORLD.WD_6STADIUM } as never;
       Social.battleSoccer = { redTeam: 'Red', blueTeam: 'Blue', redGoals: 1, blueGoals: 0 };
@@ -67,7 +75,7 @@ describe('the match time at the screen centre (RenderTournamentInterface)', () =
     expect(renderToStaticMarkup(<MatchTime />)).toBe('');
     expect(renderToStaticMarkup(<SoccerScoreHud />)).toContain('02:05');
 
-    setFidelityChoice(FIDELITY_CLASSIC, {});
+    choice(FIDELITY_CLASSIC);
     expect(renderToStaticMarkup(<SoccerScoreHud />)).not.toContain('02:05');
   });
 });

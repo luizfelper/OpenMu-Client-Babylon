@@ -33,7 +33,9 @@ the code that deviates from the original asks `isOn('<id>')` and keeps the origi
   never a toggle: Classic must be the true original.
 - A deviation the server can see (what a packet says, or when it leaves) is not the player's to
   choose: it is a server setting in the world's `server.json` (`modules/servers/serverManifest.ts`).
-- Enhanced is the default, so every improvement that existed before this option stays on.
+- Enhanced is `FIDELITY_DEFAULT` (the answer before the stored choice arrives); a fresh install on this
+  server starts on Classic with the five quality-of-life improvements overridden on
+  (`DEFAULTS.fidelityOverrides` in `controllers/settings`), so the first load stays light.
 - The graded lighting and material looks (`tierIndex() >= ENHANCED_TIER`, skill `enhanced` rows)
   stay on their own quality options (`lighting/lightingQuality.ts`, `render/materialQuality.ts`);
   they are not improvements.

@@ -13,6 +13,7 @@ import { hasSkillClip, skillClip, type CastContext } from '@/controllers/combat/
 import { castTarget } from '@/controllers/combat/castTargets';
 import { skillStepIn } from '@/controllers/combat/skillMovement';
 import { SKILL_DELAY_MS } from '@/controllers/combat';
+import { setGameOption } from '@/controllers/settings';
 import { skillDefinition } from './skillsDatabase';
 import './skillVisuals';
 
@@ -52,6 +53,9 @@ describe('skill tables golden', () => {
   beforeAll(() => {
     engine = new NullEngine();
     scene = new Scene(engine);
+    // The snapshots were recorded at the Enhanced lighting tier (a row's `enhanced` light). The
+    // golden is about the tables, so the tier is pinned rather than taken from the install default.
+    setGameOption('lightingQuality', 1);
     vi.spyOn(LightSource, 'attach').mockImplementation(((_s: Scene, recipe: unknown, anchor: { travel?: { onArrive?: () => void } }) => {
       lights.push(summarize(recipe));
       anchor.travel?.onArrive?.();

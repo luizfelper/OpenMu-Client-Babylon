@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { migrate, optionsFrom } from './gameOptions';
+import { migrate, optionsFrom, defaultGameOption } from './gameOptions';
 
 const DROPPED = [
   'darkness',
@@ -110,13 +110,33 @@ describe('gameOptions migration', () => {
   });
 });
 
-describe('fidelity in a stored blob', () => {
-  it('a save from before Fidelity gets Enhanced and no overrides', () => {
-    const loaded = optionsFrom(oldBlob());
-    expect(loaded.fidelity).toBe(1);
-    expect(loaded.fidelityOverrides).toEqual({});
+describe('a fresh install', () => {
+  it('runs the Video tab Classic preset', () => {
+    expect(defaultGameOption('lightingQuality')).toBe(0);
+    expect(defaultGameOption('materialQuality')).toBe(0);
+    expect(defaultGameOption('materialDetail')).toBe(6);
   });
 
+  it('runs Classic fidelity with the quality-of-life improvements on', () => {
+    const loaded = optionsFrom({});
+    expect(loaded.fidelity).toBe(0);
+    expect(loaded.fidelityOverrides).toEqual({
+      loginTokens: true,
+      muHelperButtons: true,
+      noticeLinks: true,
+      openRooms: true,
+      roofFade: true,
+    });
+  });
+
+  it('a save from before Fidelity gets the same defaults', () => {
+    const loaded = optionsFrom(oldBlob());
+    expect(loaded.fidelity).toBe(0);
+    expect(loaded.fidelityOverrides).toEqual(defaultGameOption('fidelityOverrides'));
+  });
+});
+
+describe('fidelity in a stored blob', () => {
   it('keeps a stored choice, clamps the preset and drops a bad overrides blob', () => {
     expect(optionsFrom({ fidelity: 0, fidelityOverrides: { torchCrackle: true } }).fidelityOverrides)
       .toEqual({ torchCrackle: true });

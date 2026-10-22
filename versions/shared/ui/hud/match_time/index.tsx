@@ -1,7 +1,7 @@
 import './style.less';
 import { observer } from 'mobx-react-lite';
 import { Social } from '@/modules/social/social';
-import { isOn } from '@/controllers/fidelity';
+import { improvementOnChoice } from '@/controllers/settings';
 import { t } from '@/i18n';
 import { MuText } from '@/controllers/interface/components/mu_text';
 import { DEFAULT_SCALE } from '@/controllers/interface/windowManager';
@@ -22,7 +22,7 @@ const WHITE = 'rgb(255,255,255)';
 
 export const MatchTime = observer(() => {
   const time = Social.soccerSeconds;
-  if (time <= 0 || isOn('soccerBoardClock')) return null;
+  if (time <= 0 || improvementOnChoice('soccerBoardClock')) return null;
   const min = Math.floor(time / 60);
   const sec = time % 60;
   if (min > 10) return null;

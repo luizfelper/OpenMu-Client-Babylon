@@ -60,8 +60,12 @@ describe('the skill effects row', () => {
   it('writes the same override the Fidelity page check reads', async () => {
     const { setImprovement } = await import('./fidelity');
     const { GameOptions, setGameOption } = await import('@/controllers/settings');
-    const { improvementOn, isOn } = await import('@/controllers/fidelity');
+    const { FIDELITY_DEFAULT, improvementOn, isOn } = await import('@/controllers/fidelity');
     await import('@versions/shared/improvements/all');
+    // Both sides read the same choice: the test states it (Enhanced) instead of inheriting the
+    // install default, which is Classic with a few improvements on.
+    setGameOption('fidelity', FIDELITY_DEFAULT);
+    setGameOption('fidelityOverrides', {});
     const check = () => improvementOn('enhancedSkillEffects', GameOptions.fidelity, GameOptions.fidelityOverrides);
     try {
       expect([check(), isOn('enhancedSkillEffects')]).toEqual([true, true]);

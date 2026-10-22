@@ -7,7 +7,7 @@ import { ENUM_WORLD } from '@/core/types';
 import { guildMarkDataUrl } from '@/core/guildMark';
 import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
 import { MuText } from '@/controllers/interface/components/mu_text';
-import { isOn } from '@/controllers/fidelity';
+import { improvementOnChoice } from '@/controllers/settings';
 import {
   useUiStageScale,
   UI_STAGE_HEIGHT,
@@ -116,7 +116,7 @@ export const SoccerScoreHud = observer(() => {
         transform: `scale(${scale})`,
       }}
     >
-      {Social.soccerSeconds >= 0 && isOn('soccerBoardClock') && (
+      {Social.soccerSeconds >= 0 && improvementOnChoice('soccerBoardClock') && (
         <MuText
           face="bold"
           text={clock(Social.soccerSeconds)}

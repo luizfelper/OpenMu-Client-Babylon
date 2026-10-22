@@ -13,7 +13,7 @@ import { MuText } from '@/controllers/interface/components/mu_text';
 import { DEFAULT_SCALE } from '@/controllers/interface/windowManager';
 import { UI_STAGE_HEIGHT } from '@/controllers/interface/components/ui_stage';
 import { stableKeyOf } from '@/core/stableKey';
-import { isOn } from '@/controllers/fidelity';
+import { improvementOnChoice } from '@/controllers/settings';
 import { parseNoticeLinks } from '@/modules/chat/noticeLinks';
 
 /**
@@ -72,7 +72,7 @@ export const Notices = observer(() => {
   const lines = NoticeStore.lines;
   const anyBlinking = lines.some(line => NOTICE_STYLE[line.color]?.blink);
   const dim = useBlink(anyBlinking);
-  const links = isOn('noticeLinks');
+  const links = improvementOnChoice('noticeLinks');
 
   if (lines.length === 0) return null;
 

@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
-import { isOn } from '@/controllers/fidelity';
 import { MuButton } from '@/controllers/interface/components/mu_button';
-import { GameOptions, uiScaleFactor } from '@/controllers/settings';
+import { GameOptions, improvementOnChoice, uiScaleFactor } from '@/controllers/settings';
 import { Ecs } from '@/ecs/current';
 import { MuHelper } from '@/modules/mu_helper';
 import { toggleMuHelperWindow } from '@/modules/mu_helper/state';
@@ -22,7 +21,9 @@ const GAP = 6;
  * and the event timers. Draws nothing on Classic.
  */
 export const MuHelperButtons = observer(() => {
-  if (!isOn('muHelperButtons') || !Ecs.world?.playerEntity) return null;
+  // `improvementOnChoice`, not `isOn`: it reads the observable choice, so flipping
+  // the checkbox in Options shows or hides the buttons at once.
+  if (!improvementOnChoice('muHelperButtons') || !Ecs.world?.playerEntity) return null;
 
   const ui = uiScaleFactor(GameOptions.uiScale);
   // The event timers' slot (`events/eventTimers.tsx`), then below their rows.

@@ -1,9 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { LocalStorage } from '../../core/localStorage';
 import {
-  FIDELITY_DEFAULT,
+  FIDELITY_CLASSIC,
   FIDELITY_MAX,
   cleanOverrides,
+  improvementOn,
   setFidelityChoice,
   type FidelityOverrides,
 } from '../fidelity';
@@ -609,8 +610,12 @@ const DEFAULTS: GameOptions = {
   vignette: 0,
   sunShafts: 3,
   dynamicLights: true,
-  lightingQuality: 1,
-  materialQuality: 1,
+  // The Video tab's "Classic" quality preset (`ui/windows/options/presets.ts`): the
+  // §6 image defaults this file already carried, at tier 0. The tier itself skips
+  // the image-processing pass and the bloom, so those values stay as they are for
+  // a player who moves up to Enhanced.
+  lightingQuality: 0,
+  materialQuality: 0,
   materialDetail: 6,
   materialMetal: 8,
   materialPlate: 8,
@@ -719,8 +724,19 @@ const DEFAULTS: GameOptions = {
   englishItemNames: false,
   helperItemFilters: false,
   partyInviteReply: 0,
-  fidelity: FIDELITY_DEFAULT,
-  fidelityOverrides: {},
+  // A fresh install runs the original client (Classic) with the few improvements
+  // that are quality-of-life, not cost: saved logins, the MU Helper buttons, links
+  // in server notices, open rooms and transparent roofs. Everything else - the
+  // skill effects, the extra particles - stays off, which is what keeps the first
+  // load light.
+  fidelity: FIDELITY_CLASSIC,
+  fidelityOverrides: {
+    loginTokens: true,
+    muHelperButtons: true,
+    noticeLinks: true,
+    openRooms: true,
+    roofFade: true,
+  },
   lowPresetApplied: false,
 };
 
@@ -859,4 +875,17 @@ export function defaultGameOption<K extends keyof GameOptions>(
 export function onGameOptionsChanged(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+/**
+ * `isOn(id)`, for a React `observer`.
+ *
+ * `isOn` reads a plain map, which MobX cannot see: a HUD piece that only asks it
+ * kept drawing (or hiding) the answer from its last render, so flipping an
+ * improvement in Options - Classic and then "MU Helper buttons", say - did not
+ * bring the buttons back until something else redrew it. This reads the two
+ * stored fields instead, which are observable, so the observer tracks them.
+ */
+export function improvementOnChoice(id: string): boolean {
+  return improvementOn(id, GameOptions.fidelity, GameOptions.fidelityOverrides);
 }

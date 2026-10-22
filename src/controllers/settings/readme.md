@@ -10,6 +10,7 @@ modules. The gameplay side of options (the server's saved hot keys, the mobile s
 - `setGameOption(key, value)`: sets one option, saves all of them, calls the listeners.
 - `onGameOptionsChanged(listener)`: subscribe; returns the unsubscribe.
 - `defaultGameOption(key)`: the fresh-install value (the Options window's Defaults).
+- `improvementOnChoice(id)`: `isOn` for a React `observer`, reading the observable choice.
 - `uiScaleFactor(step)`, `UI_SCALE_MAX`, `TONE_MAPPER_MAX`, `BRIGHTNESS_MIN` / `BRIGHTNESS_MAX`.
 - `optionsFrom(parsed)` and `migrate(stored)` (`gameOptions.ts`, for its tests): a stored blob over
   the defaults, cleaned and clamped.
@@ -21,10 +22,14 @@ modules. The gameplay side of options (the server's saved hot keys, the mobile s
   vignette rescale), then saves. The stored format is the one `modules/options` wrote before the
   move, byte for byte, so old saves load unchanged.
 - Fidelity: `fidelity` (0 Classic / 1 Enhanced / 2 Ultra) and `fidelityOverrides` (improvement id ->
-  boolean, only the ones set apart from the preset). `optionsFrom` drops a bad overrides blob; a
-  save from before the option gets Enhanced and no overrides, which is how the client behaved. On
-  load and on every change of either key this pushes them to `controllers/fidelity`
-  (`setFidelityChoice`), which answers `isOn(id)`.
+  boolean, only the ones set apart from the preset). A fresh install is Classic with `loginTokens`,
+  `muHelperButtons`, `noticeLinks`, `openRooms` and `roofFade` on, the performance-first default of
+  this server; the Video tab's Classic preset is the matching quality default. `optionsFrom` drops a
+  bad overrides blob. On load and on every change of either key this pushes them to
+  `controllers/fidelity` (`setFidelityChoice`), which answers `isOn(id)`.
+- `improvementOnChoice(id)`: `isOn` for a React `observer`. `isOn` reads a plain map, which MobX
+  cannot see, so a HUD piece kept its old answer until something else redrew it; this one reads the
+  two stored fields and is tracked.
 - Ranges and defaults owned elsewhere are literals: the camera FOV (`camera/recipes.ts`), render
   distance and render scale steps (`render/`), the low vital thresholds (`modules/hero/lowVitals.ts`),
   the sound buses, MSAA, anisotropy, the rendering style, material detail, compare tooltips and emoji
@@ -48,7 +53,7 @@ modules. The gameplay side of options (the server's saved hot keys, the mobile s
 
 ## Tests
 - `gameOptions.test.ts`: `migrate` (retired keys, tone mapper and brightness mapping, vignette rescale,
-  stored tiers kept); `optionsFrom` (old saves get Enhanced, the preset is clamped, a bad overrides
+  stored tiers kept); `optionsFrom` (the fresh-install defaults, the preset is clamped, a bad overrides
   blob is dropped).
 - `limits.test.ts`: the literal ranges and defaults equal their owners' constants.
 - `render/configFingerprint.test.ts` and `docs/configuration_hex.md`: the option layout.

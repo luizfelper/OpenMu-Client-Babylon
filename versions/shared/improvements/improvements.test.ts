@@ -24,7 +24,8 @@ const HERE = __dirname;
 
 const camel = (file: string) => file.replace(/\.ts$/, '').replace(/_(\w)/g, (_, c: string) => c.toUpperCase());
 
-/** Every `isOn('<id>')` in the client's code, by id. */
+/** Every `isOn('<id>')` in the client's code, and every `improvementOnChoice('<id>')` (the React
+ *  form of the same read), by id. */
 function readSites(): Map<string, string[]> {
   const sites = new Map<string, string[]>();
   const walk = (dir: string) => {
@@ -33,7 +34,7 @@ function readSites(): Map<string, string[]> {
       if (d.isDirectory()) {
         if (d.name !== 'node_modules') walk(rel);
       } else if (/\.tsx?$/.test(d.name) && !d.name.endsWith('.test.ts')) {
-        for (const m of readFileSync(join(ROOT, rel), 'utf8').matchAll(/\bisOn\('([^']+)'\)/g)) {
+        for (const m of readFileSync(join(ROOT, rel), 'utf8').matchAll(/\b(?:isOn|improvementOnChoice)\('([^']+)'\)/g)) {
           sites.set(m[1], [...(sites.get(m[1]) ?? []), rel]);
         }
       }
