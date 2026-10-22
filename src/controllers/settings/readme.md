@@ -30,6 +30,13 @@ modules. The gameplay side of options (the server's saved hot keys, the mobile s
 - `improvementOnChoice(id)`: `isOn` for a React `observer`. `isOn` reads a plain map, which MobX
   cannot see, so a HUD piece kept its old answer until something else redrew it; this one reads the
   two stored fields and is tracked.
+- The revision (`DEFAULTS_REVISION` / `mu_options_revision`): a one-time push of the server's
+  performance default - Video Qualidade on Classic (the lighting and material tiers at 0, their
+  minimum, so it can only make a save cheaper) and Fidelity Classic with those five improvements -
+  onto saves made before it. The stamp is written before the blob is rewritten, so it runs once per
+  browser and a player who changes either afterwards keeps that choice; a fresh install already
+  reads it from `DEFAULTS` and gets no blob written. Bump the number to apply a new default to
+  everyone once more.
 - Ranges and defaults owned elsewhere are literals: the camera FOV (`camera/recipes.ts`), render
   distance and render scale steps (`render/`), the low vital thresholds (`modules/hero/lowVitals.ts`),
   the sound buses, MSAA, anisotropy, the rendering style, material detail, compare tooltips and emoji
@@ -55,5 +62,7 @@ modules. The gameplay side of options (the server's saved hot keys, the mobile s
 - `gameOptions.test.ts`: `migrate` (retired keys, tone mapper and brightness mapping, vignette rescale,
   stored tiers kept); `optionsFrom` (the fresh-install defaults, the preset is clamped, a bad overrides
   blob is dropped).
+- `defaultsRevision.test.ts`: the one-time revision (an old save gets it and keeps its other choices,
+  a later choice survives the next boot, a fresh install gets it with no blob written).
 - `limits.test.ts`: the literal ranges and defaults equal their owners' constants.
 - `render/configFingerprint.test.ts` and `docs/configuration_hex.md`: the option layout.

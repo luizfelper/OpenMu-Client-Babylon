@@ -756,6 +756,37 @@ const DROPPED_KEYS = [
   'exposure',
 ] as const;
 
+/**
+ * The one-time push of this server's performance default onto saves made before it: the Video
+ * tab's Qualidade on Classic (lighting and material tiers at 0, their minimum - so it can only
+ * make a save cheaper, never heavier) and Fidelity Classic with the five quality-of-life
+ * improvements. Everything else the player chose - shadows, material detail, resolution - and
+ * every check on the Fidelity page after this stays theirs. A fresh install already reads all of
+ * it from `DEFAULTS`.
+ *
+ * The stamp has its own key, so it survives a later `mu_options` reset, and it is written
+ * before the save is rewritten: the migration runs once per browser, then the player's own
+ * choice wins on every boot. Bump the number to apply a new default to everyone once more.
+ */
+const DEFAULTS_REVISION = 1;
+const REVISION_KEY = 'mu_options_revision';
+
+/** The revision's choice over whatever the player already had. */
+function withDefaultsRevision(options: GameOptions): GameOptions {
+  return {
+    ...options,
+    lightingQuality: DEFAULTS.lightingQuality,
+    materialQuality: DEFAULTS.materialQuality,
+    fidelity: DEFAULTS.fidelity,
+    fidelityOverrides: { ...DEFAULTS.fidelityOverrides },
+  };
+}
+
+/** True the first time a browser opens the client at this revision. */
+function revisionDue(): boolean {
+  return LocalStorage.load(REVISION_KEY) !== String(DEFAULTS_REVISION);
+}
+
 type Listener = (options: GameOptions) => void;
 
 const listeners = new Set<Listener>();
@@ -820,20 +851,32 @@ export function optionsFrom(parsed: Record<string, unknown>): GameOptions {
 
 function load(): GameOptions {
   const stored = LocalStorage.load(OPTIONS_KEY);
+  let loaded: GameOptions;
 
-  if (!stored) return { ...DEFAULTS };
+  if (!stored) {
+    loaded = { ...DEFAULTS };
+  } else {
+    try {
+      const parsed = JSON.parse(stored) as Record<string, unknown>;
+      const migrated = migrate(parsed);
+      loaded = optionsFrom(parsed);
 
-  try {
-    const parsed = JSON.parse(stored) as Record<string, unknown>;
-    const migrated = migrate(parsed);
-    const loaded = optionsFrom(parsed);
-
-    if (migrated) LocalStorage.save(OPTIONS_KEY, JSON.stringify(loaded));
-
-    return loaded;
-  } catch {
-    return { ...DEFAULTS };
+      if (migrated) LocalStorage.save(OPTIONS_KEY, JSON.stringify(loaded));
+    } catch {
+      loaded = { ...DEFAULTS };
+    }
   }
+
+  if (revisionDue()) {
+    LocalStorage.save(REVISION_KEY, String(DEFAULTS_REVISION));
+    // A fresh install already reads these from DEFAULTS; only a real save needs rewriting.
+    if (stored) {
+      loaded = withDefaultsRevision(loaded);
+      LocalStorage.save(OPTIONS_KEY, JSON.stringify(loaded));
+    }
+  }
+
+  return loaded;
 }
 
 /**
