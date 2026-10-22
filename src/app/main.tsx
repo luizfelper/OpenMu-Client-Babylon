@@ -26,6 +26,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch(e => {
-  console.error('boot failed:', e);
+  console.error('boot failed!:', e);
   throw e;
 });
