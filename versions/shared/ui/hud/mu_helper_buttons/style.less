@@ -1,0 +1,31 @@
+@import (reference) '@/controllers/interface/components/mu_text/style.less';
+
+// Ours (`muHelperButtons`): two square plates stacked against the left side of the
+// corner minimap, as tall together as the minimap (the component supplies the sizes).
+.mu-helper-buttons {
+  .mu-font();
+  user-select: none;
+
+  .mu-helper-button {
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border: 1px solid rgba(214, 178, 106, 0.55);
+    background: rgba(58, 10, 10, 0.72);
+    color: inherit;
+    font-family: inherit;
+    font-weight: bold;
+    line-height: 1.15;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(92, 18, 18, 0.82);
+      border-color: rgba(240, 208, 138, 0.9);
+    }
+  }
+}

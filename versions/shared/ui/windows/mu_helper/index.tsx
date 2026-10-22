@@ -60,6 +60,18 @@ const CHECK_SIZE = 16;
 const EXIT_BUTTON = { x: 13, y: 392, width: 36, height: 29 };
 const EXIT_SPRITE = 'newui_exit_00.OZT';
 
+/**
+ * The X painted at the right end of the top strip (`newui_item_back04`, 190 x 64):
+ * the frame stretches that art to this window's width, so the hotspot follows the
+ * same ratio (`inventory/layout.ts` has the same box in the art's own units).
+ */
+const TOP_ART_WIDTH = 190;
+const HEAD_CLOSE = { x: 169, y: 7, width: 13, height: 12 };
+const HEAD_SCALE = WINDOW_WIDTH / TOP_ART_WIDTH;
+
+/** Ours: no background texture, just a dark red that lets the world show through. */
+const WINDOW_BACKGROUND = 'rgba(58, 10, 10, 0.75)';
+
 type Draft = MuHelperConfig;
 
 function edit(fn: (draft: Draft) => void): void {
@@ -733,8 +745,22 @@ export const MuHelperWindow = observer(() => {
       height={WINDOW_HEIGHT}
       label={t('muHelper.title')}
       onClose={close}
+      style={{ backgroundImage: 'none', backgroundColor: WINDOW_BACKGROUND }}
     >
       <div className="helper-title">{t('muHelper.title')}</div>
+
+      {/* The X painted at the top strip's right end: without a hotspot it is only art. */}
+      <div
+        className="head-close"
+        data-no-drag="true"
+        style={{
+          left: HEAD_CLOSE.x * HEAD_SCALE,
+          top: HEAD_CLOSE.y,
+          width: HEAD_CLOSE.width * HEAD_SCALE,
+          height: HEAD_CLOSE.height,
+        }}
+        onClick={close}
+      />
 
       <div className="helper-columns" data-no-drag="true">
         <section className="helper-section-panel">

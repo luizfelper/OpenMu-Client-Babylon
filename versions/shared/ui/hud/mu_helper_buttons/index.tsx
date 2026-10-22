@@ -1,24 +1,35 @@
+import './style.less';
 import { observer } from 'mobx-react-lite';
-import { MuButton } from '@/controllers/interface/components/mu_button';
 import { GameOptions, improvementOnChoice, uiScaleFactor } from '@/controllers/settings';
+import { uiClick } from '@/controllers/sound/sfx';
 import { Ecs } from '@/ecs/current';
 import { MuHelper } from '@/modules/mu_helper';
 import { toggleMuHelperWindow } from '@/modules/mu_helper/state';
-import { eventSchedule } from '@/modules/events/schedule';
 import { t } from '@/i18n';
-import {
-  EVENT_ROW_GAP,
-  EVENT_ROW_HEIGHT,
-  MINIMAP_SLOT_HEIGHT,
-  MINIMAP_SLOT_TOP,
-} from '../../windows/events/layout';
+import { MINIMAP_SLOT_TOP } from '../../windows/events/layout';
+import { cornerPanelSize, cornerPanelSpan } from '../minimap/corner';
 
-const RIGHT = 10;
+/** Between the two buttons and between the column and the minimap, in interface units. */
 const GAP = 6;
 
+/** One square button's edge: half the minimap, so the pair stacks as tall as it. */
+function buttonSize(): number {
+  return (cornerPanelSize() - GAP * uiScaleFactor(GameOptions.uiScale)) / 2;
+}
+
 /**
- * Ours (`muHelperButtons`): the Home and End keys as buttons, top right under the minimap slot
- * and the event timers. Draws nothing on Classic.
+ * The column's width plus its gap to the minimap, in screen pixels (0 while the
+ * improvement is off): the HUD pieces left of the minimap step past the buttons.
+ */
+export function helperButtonsSpan(): number {
+  return improvementOnChoice('muHelperButtons')
+    ? buttonSize() + GAP * uiScaleFactor(GameOptions.uiScale)
+    : 0;
+}
+
+/**
+ * Ours (`muHelperButtons`): the Home and End keys as square buttons, stacked against the
+ * left side of the corner minimap and exactly as tall as it. Draws nothing on Classic.
  */
 export const MuHelperButtons = observer(() => {
   // `improvementOnChoice`, not `isOn`: it reads the observable choice, so flipping
@@ -26,42 +37,45 @@ export const MuHelperButtons = observer(() => {
   if (!improvementOnChoice('muHelperButtons') || !Ecs.world?.playerEntity) return null;
 
   const ui = uiScaleFactor(GameOptions.uiScale);
-  // The event timers' slot (`events/eventTimers.tsx`), then below their rows.
-  const rows = GameOptions.eventTimers ? eventSchedule().length : 0;
-  const top = MINIMAP_SLOT_TOP + (MINIMAP_SLOT_HEIGHT + EVENT_ROW_GAP + rows * EVENT_ROW_HEIGHT + GAP) * ui;
+  const size = buttonSize();
+  const gap = GAP * ui;
 
   return (
     <div
+      className="mu-helper-buttons"
       style={{
         position: 'absolute',
-        top,
-        right: RIGHT,
+        top: MINIMAP_SLOT_TOP,
+        // Immediately left of the corner panel (`cornerPanelSpan` already has its 10 px margin).
+        right: cornerPanelSpan() + gap,
+        width: size,
+        height: cornerPanelSize(),
         display: 'flex',
-        gap: 4,
-        transform: `scale(${ui})`,
-        transformOrigin: '100% 0',
+        flexDirection: 'column',
+        gap,
         pointerEvents: 'auto',
         zIndex: 10,
       }}
     >
-      <MuButton
-        file="newui_btn_empty.OZT"
-        width={108}
-        height={29}
-        frames={{ up: 0, active: 1, down: 2 }}
-        label={t(MuHelper.active ? 'muHelperButtons.stop' : 'muHelperButtons.start')}
-        labelStyle={{ fontWeight: 'bold', fontSize: 11, color: MuHelper.active ? '#7CFC7C' : '#FFD700' }}
-        onClick={() => MuHelper.toggleMuHelper()}
-      />
-      <MuButton
-        file="newui_btn_empty.OZT"
-        width={108}
-        height={29}
-        frames={{ up: 0, active: 1, down: 2 }}
-        label={t('muHelperButtons.settings')}
-        labelStyle={{ fontWeight: 'bold', fontSize: 11 }}
-        onClick={() => toggleMuHelperWindow()}
-      />
+      <button
+        type="button"
+        className="mu-helper-button"
+        style={{
+          fontSize: 11 * ui,
+          color: MuHelper.active ? '#7CFC7C' : '#FFD700',
+        }}
+        onClick={uiClick(() => MuHelper.toggleMuHelper())}
+      >
+        {t(MuHelper.active ? 'muHelperButtons.stop' : 'muHelperButtons.start')}
+      </button>
+      <button
+        type="button"
+        className="mu-helper-button"
+        style={{ fontSize: 11 * ui }}
+        onClick={uiClick(() => toggleMuHelperWindow())}
+      >
+        {t('muHelperButtons.settings')}
+      </button>
     </div>
   );
 });

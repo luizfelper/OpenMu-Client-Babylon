@@ -51,8 +51,11 @@ const PANEL = 240;
 /** Art units to CSS pixels at interface size 100%. */
 const PANEL_SCALE = 0.75;
 
+/** The panel's on-screen edge at the current interface size. */
+export const cornerPanelSize = (): number => PANEL * PANEL_SCALE * uiScaleFactor(GameOptions.uiScale);
+
 /** The panel's on-screen width with its 10 px margin, for the HUD pieces left of it (party list). */
-export const cornerPanelSpan = (): number => 10 + PANEL * PANEL_SCALE * uiScaleFactor(GameOptions.uiScale);
+export const cornerPanelSpan = (): number => 10 + cornerPanelSize();
 
 /** Map edge length per zoom step, in art units; the sheet draws 800. */
 const ZOOM_LEVELS = [512, 640, 768, 1024, 1280];

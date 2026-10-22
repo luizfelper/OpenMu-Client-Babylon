@@ -11,6 +11,7 @@ import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
 import { useUiStageScale } from '@/controllers/interface/components/ui_stage';
 import { uiClick } from '@/controllers/sound/sfx';
 import { cornerPanelSpan } from '../minimap/corner';
+import { helperButtonsSpan } from '../mu_helper_buttons';
 import { nameColor, rowLooks, type RowLook, type SeenPlayer } from './rows';
 
 /**
@@ -91,8 +92,10 @@ export const PartyList = observer(() => {
   if (!active) return null;
 
   const mayRemove = (name: string) => Social.isPartyLeader || name === Hero.name;
-  // Left of the corner minimap (ours) as the original steps left of the windows on the right.
-  const right = (GameOptions.minimapCorner ? cornerPanelSpan() : 0) + RIGHT * scale;
+  // Left of the corner minimap (ours) as the original steps left of the windows on the right;
+  // past the MU Helper buttons when those are shown in that column too.
+  const right =
+    (GameOptions.minimapCorner ? cornerPanelSpan() + helperButtonsSpan() : 0) + RIGHT * scale;
 
   return (
     <div className="party-list" style={{ right, top: TOP * scale, transform: `scale(${scale})` }}>
