@@ -108,6 +108,13 @@ export function stackEnv(c: Config, paths: { repo: string; state: string }): Env
     MU_STATE: paths.state,
     OPENMU_IMAGE: openmuImage(c),
     POSTGRES_PASSWORD: c.postgresPassword,
+    // OpenMU's own compose interpolates these into its container's environment
+    // (`DB_ADMIN_USER: ${DB_ADMIN_USER:-}`), which overrides the service's env
+    // file. Without them here, Compose resolves them to empty and OpenMU fails
+    // with "password authentication failed for user postgres" (28P01).
+    DB_HOST: HOSTS.database,
+    DB_ADMIN_USER: 'postgres',
+    DB_ADMIN_PW: c.postgresPassword,
     MU_MAIL_HOST: mailHost(c),
     ...clientBuildArgs(c),
   };

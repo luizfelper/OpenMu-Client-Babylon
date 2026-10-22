@@ -74,6 +74,15 @@ describe('compose interpolation', () => {
     expect(JSON.stringify(env)).not.toMatch(/secret/);
   });
 
+  // OpenMU's compose interpolates DB_ADMIN_PW/DB_ADMIN_USER into the container's
+  // environment, which overrides openmu.env; empty values make OpenMU fail with 28P01.
+  it('carries the database admin credentials OpenMU\'s compose interpolates', () => {
+    const env = stackEnv(domain, { repo: '/opt/mu', state: '/etc/mu-server' });
+    expect(env.DB_HOST).toBe('database');
+    expect(env.DB_ADMIN_USER).toBe('postgres');
+    expect(env.DB_ADMIN_PW).toBe('Db/pass@12345!');
+  });
+
   it('has OpenMU advertise loopback, where the proxy dials it', () => {
     expect(serviceEnv(domain).openmu?.RESOLVE_IP).toBe('loopback');
   });
