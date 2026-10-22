@@ -5,7 +5,7 @@ import { backup, listBackups, restore } from '../backup';
 import type { Config } from '../config';
 import { Stack } from '../docker';
 import { must, run } from '../exec';
-import { checks } from '../health';
+import { checks, waitForHealthy } from '../health';
 import { isWindows, type Paths } from '../paths';
 import { mailOn } from '../render/mail';
 import { saveState } from '../state';
@@ -38,6 +38,7 @@ export async function configure(c: Config, p: Paths): Promise<void> {
   await ui.task('Applying', async () => {
     await stack.up();
     await stack.compose(['restart', 'web']);
+    await waitForHealthy(stack);
   });
   if (mailOn(next) && !mailOn(c)) printMailDns(next, p);
   ui.outro('Saved and applied.');
@@ -68,7 +69,10 @@ export async function update(c: Config, p: Paths): Promise<void> {
     saveState(c, p);
     await buildAll(stack, logFile(p, 'update'));
     await ui.task('Restarting', () => stack.up());
-    const failed = (await checks(stack)).filter(r => !r.ok);
+    // `--wait` only means the healthchecks passed; OpenMU is still seeding and the
+    // proxy / cash shop reach it through its namespace, so poll instead of a single
+    // check - a lone one races the stack and rolls a healthy update back.
+    const failed = (await waitForHealthy(stack)).filter(r => !r.ok);
     if (failed.length) throw new Error(`Not answering after the update: ${failed.map(f => f.name).join(', ')}`);
     ui.outro('Updated.');
   } catch (e) {

@@ -31,7 +31,12 @@ export async function checks(stack: Stack): Promise<Check[]> {
   return [...tcp.map(t => t[0]), ...HTTP.map(h => h[0])].map((name, i) => ({ name, ok: results[i]?.trim() === '1' }));
 }
 
-/** Waits until OpenMU has seeded (or migrated) its database and its connect server listens. */
+/**
+ * Waits until OpenMU has seeded (or migrated) its database and its connect server listens.
+ *
+ * Only meant right after OpenMU itself was (re)created: it keys off the startup log, and a
+ * container that was left running still carries the line from its previous boot.
+ */
 export async function waitForOpenMu(stack: Stack, timeoutMs = 10 * 60_000, onLine?: (l: string) => void): Promise<void> {
   const until = Date.now() + timeoutMs;
   while (Date.now() < until) {
@@ -42,4 +47,22 @@ export async function waitForOpenMu(stack: Stack, timeoutMs = 10 * 60_000, onLin
     await Bun.sleep(3000);
   }
   throw new Error('OpenMU did not start in time; see `mu logs openmu-startup`.');
+}
+
+/**
+ * Polls `checks` until every service answers, or `timeoutMs` runs out; returns the last round.
+ *
+ * A restart's `--wait` only means the healthchecks passed: OpenMU is still seeding and the
+ * proxy / cash shop / marketplace reach it through its network namespace, so a single check
+ * right after `up` races the stack and reports a service that is merely still coming up. The
+ * install does this after its own `up`; `update` and `configure` must too.
+ */
+export async function waitForHealthy(stack: Stack, timeoutMs = 120_000): Promise<Check[]> {
+  const until = Date.now() + timeoutMs;
+  let results = await checks(stack);
+  while (!results.every(r => r.ok) && Date.now() < until) {
+    await Bun.sleep(3000);
+    results = await checks(stack);
+  }
+  return results;
 }

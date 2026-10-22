@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULTS, clientOrigin, type Config } from '../config';
 import { Stack, dockerProblem } from '../docker';
-import { checks, waitForOpenMu } from '../health';
+import { waitForHealthy, waitForOpenMu } from '../health';
 import { installLauncher } from '../launcher';
 import { openFirewall } from '../firewall';
 import { busyPorts, holder } from '../ports';
@@ -66,15 +66,7 @@ export async function finish(stack: Stack): Promise<void> {
   const c = stack.config;
   if (mailOn(c)) await ui.task('Making the mail server\'s DKIM key', () => ensureDkim(stack));
   await ui.task('Starting everything', () => stack.up());
-  const results = await ui.task('Checking every service', async () => {
-    const until = Date.now() + 120_000;
-    let r = await checks(stack);
-    while (!r.every(x => x.ok) && Date.now() < until) {
-      await Bun.sleep(3000);
-      r = await checks(stack);
-    }
-    return r;
-  });
+  const results = await ui.task('Checking every service', () => waitForHealthy(stack));
   ui.note(results.map(r => `${r.ok ? pc.green('ok  ') : pc.red('DOWN')}  ${r.name}`).join('\n'), 'Health');
 
   if (await ui.confirm('Open the firewall for the web ports (and keep SSH open)?', true)) await openFirewall(c);
