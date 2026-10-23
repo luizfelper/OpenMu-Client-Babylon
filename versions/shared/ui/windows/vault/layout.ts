@@ -51,15 +51,31 @@ export const DEPOSIT_BUTTON_X = BUTTON_X0;
 export const WITHDRAW_BUTTON_X = BUTTON_X0 + BUTTON_PITCH;
 export const LOCK_BUTTON_X = BUTTON_X0 + BUTTON_PITCH * 2;
 
+/**
+ * Ours, in the slot after the original's three buttons: the inventory's
+ * rearrange button, arranging the vault grid instead.
+ */
+export const REARRANGE_BUTTON_X = BUTTON_X0 + BUTTON_PITCH * 3;
+export const REARRANGE_BUTTON_Y = BUTTON_Y;
+export const REARRANGE_BUTTON_WIDTH = BUTTON_WIDTH;
+export const REARRANGE_BUTTON_HEIGHT = BUTTON_HEIGHT;
+
 export const DEPOSIT_SPRITE = 'newui_Bt_money01.OZT';
 export const WITHDRAW_SPRITE = 'newui_Bt_money02.OZT';
 export const UNLOCKED_SPRITE = 'newui_Bt_lock02.OZT';
 export const LOCKED_SPRITE = 'newui_Bt_lock.OZT';
+/** The blank MU button sprite, carrying our own icon like the inventory's. */
+export const REARRANGE_SPRITE = 'newui_btn_empty.OZT';
 
 /** GlobalText[235] / [236] / [242]. */
 export const DEPOSIT_TOOLTIP: TextKey = 'vault.deposit';
 export const WITHDRAW_TOOLTIP: TextKey = 'vault.withdraw';
 export const LOCK_TOOLTIP: TextKey = 'vault.pin';
+/**
+ * The inventory's label, reused here: the action is the same and the key is
+ * already translated in every language (a `vault.*` twin would need all 30).
+ */
+export const REARRANGE_LABEL: TextKey = 'inventory.rearrange';
 
 export const HEAD_CLOSE_X = 169;
 export const HEAD_CLOSE_Y = 7;
@@ -72,4 +88,5 @@ export const VAULT_SPRITES = [
   WITHDRAW_SPRITE,
   UNLOCKED_SPRITE,
   LOCKED_SPRITE,
+  REARRANGE_SPRITE,
 ];

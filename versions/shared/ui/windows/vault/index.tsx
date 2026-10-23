@@ -14,6 +14,7 @@ import { ItemGrid } from '../../components/item_grid';
 import { ItemSearchBox, useItemSearch } from '@/controllers/interface/components/item_search';
 import { BulkMove } from '@/modules/inventory/bulkMove';
 import { QuickItemActions } from '@/modules/inventory/quickItemActions';
+import { InventorySort } from '@/modules/inventory/inventorySort';
 import { isJewel, itemDef } from '@/controllers/item_rules';
 
 import { goldColor } from '@/controllers/item_rules';
@@ -49,6 +50,12 @@ import {
   MONEY_WIDTH,
   MONEY_X,
   MONEY_Y,
+  REARRANGE_BUTTON_HEIGHT,
+  REARRANGE_BUTTON_WIDTH,
+  REARRANGE_BUTTON_X,
+  REARRANGE_BUTTON_Y,
+  REARRANGE_LABEL,
+  REARRANGE_SPRITE,
   ROWS,
   TITLE,
   TITLE_LOCKED,
@@ -247,6 +254,29 @@ export const Vault = observer(() => {
           }
         >
           <span className="button-tooltip">{t(LOCK_TOOLTIP)}</span>
+        </MuButton>
+      </div>
+
+      {/* The inventory's rearrange button, packing the vault grid instead. */}
+      <div
+        className="window-button"
+        data-no-drag="true"
+        style={{ left: REARRANGE_BUTTON_X, top: REARRANGE_BUTTON_Y }}
+      >
+        <MuButton
+          file={REARRANGE_SPRITE}
+          width={REARRANGE_BUTTON_WIDTH}
+          height={REARRANGE_BUTTON_HEIGHT}
+          frames={BUTTON_FRAMES}
+          onClick={() => {
+            if (!unlock()) return;
+            InventorySort.start(StorageKind.Vault);
+          }}
+        >
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" className="rearrange-icon">
+            <path d="M3 6a5 5 0 0 1 8.5-3.5L13 4M13 1v3h-3M13 10a5 5 0 0 1-8.5 3.5L3 12m0 3v-3h3" />
+          </svg>
+          <span className="button-tooltip">{t(REARRANGE_LABEL)}</span>
         </MuButton>
       </div>
     </MuItemWindow>
