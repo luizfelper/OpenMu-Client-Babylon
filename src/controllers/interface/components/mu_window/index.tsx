@@ -1,7 +1,7 @@
 import './style.less';
 import { useCallback, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import { MuSpriteFrame, useMuSprite } from '../mu_sprite';
+import { MuSpriteFrame } from '../mu_sprite';
 import { MuResizeGrip, useWindowChrome } from './useWindowChrome';
 import { MuWindows, type WindowCloser } from '../../windowManager';
 
@@ -13,10 +13,6 @@ const BOTTOM_SPRITE = 'newui_item_back03.OZT';
 
 export const WINDOW_WIDTH = 190;
 export const WINDOW_HEIGHT = 429;
-
-const TOP_HEIGHT = 64;
-const SIDE_WIDTH = 21;
-const BOTTOM_HEIGHT = 45;
 
 // The main bar's height in 640x480 units; the bar is scaled by the player, so
 // every window that rides on it (the original's `480 - 51 - h`) follows the
@@ -60,9 +56,6 @@ export const MuItemWindow = observer(
     onClose,
     children,
   }: MuItemWindowProps) => {
-    const back = useMuSprite(BACK_SPRITE);
-    // The side strips run between the top and the bottom, whatever the height.
-    const sideHeight = Math.max(0, height - TOP_HEIGHT - BOTTOM_HEIGHT);
     const chrome = useWindowChrome(id, {
       width,
       height,
@@ -90,56 +83,10 @@ export const MuItemWindow = observer(
         style={{
           right: column * width * chrome.scale,
           bottom: bottomBarScreenHeight(),
-          backgroundImage: back ? `url(${back.url})` : undefined,
-          backgroundSize: '100% 100%',
           ...chrome.style,
           ...style,
         }}
       >
-      <MuSpriteFrame
-        file={TOP_SPRITE}
-        width={width}
-        height={TOP_HEIGHT}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          backgroundSize: '100% 100%',
-        }}
-      />
-      <MuSpriteFrame
-        file={LEFT_SPRITE}
-        width={SIDE_WIDTH}
-        height={sideHeight}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: TOP_HEIGHT,
-          backgroundSize: '100% 100%',
-        }}
-      />
-      <MuSpriteFrame
-        file={RIGHT_SPRITE}
-        width={SIDE_WIDTH}
-        height={sideHeight}
-        style={{
-          position: 'absolute',
-          left: width - SIDE_WIDTH,
-          top: TOP_HEIGHT,
-          backgroundSize: '100% 100%',
-        }}
-      />
-      <MuSpriteFrame
-        file={BOTTOM_SPRITE}
-        width={width}
-        height={BOTTOM_HEIGHT}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: height - BOTTOM_HEIGHT,
-          backgroundSize: '100% 100%',
-        }}
-      />
         {children}
         <MuResizeGrip id={id} width={width} />
       </div>
@@ -262,6 +209,7 @@ export const MuTableRule = ({
 }) => (
   <MuSpriteFrame
     file={TABLE_BOTTOM_PIXEL}
+    className="mu-table-rule"
     style={{
       position: 'absolute',
       left,

@@ -1,25 +1,52 @@
 @import (reference) '@/controllers/interface/components/mu_text/style.less';
+@import (reference) '@/controllers/interface/theme.less';
+
 .login-page {
   position: absolute;
   inset: 0;
 
-  // `UIMng.cpp:226` places the window at
-  //   x = (screenWidth  - 329) / 2
-  //   y = (screenHeight - 245) * 2 / 3
-  // i.e. horizontally centred and two thirds of the way down, which is where
-  // MU actually puts it - not dead centre.
+  // The MUCURA login box: black glass, a dark red title bar, gold headings
+  // and warm beige text. It sits low on the scene, as in the reference.
   .login-win {
     position: absolute;
     left: 50%;
-    top: calc((100% - 245px) * 2 / 3);
+    top: clamp(96px, 56%, calc(100% - 255px));
     transform: translateX(-50%);
+    box-sizing: border-box;
+    overflow: hidden;
+
+    background: linear-gradient(180deg, rgba(12, 8, 8, 0.96), rgba(6, 4, 4, 0.92));
+    border: 2px solid @mucura-red;
+    border-radius: 6px;
+    box-shadow:
+      0 18px 40px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(231, 199, 119, 0.08);
+
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    user-select: none;
 
     // MU's UI is authored at fixed pixel sizes; the window must be positioned,
     // never stretched or reflowed.
     flex: none;
+  }
 
-    .mu-font();
-    user-select: none;
+  .login-title {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 6px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .mucura-title-bar();
+    .mucura-title-text();
+    font-size: 16px;
+    // The reference titles this bar "Entrar", not "ENTRAR"; the character
+    // screen's big heading is the one that is all caps.
+    text-transform: none;
+    pointer-events: none;
   }
 
   form {
@@ -30,60 +57,164 @@
 
   .login-label {
     position: absolute;
-    color: #ffffff;
-    font-size: 11px;
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    font-size: 13px;
     line-height: 1;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+    text-shadow: @mucura-shadow;
     white-space: nowrap;
   }
 
-  // `RenderText(baseX + 111, baseY + 80, szServerName)` in `g_hFixFont`.
   .login-server-line {
     position: absolute;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: @mucura-beige-dim;
+    font-family: @mucura-serif;
+    font-size: 12px;
+    line-height: 1;
+    text-shadow: @mucura-shadow;
+    white-space: nowrap;
   }
 
   .login-remember {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    font-size: 13px;
+    line-height: 1;
+    text-shadow: @mucura-shadow;
+    white-space: nowrap;
     pointer-events: auto;
     cursor: pointer;
+    user-select: none;
+
+    input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  .login-check {
+    position: relative;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    box-sizing: border-box;
+    border: 1px solid #b08a3e;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .login-remember input:checked + .login-check::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: @mucura-gold;
+    font-family: @mucura-serif;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  // The box art used to be the field; now the field is the field.
+  .login-input {
+    position: absolute;
+    width: 190px;
+    height: 24px;
+    box-sizing: border-box;
+    padding: 0 8px;
+
+    background: rgba(6, 4, 4, 0.75);
+    border: 1px solid #5c4a32;
+    border-radius: 3px;
+    outline: none;
+
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    font-size: 13px;
+    line-height: 1;
+    pointer-events: auto;
+
+    &::placeholder {
+      color: rgba(200, 181, 143, 0.55);
+    }
+
+    &:focus {
+      border-color: @mucura-gold;
+      box-shadow: 0 0 0 1px rgba(231, 199, 119, 0.28);
+    }
+  }
+
+  .login-btn {
+    position: absolute;
+    width: 63px;
+    height: 24px;
+    box-sizing: border-box;
+
+    background: rgba(20, 8, 8, 0.65);
+    border: 1px solid #b08a3e;
+    border-radius: 3px;
+
+    color: @mucura-gold;
+    font-family: @mucura-serif;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: @mucura-shadow;
+    cursor: pointer;
+    pointer-events: auto;
+
+    &:hover:not(:disabled) {
+      border-color: @mucura-gold;
+      background: rgba(60, 20, 15, 0.7);
+      color: #f6e4b8;
+    }
+
+    &.is-primary {
+      background: linear-gradient(180deg, #7a1c12, #4f0e0a);
+      border-color: #c49a45;
+      color: #f1d99a;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 200, 150, 0.2),
+        0 0 12px rgba(196, 154, 69, 0.18);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
   }
 
   // Same type as the labels around it; the colour is what marks it clickable,
   // since MU has no underlined link anywhere in its interface.
   .login-register {
     position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
     pointer-events: auto;
     cursor: pointer;
-    color: #b3b3b3;
+    color: @mucura-beige-dim;
+    font-family: @mucura-serif;
     font-size: 11px;
     line-height: 1;
     text-decoration: none;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+    text-shadow: @mucura-shadow;
     white-space: nowrap;
 
     &:hover {
-      color: #ffffff;
+      color: @mucura-gold;
     }
-  }
-
-  // The box art is the input's background, so the field itself is invisible
-  // chrome sitting exactly on top of it.
-  .login-input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    pointer-events: auto;
-
-    background: transparent;
-    border: none;
-    outline: none;
-
-    color: #ffffff;
-    font-family: inherit;
-    font-size: 12px;
-    line-height: 1;
   }
 
   .login-submit {
@@ -101,21 +232,20 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 205px;
+    top: 204px;
     margin: 0;
     text-align: center;
+    font-family: @mucura-serif;
     font-size: 11px;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+    line-height: 1.2;
+    text-shadow: @mucura-shadow;
+    pointer-events: none;
   }
 
   .login-error {
-    color: #ff5a5a;
+    color: #ff7a6a;
   }
 
-  // `g_pRenderText->SetBgColor`: MU paints a box behind text that would
-  // otherwise land on the frame's art, and the band under the buttons is
-  // dragons. Shrink-wrapped to the line, so the box is the text's and not
-  // the window's.
   .login-notice,
   .login-signup-message {
     width: fit-content;
@@ -123,24 +253,27 @@
     margin: 0 auto;
     padding: 1px 6px;
     background: rgba(0, 0, 0, 0.65);
-    line-height: 1.3;
   }
 
-  // "Account created" - the one thing this screen says that is good news.
   .login-notice {
-    color: #7dff7d;
+    color: #9fe08f;
   }
 
-  // The register window has a row where the login one has its checkbox, so
-  // its message goes above the buttons instead of across them.
   .login-signup-message {
-    top: 162px;
-    color: #ff5a5a;
+    top: 166px;
+    color: #ff7a6a;
   }
 
   .login-signup-title {
     left: 0;
     right: 0;
+    top: 48px !important;
     text-align: center;
+    color: @mucura-gold;
+    font-family: @mucura-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 }

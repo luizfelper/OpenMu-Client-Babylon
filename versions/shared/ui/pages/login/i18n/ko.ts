@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': '계정과 비밀번호를 입력하세요',
   'login.createAccount': '계정 만들기',
   'login.rememberMe': '로그인 정보를 저장할까요?',

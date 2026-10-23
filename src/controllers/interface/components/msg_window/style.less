@@ -1,4 +1,6 @@
 @import (reference) '@/controllers/interface/components/mu_text/style.less';
+@import (reference) '@/controllers/interface/theme.less';
+
 // `CMsgWin`. The layer exists so the window is modal: `CursorInWin` reports
 // the message window under the cursor for every area but `WA_MOVE`, so while
 // it is up nothing behind it - including the staged characters - can be
@@ -27,6 +29,42 @@
   // MU's UI is authored at fixed pixel sizes; the window must be positioned,
   // never stretched or reflowed.
   flex: none;
+
+  // The old `message_back.OZT` art is replaced by the shared black glass.
+  background-image: none !important;
+  background: @mucura-panel;
+  border: 1px solid @mucura-red;
+  border-radius: 5px;
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(231, 199, 119, 0.08);
+
+  // A short red cap, like the title bar of the larger windows, with a gold
+  // diamond where a title would be.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    top: 5px;
+    height: 20px;
+    .mucura-title-bar();
+    border-radius: 3px;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    transform: translateX(-50%) rotate(45deg);
+    background: @mucura-gold;
+    box-shadow: 0 0 7px rgba(231, 199, 119, 0.65);
+    pointer-events: none;
+  }
 }
 
 .msg-window-text {
@@ -34,32 +72,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  // A two-line box (the mix confirm) breaks at its newline.
-  white-space: pre-line;
 
-  color: #ffffff;
-  font-size: 11px;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+  color: @mucura-beige;
+  font-family: @mucura-serif;
+  font-size: 12px;
+  text-align: center;
+  text-shadow: @mucura-shadow;
+  pointer-events: none;
 }
 
-// The box art is the input's background, so the field itself is invisible
-// chrome sitting exactly on top of it.
 .msg-window-input {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
   box-sizing: border-box;
-  pointer-events: auto;
+  padding: 0 8px;
 
-  background: transparent;
-  border: none;
+  background: rgba(6, 4, 4, 0.78);
+  border: 1px solid #5c4a32;
+  border-radius: 3px;
   outline: none;
 
-  color: #ffffff;
-  font-family: inherit;
+  color: @mucura-beige;
+  font-family: @mucura-serif;
   font-size: 12px;
   line-height: 1;
-  letter-spacing: 0.2em;
+
+  &:focus {
+    border-color: @mucura-gold;
+    box-shadow: 0 0 0 1px rgba(231, 199, 119, 0.25);
+  }
 }

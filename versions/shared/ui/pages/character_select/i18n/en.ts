@@ -6,6 +6,16 @@ const en = {
   'characters.hint.select': 'Select',
   'characters.hint.zoomIn': 'Zoom in',
   'characters.hint.zoomOut': 'Zoom out',
+  'characters.chooseHero': 'Choose your hero',
+  'characters.slotCount': '{count} of {total}',
+  'characters.emptySlot': 'Empty slot',
+  'characters.createCharacter': 'Create character',
+  'characters.playHint': 'Enter or double-click to play',
+  'characters.menu': 'Menu',
+  'characters.create': 'Create',
+  'characters.play': 'Play',
+  'characters.delete': 'Delete',
+  'characters.levelShort': 'LV',
 
   // The blurb under each class on the creation screen (GlobalText 1705…).
   'class.desc.darkWizard':

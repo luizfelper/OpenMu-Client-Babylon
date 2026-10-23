@@ -18,7 +18,7 @@ import { t } from '@/i18n';
  */
 
 const ART = '/backdrops/character-select.jpeg';
-const LOGO = '/ui/world_select/logo.webp';
+const LOGO = '/ui/world_select/mucura.webp';
 /** After the download, how long the login scene behind may still take before the page leaves anyway. */
 const SCENE_WAIT_MS = 15000;
 

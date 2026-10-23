@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'アカウント名とパスワードを入力してください',
   'login.createAccount': 'アカウント作成',
   'login.rememberMe': 'ログイン情報を保存しますか？',

@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'Masukkan nama akun dan kata sandimu',
   'login.createAccount': 'Buat akun',
   'login.rememberMe': 'Ingat akun?',

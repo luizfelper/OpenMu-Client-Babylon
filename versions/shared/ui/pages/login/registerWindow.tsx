@@ -13,9 +13,7 @@ import {
   validateSignup,
   type SignupProblem,
 } from '@/modules/servers/registerRules';
-import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
-import { MuButton } from '@/controllers/interface/components/mu_button';
-import { TEXT_COLOR } from '@/controllers/interface/components/mu_text';
+
 
 /**
  * Account creation, in the login window's place.
@@ -33,34 +31,23 @@ import { TEXT_COLOR } from '@/controllers/interface/components/mu_text';
 const WIN_WIDTH = 329;
 const WIN_HEIGHT = 245;
 
-const INPUT_WIDTH = 156;
-const INPUT_HEIGHT = 23;
-const INPUT_X = 109;
+const INPUT_X = 110;
 const LABEL_X = 30;
 
 /**
- * The layout, against the frame art rather than against arithmetic. Only the
- * middle of `login_back.OZT` is flat: the top bar is the MU ONLINE plate with
- * a dragon's head reaching down at the right, and the bottom band is two more
- * of them. So the rows sit clear of both, the buttons take the bottom band the
- * way the login window's do - they are opaque sprites and cover it - and the
- * message goes between them, on a box of its own (see `login-signup-message`).
+ * The same box as the login window, with one more row. The title bar is the
+ * shared `.login-title`, so the form starts below it and the buttons take the
+ * bottom band exactly as they do on the login window.
  */
-const TITLE_Y = 60;
 const FIRST_ROW_Y = 88;
-const ROW_STEP = 24;
+const ROW_STEP = 26;
 
 /** The label sits a few px below the input's top edge to look centred. */
-const LABEL_OFFSET_Y = 7;
+const LABEL_OFFSET_Y = 8;
 
-const TEXT_INSET_X = 6;
-const TEXT_INSET_Y = 6;
-
-const BUTTON_WIDTH = 54;
-const BUTTON_HEIGHT = 30;
 const BUTTON_Y = 196;
-const OK_X = 150;
-const CANCEL_X = 211;
+const OK_X = 167;
+const CANCEL_X = 237;
 
 const ROWS = [
   { key: 'username', label: 'register.id', type: 'text' },
@@ -196,15 +183,8 @@ export const RegisterWindow = observer(({ onCreated, onCancel }: RegisterWindowP
   }, []);
 
   return (
-    <MuSpriteFrame
-      file="login_back.OZT"
-      width={WIN_WIDTH}
-      height={WIN_HEIGHT}
-      className="login-win"
-    >
-      <span className="login-label login-signup-title" style={{ top: TITLE_Y }}>
-        {t('login.createAccount')}
-      </span>
+    <div className="login-win" style={{ width: WIN_WIDTH, height: WIN_HEIGHT }}>
+      <div className="login-title">{t('login.createAccount')}</div>
 
       <form
         ref={form}
@@ -225,57 +205,42 @@ export const RegisterWindow = observer(({ onCreated, onCancel }: RegisterWindowP
                 {t(row.label)}
               </span>
 
-              <MuSpriteFrame
-                file="login_me.OZT"
-                width={INPUT_WIDTH}
-                height={INPUT_HEIGHT}
-                style={{ position: 'absolute', left: INPUT_X, top }}
-              >
-                <input
-                  className="login-input"
-                  type={row.type}
-                  autoFocus={i === 0}
-                  autoComplete="off"
-                  value={values[row.key]}
-                  onChange={e => set(row.key, e.target.value)}
-                  maxLength={MAX_LENGTH[row.key]}
-                  style={{
-                    paddingLeft: TEXT_INSET_X,
-                    paddingTop: TEXT_INSET_Y,
-                  }}
-                />
-              </MuSpriteFrame>
+              <input
+                className="login-input"
+                type={row.type}
+                autoFocus={i === 0}
+                autoComplete="off"
+                value={values[row.key]}
+                onChange={e => set(row.key, e.target.value)}
+                maxLength={MAX_LENGTH[row.key]}
+                style={{ left: INPUT_X, top }}
+              />
             </div>
           );
         })}
 
-        <MuButton
-          file="message_ok_b_all.OZT"
-          width={BUTTON_WIDTH}
-          height={BUTTON_HEIGHT}
-          frames={{ up: 0, active: 1, down: 2 }}
-          color={TEXT_COLOR.brightGray}
-          activeColor={TEXT_COLOR.white}
+        <button
+          type="button"
+          className="login-btn is-primary"
           disabled={sending}
           onClick={submit}
-          style={{ position: 'absolute', left: OK_X, top: BUTTON_Y }}
-        />
-        <MuButton
-          file="loding_cancel_b_all.OZT"
-          width={BUTTON_WIDTH}
-          height={BUTTON_HEIGHT}
-          frames={{ up: 0, active: 1, down: 2 }}
-          color={TEXT_COLOR.brightGray}
-          activeColor={TEXT_COLOR.white}
+          style={{ left: OK_X, top: BUTTON_Y }}
+        >
+          {t('common.create')}
+        </button>
+        <button
+          type="button"
+          className="login-btn"
           onClick={onCancel}
-          style={{ position: 'absolute', left: CANCEL_X, top: BUTTON_Y }}
-        />
+          style={{ left: CANCEL_X, top: BUTTON_Y }}
+        >
+          {t('common.cancel')}
+        </button>
 
-        {}
         <button type="submit" className="login-submit" tabIndex={-1} />
       </form>
 
       {!!error && <p className="login-signup-message">{error}</p>}
-    </MuSpriteFrame>
+    </div>
   );
 });

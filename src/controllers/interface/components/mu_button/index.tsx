@@ -22,6 +22,8 @@ type MuButtonProps = {
   onClick?: () => void;
   style?: CSSProperties;
   labelStyle?: CSSProperties;
+  /** Lets a themed menu replace the sprite skin without losing the behaviour. */
+  className?: string;
   children?: React.ReactNode;
 };
 
@@ -38,6 +40,7 @@ export const MuButton = ({
   onClick,
   style,
   labelStyle,
+  className,
   children,
 }: MuButtonProps) => {
   const [hovered, setHovered] = useState(false);
@@ -61,6 +64,7 @@ export const MuButton = ({
       // does nothing. Every caller used to wrap itself in a `data-no-drag`
       // div to avoid that; the ones that forgot were simply broken.
       noDrag
+      className={className ? `mu-button ${className}` : 'mu-button'}
       style={{
         position: 'relative',
         pointerEvents: 'auto',

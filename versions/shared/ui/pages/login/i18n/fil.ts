@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'Ilagay ang pangalan ng iyong account at password',
   'login.createAccount': 'Gumawa ng account',
   'login.rememberMe': 'Tandaan ako?',

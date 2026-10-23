@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'Nhập tên tài khoản và mật khẩu',
   'login.createAccount': 'Tạo tài khoản',
   'login.rememberMe': 'Ghi nhớ?',

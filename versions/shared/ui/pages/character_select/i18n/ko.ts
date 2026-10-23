@@ -3,6 +3,16 @@
 import type en from './en';
 
 export default {
+  'characters.chooseHero': 'Choose your hero',
+  'characters.slotCount': '{count} of {total}',
+  'characters.emptySlot': 'Empty slot',
+  'characters.createCharacter': 'Create character',
+  'characters.playHint': 'Enter or double-click to play',
+  'characters.menu': 'Menu',
+  'characters.create': 'Create',
+  'characters.play': 'Play',
+  'characters.delete': 'Delete',
+  'characters.levelShort': 'LV',
   'characters.loading': '캐릭터를 불러오는 중...',
   'characters.select': '캐릭터를 선택하세요',
   'characters.hint.select': '선택',

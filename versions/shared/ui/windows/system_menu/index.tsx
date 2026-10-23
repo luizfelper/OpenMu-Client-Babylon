@@ -20,7 +20,7 @@ import { menuLabelStyle } from './labelFit';
 
 const LINES = 5;
 const TOP = 100;
-const BUTTON = { width: 108, height: 29 };
+const BUTTON = { width: 120, height: 29 };
 const FIRST_BUTTON_Y = 23;
 const BUTTON_STEP = 30;
 const BUTTON_SPRITE = 'newui_btn_empty.OZT';
@@ -76,7 +76,9 @@ export const SystemMenuWindow = observer(() => {
             width={BUTTON.width}
             height={BUTTON.height}
             frames={{ up: 0, active: 1, down: 2 }}
-            color="#ffffff"
+            color="#e6d6b4"
+            activeColor="#f1d99a"
+            className="mucura-menu-button"
             label={t(key)}
             labelStyle={menuLabelStyle(t(key))}
             onClick={() => choose(i)}

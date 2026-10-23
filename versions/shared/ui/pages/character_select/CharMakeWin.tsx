@@ -50,7 +50,6 @@ import {
   NAME_MIN_LENGTH,
   offeredBy,
   OK_BTN_X,
-  PANEL_ALPHA,
   PREVIEW_HEIGHT,
   PREVIEW_WIDTH,
   separateTextIntoLines,
@@ -216,7 +215,6 @@ export const CharMakeWin = observer(({ onClose }: CharMakeWinProps) => {
           top: STAT_Y,
           width: STAT_WIDTH,
           height: isDarkLord ? STAT_HEIGHT_DARK_LORD : STAT_HEIGHT,
-          background: `rgba(0, 0, 0, ${PANEL_ALPHA})`,
         }}
       />
 
@@ -344,7 +342,6 @@ export const CharMakeWin = observer(({ onClose }: CharMakeWinProps) => {
           top: DESC_Y,
           width: DESC_WIDTH,
           height: DESC_HEIGHT,
-          background: `rgba(0, 0, 0, ${PANEL_ALPHA})`,
         }}
       />
       {descriptionLines.map((line, i) => (

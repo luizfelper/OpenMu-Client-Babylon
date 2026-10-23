@@ -7,7 +7,6 @@ import {
 } from 'react';
 import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
 import { MuButton } from '@/controllers/interface/components/mu_button';
-import { TEXT_COLOR } from '@/controllers/interface/components/mu_text';
 import { uiClick } from '@/controllers/sound/sfx';
 
 /**
@@ -104,10 +103,11 @@ export const OptionsButton = ({
       height={BUTTON_HEIGHT}
       frames={{ up: 0, active: 1, down: 2, check: 3 }}
       checked={checked}
-      color={TEXT_COLOR.brightGray}
-      activeColor={TEXT_COLOR.white}
+      color="#e6d6b4"
+      activeColor="#f1d99a"
       disabled={disabled}
       onClick={onClick}
+      className="mucura-options-button"
       style={{
         backgroundSize: `${width}px ${BUTTON_HEIGHT * BUTTON_FRAMES}px`,
       }}

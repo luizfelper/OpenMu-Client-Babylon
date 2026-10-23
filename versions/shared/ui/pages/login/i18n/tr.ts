@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'Hesap adını ve şifreni gir',
   'login.createAccount': 'Hesap oluştur',
   'login.rememberMe': 'Beni hatırla',

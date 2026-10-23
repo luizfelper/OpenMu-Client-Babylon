@@ -1,6 +1,8 @@
 /** English text of the `login` page. See src/i18n/readme.md. */
 
 const en = {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'Enter your account name and password',
   'login.createAccount': 'Create account',
   'login.rememberMe': 'Remember me?',

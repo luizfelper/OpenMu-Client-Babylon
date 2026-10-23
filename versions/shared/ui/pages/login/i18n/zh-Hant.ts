@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': '請輸入帳號與密碼',
   'login.createAccount': '建立帳號',
   'login.rememberMe': '記住我？',

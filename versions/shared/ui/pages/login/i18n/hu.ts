@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'Add meg a fióknevedet és a jelszavadat',
   'login.createAccount': 'Fiók létrehozása',
   'login.rememberMe': 'Emlékezz rám?',

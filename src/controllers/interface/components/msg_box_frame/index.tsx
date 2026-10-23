@@ -1,3 +1,4 @@
+import './style.less';
 import type { CSSProperties, ReactNode } from 'react';
 import { MuSpriteFrame } from '../mu_sprite';
 
@@ -52,9 +53,13 @@ export const MsgBoxFrame = ({ lines, top = MSGBOX_TOP_SPRITE, className, style, 
   const height = msgBoxHeight(lines);
 
   return (
-    <div className={className} style={{ width: MSGBOX_WIDTH, height, ...style }}>
+    <div
+      className={className ? `mu-msgbox-frame ${className}` : 'mu-msgbox-frame'}
+      style={{ width: MSGBOX_WIDTH, height, ...style }}
+    >
       <MuSpriteFrame
         file={MSGBOX_BACK_SPRITE}
+        className="mu-msgbox-art"
         style={{
           position: 'absolute',
           left: 0,
@@ -66,12 +71,14 @@ export const MsgBoxFrame = ({ lines, top = MSGBOX_TOP_SPRITE, className, style, 
       />
       <MuSpriteFrame
         file={top}
+        className="mu-msgbox-art"
         width={MSGBOX_WIDTH}
         height={MSGBOX_TOP_HEIGHT}
         style={{ position: 'absolute', left: 0, top: 0 }}
       />
       <MuSpriteFrame
         file={MSGBOX_MIDDLE_SPRITE}
+        className="mu-msgbox-art"
         width={MSGBOX_WIDTH}
         height={MSGBOX_MIDDLE_HEIGHT * lines}
         style={{
@@ -83,6 +90,7 @@ export const MsgBoxFrame = ({ lines, top = MSGBOX_TOP_SPRITE, className, style, 
       />
       <MuSpriteFrame
         file={MSGBOX_BOTTOM_SPRITE}
+        className="mu-msgbox-art"
         width={MSGBOX_WIDTH}
         height={MSGBOX_BOTTOM_HEIGHT}
         style={{ position: 'absolute', left: 0, top: height - MSGBOX_BOTTOM_HEIGHT }}

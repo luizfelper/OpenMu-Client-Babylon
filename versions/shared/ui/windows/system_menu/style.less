@@ -1,4 +1,5 @@
 @import (reference) '@/controllers/interface/components/mu_text/style.less';
+@import (reference) '@/controllers/interface/theme.less';
 
 // The system menu: modal like every common message box, on the stage.
 .system-menu-layer {
@@ -14,5 +15,23 @@
     position: absolute;
     transform-origin: top left;
     font-size: 11px;
+  }
+
+  // The five empty message-box buttons, skinned as MUCURA text buttons. The
+  // sprite stays in the DOM for its hit area; the panel is the skin.
+  .mucura-menu-button {
+    background-image: none !important;
+    background: linear-gradient(180deg, rgba(74, 16, 12, 0.6), rgba(18, 8, 7, 0.82)) !important;
+    border: 1px solid rgba(231, 199, 119, 0.3) !important;
+    border-radius: 3px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 200, 150, 0.08);
+    // The Portuguese "Trocar de personagem" is the longest label; a 10 px
+    // stage font keeps it inside the 108 px button even on Classic.
+    font-size: 10px;
+
+    &:hover {
+      background: linear-gradient(180deg, rgba(112, 26, 18, 0.7), rgba(24, 9, 8, 0.86)) !important;
+      border-color: @mucura-gold !important;
+    }
   }
 }

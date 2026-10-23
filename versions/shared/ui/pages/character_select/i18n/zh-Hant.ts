@@ -3,6 +3,16 @@
 import type en from './en';
 
 export default {
+  'characters.chooseHero': 'Choose your hero',
+  'characters.slotCount': '{count} of {total}',
+  'characters.emptySlot': 'Empty slot',
+  'characters.createCharacter': 'Create character',
+  'characters.playHint': 'Enter or double-click to play',
+  'characters.menu': 'Menu',
+  'characters.create': 'Create',
+  'characters.play': 'Play',
+  'characters.delete': 'Delete',
+  'characters.levelShort': 'LV',
   'characters.loading': '正在載入角色……',
   'characters.select': '請選擇角色',
   'characters.hint.select': '選擇',

@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'Εισαγάγετε όνομα λογαριασμού και κωδικό',
   'login.createAccount': 'Δημιουργία λογαριασμού',
   'login.rememberMe': 'Να με θυμάσαι;',

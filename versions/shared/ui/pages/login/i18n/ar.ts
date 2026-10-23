@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'أدخل اسم الحساب وكلمة المرور',
   'login.createAccount': 'إنشاء حساب',
   'login.rememberMe': 'تذكرني؟',

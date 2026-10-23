@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'अपना अकाउंट नाम और पासवर्ड डालें',
   'login.createAccount': 'अकाउंट बनाएं',
   'login.rememberMe': 'मुझे याद रखें?',

@@ -18,9 +18,6 @@ import {
   BTN_Y,
   CANCEL_SPRITE,
   INPUT_HEIGHT,
-  INPUT_SPRITE,
-  INPUT_TEXT_INSET_X,
-  INPUT_TEXT_INSET_Y,
   INPUT_WIDTH,
   INPUT_X,
   INPUT_Y,
@@ -134,26 +131,20 @@ export const MsgWindow = observer(() => {
         </div>
 
         {type === MsgWinType.StrInput && (
-          <MuSpriteFrame
-            file={INPUT_SPRITE}
-            width={INPUT_WIDTH}
-            height={INPUT_HEIGHT}
-            style={{ position: 'absolute', left: INPUT_X, top: INPUT_Y }}
-          >
-            {}
-            <input
-              className="msg-window-input"
-              type="password"
-              autoFocus
-              value={securityCode}
-              onChange={e => setSecurityCode(e.target.value)}
-              maxLength={SECURITY_CODE_MAX_LENGTH}
-              style={{
-                paddingLeft: INPUT_TEXT_INSET_X,
-                paddingTop: INPUT_TEXT_INSET_Y,
-              }}
-            />
-          </MuSpriteFrame>
+          <input
+            className="msg-window-input"
+            type="password"
+            autoFocus
+            value={securityCode}
+            onChange={e => setSecurityCode(e.target.value)}
+            maxLength={SECURITY_CODE_MAX_LENGTH}
+            style={{
+              left: INPUT_X,
+              top: INPUT_Y,
+              width: INPUT_WIDTH,
+              height: INPUT_HEIGHT,
+            }}
+          />
         )}
 
         {showOk && (

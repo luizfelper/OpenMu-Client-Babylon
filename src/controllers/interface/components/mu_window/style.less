@@ -1,22 +1,101 @@
 @import (reference) '@/controllers/interface/components/mu_text/style.less';
-// Window furniture. Both components are pure positioning: every coordinate
-// comes from the C++ and is passed in, so this file only says that the pieces
-// stack absolutely and that the art must not be smoothed.
+@import (reference) '@/controllers/interface/theme.less';
+
+// MUCURA's window furniture. The original's strips are gone: every window is
+// the same black glass panel with a dark red title bar, so a menu added later
+// inherits the skin without having to draw it.
 .mu-item-window {
   position: absolute;
   pointer-events: auto;
   user-select: none;
-  image-rendering: pixelated;
-  color: #fff;
+  box-sizing: border-box;
+  color: @mucura-beige;
   .mu-font();
+  .mucura-panel();
+  // In the world the panel lets a little of the scene through; the login and
+  // the dialogs are allowed to be denser.
+  background: @mucura-panel-soft;
+
   // The root takes focus on open (Escape scopes to the focused window); the
-  // art is the frame, not a focus ring.
+  // skin is the frame, not a focus ring.
   outline: none;
+
+  // The title bar. The original's header is 64 px tall; the visible bar is
+  // the top 30 px, leaving the familiar breathing room before the content.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    top: 5px;
+    height: 30px;
+    .mucura-title-bar();
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    right: 7px;
+    top: 36px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(231, 199, 119, 0.45),
+      transparent
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .window-title {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 5px !important;
+    height: 30px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .mucura-title-text();
+    font-size: 13px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  // Default body text. Inline colours (damage red, stat gold, item names)
+  // still win, as they should.
+  .mu-text {
+    color: @mucura-beige;
+  }
 }
 
 .mu-table-frame {
   position: absolute;
   pointer-events: none;
+  box-sizing: border-box;
+  border: 1px solid rgba(231, 199, 119, 0.2);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.22);
+
+  // The old bevel art would fight the flat panel; the border is the frame.
+  > * {
+    display: none;
+  }
+}
+
+.mu-table-rule {
+  background-image: none !important;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(231, 199, 119, 0.28),
+    transparent
+  ) !important;
+  height: 1px !important;
 }
 
 // The corner grip. Deliberately unobtrusive until the cursor is near it: it is
@@ -29,19 +108,19 @@
   height: 12px;
   cursor: nwse-resize;
   pointer-events: auto;
-  opacity: 0.25;
+  opacity: 0.3;
   background: linear-gradient(
     135deg,
     transparent 0 45%,
-    #d8c89a 45% 55%,
+    @mucura-gold-dim 45% 55%,
     transparent 55% 70%,
-    #d8c89a 70% 80%,
+    @mucura-gold-dim 70% 80%,
     transparent 80%
   );
 }
 
 .mu-item-window:hover .mu-resize-grip {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 // A window is grabbed by its frame, so the frame advertises it. Anything

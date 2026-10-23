@@ -3,6 +3,8 @@
 import type en from './en';
 
 export default {
+  'login.title': 'Sign in',
+  'login.clear': 'Clear',
   'login.enterCredentials': 'আপনার অ্যাকাউন্টের নাম ও পাসওয়ার্ড লিখুন',
   'login.createAccount': 'অ্যাকাউন্ট তৈরি করুন',
   'login.rememberMe': 'আমাকে মনে রাখবেন?',

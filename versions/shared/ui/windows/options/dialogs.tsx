@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
+import { t } from '@/i18n';
 import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
 import { MuButton } from '@/controllers/interface/components/mu_button';
 import { WINDOW_Z_MODAL } from '@/controllers/interface/windowManager';
-import { TEXT_COLOR } from '@/controllers/interface/components/mu_text';
 import {
   BACK_SPRITE,
   BTN_BOTH_CANCEL_X,
@@ -11,7 +11,6 @@ import {
   BTN_SINGLE_X,
   BTN_WIDTH,
   BTN_Y,
-  CANCEL_SPRITE,
   OK_SPRITE,
   WIN_HEIGHT,
   WIN_WIDTH,
@@ -34,14 +33,16 @@ function useAnswerKeys(answer: (yes: boolean) => void): void {
   }, [answer]);
 }
 
-const button = (file: string, left: number, onClick: () => void) => (
+const button = (label: string, left: number, onClick: () => void) => (
   <MuButton
-    file={file}
+    file={OK_SPRITE}
     width={BTN_WIDTH}
     height={BTN_HEIGHT}
     frames={{ up: 0, active: 1, down: 2 }}
-    color={TEXT_COLOR.brightGray}
-    activeColor={TEXT_COLOR.white}
+    className="mucura-options-button"
+    color="#e6d6b4"
+    activeColor="#f1d99a"
+    label={label}
     onClick={onClick}
     style={{ position: 'absolute', left, top: BTN_Y }}
   />
@@ -59,10 +60,15 @@ export const ConfirmBox = ({
 
   return (
     <div className="options-exit-confirm" style={{ zIndex: WINDOW_Z_MODAL }}>
-      <MuSpriteFrame file={BACK_SPRITE} width={WIN_WIDTH} height={WIN_HEIGHT}>
+      <MuSpriteFrame
+        file={BACK_SPRITE}
+        className="mucura-confirm-frame"
+        width={WIN_WIDTH}
+        height={WIN_HEIGHT}
+      >
         <div className="options-exit-text">{text}</div>
-        {button(OK_SPRITE, BTN_BOTH_OK_X, () => onAnswer(true))}
-        {button(CANCEL_SPRITE, BTN_BOTH_CANCEL_X, () => onAnswer(false))}
+        {button(t('common.ok'), BTN_BOTH_OK_X, () => onAnswer(true))}
+        {button(t('common.cancel'), BTN_BOTH_CANCEL_X, () => onAnswer(false))}
       </MuSpriteFrame>
     </div>
   );
@@ -80,9 +86,14 @@ export const NoticeBox = ({
 
   return (
     <div className="options-exit-confirm" style={{ zIndex: WINDOW_Z_MODAL }}>
-      <MuSpriteFrame file={BACK_SPRITE} width={WIN_WIDTH} height={WIN_HEIGHT}>
+      <MuSpriteFrame
+        file={BACK_SPRITE}
+        className="mucura-confirm-frame"
+        width={WIN_WIDTH}
+        height={WIN_HEIGHT}
+      >
         <div className="options-exit-text">{text}</div>
-        {button(OK_SPRITE, BTN_SINGLE_X, onClose)}
+        {button(t('common.ok'), BTN_SINGLE_X, onClose)}
       </MuSpriteFrame>
     </div>
   );

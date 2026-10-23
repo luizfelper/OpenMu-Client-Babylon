@@ -11,11 +11,10 @@ import { useEventBus } from '@/controllers/interface/hooks';
 import { playUiSound } from '@/controllers/sound/sfx';
 import { isTypingInField, PREGAME_MENU } from '@/ecs/systems/keyboardInputSystem';
 import { GuildMemberRoleEnum } from '@versions/shared/packets/ServerToClientPackets';
-import { MuButton } from '@/controllers/interface/components/mu_button';
-import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
 import { MsgWindow } from '@/controllers/interface/components/msg_window';
 
 import { CharMakeWin } from './CharMakeWin';
+import { CharacterRosterPanel } from './CharacterRosterPanel';
 import {
   CharacterList,
   hasFreeSlot,
@@ -23,20 +22,7 @@ import {
   selectedCharacter,
   type ListedCharacter,
 } from './character_list';
-
-const BTN_WIDTH = 54;
-const BTN_HEIGHT = 30;
-const BTN_GAP = 1;
-const STATUS_GAP = 2;
-const STATUS_OFFSET_Y = 5;
-const STATUS_HEIGHT = 21;
-
-const DECO_WIDTH = 189;
-const DECO_HEIGHT = 103;
-const DECO_OFFSET_X = 22;
-const DECO_OFFSET_Y = 59;
-
-const CREATE_FRAMES = { up: 0, active: 1, down: 2 } as const;
+import { MAX_CHARACTERS } from './character_list/roster';
 
 const CTLCODE_02BLOCKITEM = 0x02;
 
@@ -46,6 +32,30 @@ function isDeleteBlocked(character: ListedCharacter): boolean {
     (character.Status & CTLCODE_02BLOCKITEM) !== 0
   );
 }
+
+const MenuIcon = () => (
+  <svg className="char-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg className="char-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+
+const PlayIcon = () => (
+  <svg className="char-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8 5l11 7-11 7z" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg className="char-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" />
+  </svg>
+);
 
 export const CharactersPage = observer(() => {
   const [creating, setCreating] = useState(false);
@@ -67,10 +77,22 @@ export const CharactersPage = observer(() => {
     'pick'
   );
 
-  const onConnect = () => {
-    if (!selected || selecting) return;
+  const connect = (name: string) => {
+    if (selecting) return;
+    playUiSound('click');
     setSelecting(true);
-    CharSelect.selectCharacterRequest(selected.Name);
+    CharSelect.selectCharacterRequest(name);
+  };
+
+  const onConnect = () => {
+    if (!selected) return;
+    connect(selected.Name);
+  };
+
+  const onFocusCharacter = (name: string) => {
+    playUiSound('click');
+    CharSelect.focusedChar = name;
+    CharSelect.focusCharacterRequest(name);
   };
 
   // Enter is the Connect button while nothing else is up
@@ -135,93 +157,84 @@ export const CharactersPage = observer(() => {
     confirmDeleteCharacter(selected.Name);
   };
 
+  const hint =
+    status === 'loading'
+      ? t('characters.loading')
+      : status === 'select'
+        ? t('characters.select')
+        : t('characters.playHint');
+
   return (
     <div className="characters-page">
       <CharacterList source={CharSelect} look="lineup" onList={() => setSelecting(false)} />
 
-      <div className="char-sel-bar" style={{ height: BTN_HEIGHT }}>
-        {}
-        <MuSpriteFrame
-          file="deco.OZT"
-          width={DECO_WIDTH}
-          height={DECO_HEIGHT}
-          style={{
-            position: 'absolute',
-            right: -DECO_OFFSET_X,
-            top: -DECO_OFFSET_Y,
-            pointerEvents: 'none',
-          }}
-        />
-
-        <MuButton
-          file="b_create.OZT"
-          width={BTN_WIDTH}
-          height={BTN_HEIGHT}
-          frames={{ ...CREATE_FRAMES, check: 3 }}
-          disabled={!hasFreeSlot(CharSelect.charactersList)}
-          onClick={() => setCreating(v => !v)}
-          style={{ position: 'absolute', left: 0, top: 0 }}
-        />
-        <MuButton
-          file="server_menu_b_all.OZT"
-          width={BTN_WIDTH}
-          height={BTN_HEIGHT}
-          frames={CREATE_FRAMES}
-          // `CSMW_BTN_MENU` shows `CSysMenuWin` (CharSelMainWin.cpp:227-230).
-          onClick={() => MuWindows.setOpen(PREGAME_MENU, true)}
-          style={{
-            position: 'absolute',
-            left: BTN_WIDTH + BTN_GAP,
-            top: 0,
-          }}
-        />
-
-        {!selected && (
-          <div
-            className="char-sel-status"
-            style={{
-              left: BTN_WIDTH * 2 + BTN_GAP + STATUS_GAP,
-              right: BTN_WIDTH * 2 + BTN_GAP + STATUS_GAP,
-              top: STATUS_OFFSET_Y,
-              height: STATUS_HEIGHT,
-            }}
-          >
-            {status === 'loading'
-              ? t('characters.loading')
-              : status === 'select'
-                ? t('characters.select')
-                : null}
-          </div>
-        )}
-
-        <MuButton
-          file="b_connect.OZT"
-          width={BTN_WIDTH}
-          height={BTN_HEIGHT}
-          frames={{ ...CREATE_FRAMES, check: 3 }}
-          disabled={!selected || selecting}
-          onClick={onConnect}
-          style={{
-            position: 'absolute',
-            right: BTN_WIDTH + BTN_GAP,
-            top: 0,
-          }}
-        />
-        <MuButton
-          file="b_delete.OZT"
-          width={BTN_WIDTH}
-          height={BTN_HEIGHT}
-          frames={{ ...CREATE_FRAMES, check: 3 }}
-          disabled={!selected}
-          onClick={onDelete}
-          style={{ position: 'absolute', right: 0, top: 0 }}
-        />
+      <div className="char-sel-heading">
+        <h1>{t('characters.chooseHero')}</h1>
+        <p>
+          {t('characters.slotCount', {
+            count: CharSelect.charactersList.length,
+            total: MAX_CHARACTERS,
+          })}
+        </p>
       </div>
 
-      {}
+      <CharacterRosterPanel
+        characters={CharSelect.charactersList}
+        focused={CharSelect.focusedChar}
+        canCreate={hasFreeSlot(CharSelect.charactersList)}
+        onFocus={onFocusCharacter}
+        onPlay={connect}
+        onCreate={() => setCreating(value => !value)}
+      />
+
+      <div className="char-sel-bar">
+        <div className="char-sel-actions">
+          <button
+            type="button"
+            className="char-action"
+            // `CSMW_BTN_MENU` shows `CSysMenuWin` (CharSelMainWin.cpp:227-230).
+            onClick={() => MuWindows.setOpen(PREGAME_MENU, true)}
+          >
+            <MenuIcon />
+            {t('characters.menu')}
+          </button>
+
+          <button
+            type="button"
+            className="char-action"
+            disabled={!hasFreeSlot(CharSelect.charactersList)}
+            onClick={() => setCreating(value => !value)}
+          >
+            <PlusIcon />
+            {t('characters.create')}
+          </button>
+
+          <button
+            type="button"
+            className="char-action is-primary"
+            disabled={!selected || selecting}
+            onClick={onConnect}
+          >
+            <PlayIcon />
+            {t('characters.play')}
+          </button>
+
+          <button
+            type="button"
+            className="char-action is-danger"
+            disabled={!selected}
+            onClick={onDelete}
+          >
+            <TrashIcon />
+            {t('characters.delete')}
+          </button>
+        </div>
+
+        <p className="char-sel-hint">{hint}</p>
+      </div>
+
       <MsgWindow />
 
-      {}
       {creating && <CharMakeWin onClose={() => setCreating(false)} />}
     </div>
   );

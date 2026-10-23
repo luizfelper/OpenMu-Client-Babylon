@@ -9,50 +9,30 @@ import { Session } from '@/modules/session';
 import { MsgBox } from '@/controllers/interface';
 import { MAX_PASSWORD_LENGTH, MAX_USERNAME_LENGTH } from '@/modules/servers/serverAccounts';
 import { registerApiUrl, registerUrl } from '@/modules/servers/serverServices';
-import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
-import { MuText, TEXT_COLOR } from '@/controllers/interface/components/mu_text';
 import { MuLogo } from '@/controllers/interface/components/mu_logo';
-import { MuButton } from '@/controllers/interface/components/mu_button';
 import { RegisterWindow } from './registerWindow';
 
 const WIN_WIDTH = 329;
 const WIN_HEIGHT = 245;
 
-const INPUT_WIDTH = 156;
-const INPUT_HEIGHT = 23;
-const INPUT_X = 109;
-const ACCOUNT_Y = 106;
-const PASSWORD_Y = 131;
+const INPUT_X = 110;
+const ACCOUNT_Y = 86;
+const PASSWORD_Y = 116;
 
-const TEXT_INSET_X = 6;
-const TEXT_INSET_Y = 6;
-
-const BUTTON_WIDTH = 54;
-const BUTTON_HEIGHT = 30;
 const BUTTON_Y = 178;
-const OK_X = 150;
-const CANCEL_X = 211;
+const OK_X = 167;
+const CANCEL_X = 237;
 
-const CHECK_SIZE = 16;
-const CHECK_X = 109;
-const CHECK_Y = 156;
+const CHECK_X = 110;
+const CHECK_Y = 148;
 
 const LABEL_X = 30;
 
-/**
- * The signup text, on the checkbox row and left of it. That band is the only
- * flat art left in the window - the frame's dragons take both bottom corners,
- * so the space beside the buttons is not the empty half it looks like - and
- * text rather than a button keeps it what it is: the way out of this window,
- * not another thing to press before logging in.
- *
- * It leaves about 85px before the checkbox, which is what caps how long the
- * translations of it may be.
- */
-const REGISTER = { x: 22, y: CHECK_Y + 3 };
+/** Centred under the buttons, in the empty band the old dragons used to fill. */
+const REGISTER = { x: 0, y: 224 };
 
-/** `CLoginWin::Render`: the server line in `g_hFixFont` at (111, 80). */
-const SERVER_LINE = { x: 111, y: 80 };
+/** `CLoginWin::Render`: the server line, now centred under the title bar. */
+const SERVER_LINE = { x: 0, y: 58 };
 
 const onCancelClicked = () => Session.cancelLogin();
 
@@ -149,25 +129,21 @@ export const LoginPage = observer(() => {
     <div className="login-page">
       <MuLogo />
 
-      <MuSpriteFrame
-        file="login_back.OZT"
-        width={WIN_WIDTH}
-        height={WIN_HEIGHT}
-        className="login-win"
-      >
+      <div className="login-win" style={{ width: WIN_WIDTH, height: WIN_HEIGHT }}>
+        <div className="login-title">{t('login.title')}</div>
+
         {/* GlobalText 460: "%s Server %d" - the server picked on the list. */}
         {Servers.selectedServer && (
-          <MuText
-            face="fix"
+          <span
             className="login-server-line"
             style={{ left: SERVER_LINE.x, top: SERVER_LINE.y }}
-            text={
-              Servers.selectedServer.channelName
-                ? `${Servers.selectedServer.name} - ${Servers.selectedServer.channelName}`
-                : `${Servers.selectedServer.name} Ch. ${Servers.selectedServer.channel}`
-            }
-          />
+          >
+            {Servers.selectedServer.channelName
+              ? `${Servers.selectedServer.name} - ${Servers.selectedServer.channelName}`
+              : `${Servers.selectedServer.name} Ch. ${Servers.selectedServer.channel}`}
+          </span>
         )}
+
         <form
           ref={form}
           onSubmit={e => {
@@ -175,106 +151,79 @@ export const LoginPage = observer(() => {
             onLoginClicked();
           }}
         >
-          <span className="login-label" style={{ left: LABEL_X, top: 113 }}>
+          <span className="login-label" style={{ left: LABEL_X, top: 92 }}>
             {t('login.id')}
           </span>
-          <span className="login-label" style={{ left: LABEL_X, top: 139 }}>
+          <span className="login-label" style={{ left: LABEL_X, top: 122 }}>
             {t('login.password')}
           </span>
 
-          <MuSpriteFrame
-            file="login_me.OZT"
-            width={INPUT_WIDTH}
-            height={INPUT_HEIGHT}
-            style={{ position: 'absolute', left: INPUT_X, top: ACCOUNT_Y }}
-          >
-            {/* An ID is already there after a signup, or after "remember me":
-                the field still to fill is the password. */}
-            <input
-              className="login-input"
-              type="text"
-              autoFocus={!Session.username}
-              value={Session.username}
-              onChange={e => {
-                Session.username = e.target.value;
-              }}
-              maxLength={MAX_USERNAME_LENGTH}
-              style={{ paddingLeft: TEXT_INSET_X, paddingTop: TEXT_INSET_Y }}
-            />
-          </MuSpriteFrame>
-
-          <MuSpriteFrame
-            file="login_me.OZT"
-            width={INPUT_WIDTH}
-            height={INPUT_HEIGHT}
-            style={{ position: 'absolute', left: INPUT_X, top: PASSWORD_Y }}
-          >
-            {/* Empty with a saved login: OK sends the login token instead (improvement loginTokens). */}
-            <input
-              className="login-input"
-              type="password"
-              autoFocus={!!Session.username}
-              placeholder={Session.savedToken ? t('login.savedLogin') : undefined}
-              value={Session.password}
-              onChange={e => {
-                Session.password = e.target.value;
-              }}
-              maxLength={MAX_PASSWORD_LENGTH}
-              style={{ paddingLeft: TEXT_INSET_X, paddingTop: TEXT_INSET_Y }}
-            />
-          </MuSpriteFrame>
-
-          {}
-          <MuSpriteFrame
-            file="op2_ch.OZT"
-            y={Session.rememberLogin ? CHECK_SIZE : 0}
-            width={CHECK_SIZE}
-            height={CHECK_SIZE}
-            style={{
-              position: 'absolute',
-              left: CHECK_X,
-              top: CHECK_Y,
-              cursor: 'pointer',
-              pointerEvents: 'auto',
+          {/* An ID is already there after a signup, or after "remember me":
+              the field still to fill is the password. */}
+          <input
+            className="login-input"
+            type="text"
+            autoFocus={!Session.username}
+            spellCheck={false}
+            value={Session.username}
+            onChange={e => {
+              Session.username = e.target.value;
             }}
-            onClick={uiClick(() => (Session.rememberLogin = !Session.rememberLogin))}
+            maxLength={MAX_USERNAME_LENGTH}
+            style={{ left: INPUT_X, top: ACCOUNT_Y }}
           />
-          <span
-            className="login-label login-remember"
-            style={{ left: 130, top: 159 }}
-            onClick={uiClick(() => (Session.rememberLogin = !Session.rememberLogin))}
-          >
-            {t('login.rememberMe')}
-          </span>
 
-          <MuButton
-            file="message_ok_b_all.OZT"
-            width={BUTTON_WIDTH}
-            height={BUTTON_HEIGHT}
-            frames={{ up: 0, active: 1, down: 2 }}
-            color={TEXT_COLOR.brightGray}
-            activeColor={TEXT_COLOR.white}
+          {/* Empty with a saved login: OK sends the login token instead (improvement loginTokens). */}
+          <input
+            className="login-input"
+            type="password"
+            autoFocus={!!Session.username}
+            placeholder={Session.savedToken ? t('login.savedLogin') : undefined}
+            value={Session.password}
+            onChange={e => {
+              Session.password = e.target.value;
+            }}
+            maxLength={MAX_PASSWORD_LENGTH}
+            style={{ left: INPUT_X, top: PASSWORD_Y }}
+          />
+
+          <label
+            className="login-remember"
+            style={{ left: CHECK_X, top: CHECK_Y }}
+          >
+            <input
+              type="checkbox"
+              checked={Session.rememberLogin}
+              onChange={uiClick(() => (Session.rememberLogin = !Session.rememberLogin))}
+            />
+            <span className="login-check" aria-hidden="true" />
+            <span className="login-remember-text">{t('login.rememberMe')}</span>
+          </label>
+
+          <button
+            type="button"
+            className="login-btn is-primary"
             disabled={Session.loginProcessing}
             onClick={onLoginClicked}
-            style={{ position: 'absolute', left: OK_X, top: BUTTON_Y }}
-          />
-          <MuButton
-            file="loding_cancel_b_all.OZT"
-            width={BUTTON_WIDTH}
-            height={BUTTON_HEIGHT}
-            frames={{ up: 0, active: 1, down: 2 }}
-            color={TEXT_COLOR.brightGray}
-            activeColor={TEXT_COLOR.white}
+            style={{ left: OK_X, top: BUTTON_Y }}
+          >
+            {t('login.title')}
+          </button>
+          <button
+            type="button"
+            className="login-btn"
             onClick={onCancelClicked}
-            style={{ position: 'absolute', left: CANCEL_X, top: BUTTON_Y }}
-          />
+            style={{ left: CANCEL_X, top: BUTTON_Y }}
+          >
+            {t('login.clear')}
+          </button>
 
           {/* Swaps this window for the register one. Nothing navigates: the
               scene behind stays where it is, which is the point. */}
           {!!signupApi && (
             <span
               className="login-register"
-              style={{ left: REGISTER.x, top: REGISTER.y }}
+              style={{ top: REGISTER.y }}
               onClick={uiClick(openRegister)}
             >
               {t('login.createAccount')}
@@ -289,14 +238,13 @@ export const LoginPage = observer(() => {
               href={signupPage}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ left: REGISTER.x, top: REGISTER.y }}
+              style={{ top: REGISTER.y }}
               onClick={uiClick()}
             >
               {t('login.createAccount')}
             </a>
           )}
 
-          {}
           <button type="submit" className="login-submit" tabIndex={-1} />
         </form>
 
@@ -305,7 +253,7 @@ export const LoginPage = observer(() => {
         )}
 
         {!Session.loginError && !!notice && <p className="login-notice">{notice}</p>}
-      </MuSpriteFrame>
+      </div>
     </div>
   );
 });

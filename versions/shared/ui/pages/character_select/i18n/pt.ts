@@ -8,6 +8,16 @@ export default {
   'characters.hint.select': 'Selecionar',
   'characters.hint.zoomIn': 'Aproximar',
   'characters.hint.zoomOut': 'Afastar',
+  'characters.chooseHero': 'Escolha seu herói',
+  'characters.slotCount': '{count} de {total}',
+  'characters.emptySlot': 'Espaço livre',
+  'characters.createCharacter': 'Criar personagem',
+  'characters.playHint': 'Enter ou duplo clique para jogar',
+  'characters.menu': 'Menu',
+  'characters.create': 'Criar',
+  'characters.play': 'Jogar',
+  'characters.delete': 'Excluir',
+  'characters.levelShort': 'NV',
   'class.desc.darkWizard':
     'Reino dos magos, descendente de Arka. Tem condição física fraca, mas um poder enorme, e usa livremente os feitiços de ataque.',
   'class.desc.darkKnight':

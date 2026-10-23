@@ -1,149 +1,504 @@
 @import (reference) '@/controllers/interface/components/mu_text/style.less';
+@import (reference) '@/controllers/interface/theme.less';
+
 .characters-page {
   position: absolute;
   inset: 0;
   .mu-font();
   user-select: none;
-}
 
-// `UIMng.cpp:264` places it at x = 22 and
-//   y = (567 / 600) * screenHeight - height - 11
-// which measured from the bottom is (33 / 600) * screenHeight + 11.
-.char-sel-bar {
-  position: absolute;
-  left: 22px;
-  right: 22px;
-  bottom: calc(5.5% + 11px);
-}
+  // The screen's own title: gold serif over the scene, with the slot count
+  // under it. It is chrome, not a button, so it never takes a click.
+  .char-sel-heading {
+    position: absolute;
+    left: 4%;
+    top: 3.5%;
+    pointer-events: none;
 
-// Loading / pick-a-character prompt, only while nothing is selected. The name
-// plate carries the rest.
-.char-sel-status {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    h1 {
+      margin: 0;
+      color: @mucura-gold;
+      font-family: @mucura-serif;
+      font-size: clamp(24px, 2.8vw, 48px);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      line-height: 1;
+      text-transform: uppercase;
+      text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.8),
+        0 0 22px rgba(231, 199, 119, 0.12);
+    }
 
-  color: #ffffff;
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
-  white-space: nowrap;
-  overflow: hidden;
-  pointer-events: none;
-}
+    p {
+      margin: 9px 0 0;
+      color: @mucura-beige;
+      font-family: @mucura-serif;
+      font-size: clamp(11px, 0.9vw, 15px);
+      letter-spacing: 0.18em;
+      line-height: 1;
+      text-transform: uppercase;
+      text-shadow: @mucura-shadow;
 
-// `CCharMakeWin`. `UIMng.cpp:269` puts it at
-//   ((screenWidth - 454) / 2, (screenHeight - 406) / 2)
-// i.e. dead centre. Everything inside is absolutely positioned from the
-// window's top-left, exactly as `SetPosition` does it - MU's UI is authored at
-// fixed pixel sizes and must never reflow.
-.char-make-win {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 20;
-  pointer-events: auto;
-}
+      &::before {
+        content: '— ';
+        color: rgba(231, 199, 119, 0.75);
+      }
+    }
+  }
 
-// The 410x335 hole `RenderCreateCharacter` draws the class model into. It has
-// no background of its own; it only has to not swallow clicks meant for the
-// scene behind it.
-.char-make-preview {
-  position: absolute;
-  left: 0;
-  top: 0;
-  pointer-events: none;
-}
+  // The five slots on the right. The 3D line-up still draws the heroes; these
+  // cards make the empty slots visible and give the roster a second, precise
+  // way to pick one.
+  .char-roster-panel {
+    position: absolute;
+    right: 3.2%;
+    top: 29%;
+    width: clamp(250px, 23vw, 340px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    box-sizing: border-box;
 
-// `m_asprBack[CMW_SPR_STAT]` and `[CMW_SPR_DESC]`: untextured quads, black at
-// alpha 143/255, drawn by the sprite pipeline with no border or gradient.
-.char-make-panel {
-  position: absolute;
-  pointer-events: none;
-}
+    background: rgba(7, 5, 5, 0.58);
+    border: 1px solid rgba(107, 20, 20, 0.85);
+    border-radius: 6px;
+    box-shadow:
+      0 14px 34px rgba(0, 0, 0, 0.5),
+      inset 0 0 0 1px rgba(231, 199, 119, 0.05);
+    backdrop-filter: blur(2px);
 
-// `RenderControls` switches to `g_hFixFont` for the stats and the description,
-// so both are monospaced in the original.
-.char-make-stat,
-.char-make-desc {
-  position: absolute;
-  color: #ffffff;
-  font-family: 'Courier New', Consolas, monospace;
-  font-size: 11px;
-  line-height: 1;
-  white-space: nowrap;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
-  pointer-events: none;
-}
+    pointer-events: auto;
+  }
 
-// `CLRDW_ORANGE` = ARGB(255, 255, 180, 0) (`UIBaseDef.h:16`).
-.char-make-stat-value {
-  color: #ffb400;
-}
+  .char-roster-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 64px;
+    padding: 8px 12px;
+    box-sizing: border-box;
 
-// The `cha_id` plate is the field's background, so the input itself is
-// invisible chrome sitting on top of it, sized to `InputTextWidth`.
-.char-make-input {
-  position: absolute;
-  height: 14px;
-  padding: 0;
-  box-sizing: border-box;
-  pointer-events: auto;
+    background: linear-gradient(90deg, rgba(42, 9, 8, 0.55), rgba(10, 7, 7, 0.68));
+    border: 1px solid rgba(231, 199, 119, 0.18);
+    border-radius: 4px;
 
-  background: transparent;
-  border: none;
-  outline: none;
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      background 120ms ease,
+      box-shadow 120ms ease;
 
-  color: #ffffff;
-  font-family: inherit;
-  font-size: 12px;
-  line-height: 1;
-}
+    &:hover:not(:disabled) {
+      border-color: rgba(231, 199, 119, 0.5);
+      background: linear-gradient(90deg, rgba(62, 14, 10, 0.62), rgba(12, 8, 7, 0.72));
+    }
 
-// Name plate over the hovered (else focused) line-up character. Positioned
-// each frame by CharacterSelectionPlate via `transform`; translucent black
-// panel.
-.char-sel-plate {
-  position: absolute;
-  left: 0;
-  top: 0;
-  padding: 4px 12px;
-  background: rgba(0, 0, 0, 0.56);
-  border: 1px solid rgba(255, 238, 193, 0.35);
-  color: #e2e2e2;
-  text-align: center;
-  white-space: nowrap;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
-  pointer-events: none;
+    &.is-selected {
+      border-color: @mucura-gold;
+      background: linear-gradient(90deg, rgba(86, 18, 13, 0.68), rgba(12, 8, 7, 0.74));
+      box-shadow:
+        0 0 0 1px rgba(231, 199, 119, 0.25),
+        0 0 18px rgba(196, 154, 69, 0.14);
+    }
 
-  &[hidden] {
-    display: none;
+    &.is-empty {
+      border-style: dashed;
+      border-color: rgba(231, 199, 119, 0.3);
+      background: rgba(0, 0, 0, 0.24);
+
+      .char-roster-name {
+        color: @mucura-beige-dim;
+      }
+
+      &:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  .char-roster-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 38px;
+    height: 38px;
+    box-sizing: border-box;
+    border-radius: 50%;
+
+    background: radial-gradient(circle at 35% 28%, #a83226, #5c0d0a 72%);
+    border: 1px solid #c49a45;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.55);
+
+    color: #f1d99a;
+    font-family: @mucura-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-shadow: @mucura-shadow;
+
+    &.is-empty {
+      background: transparent;
+      border: 1px dashed rgba(231, 199, 119, 0.5);
+      box-shadow: none;
+      color: @mucura-gold;
+      font-size: 22px;
+      font-weight: 400;
+    }
+  }
+
+  .char-roster-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .char-roster-name {
+    color: @mucura-beige;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: @mucura-shadow;
+  }
+
+  .char-roster-class {
+    color: @mucura-beige-dim;
+    font-size: 11px;
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .char-roster-level {
+    flex: none;
+    color: @mucura-gold;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+
+    small {
+      margin-right: 3px;
+      color: @mucura-beige-dim;
+      font-size: 8px;
+      letter-spacing: 0.06em;
+    }
+  }
+
+  // The bottom action bar: centered, four text buttons over a hint.
+  .char-sel-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 5.5%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    pointer-events: none;
+  }
+
+  .char-sel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    pointer-events: auto;
+  }
+
+  .char-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 100px;
+    height: 38px;
+    padding: 0 18px;
+    box-sizing: border-box;
+
+    background: rgba(10, 7, 7, 0.82);
+    border: 1px solid rgba(231, 199, 119, 0.35);
+    border-radius: 4px;
+
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: @mucura-shadow;
+    cursor: pointer;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease,
+      background 120ms ease,
+      box-shadow 120ms ease;
+
+    &:hover:not(:disabled) {
+      border-color: @mucura-gold;
+      color: @mucura-gold;
+      background: rgba(38, 12, 10, 0.82);
+    }
+
+    &.is-primary {
+      min-width: 132px;
+      background: linear-gradient(180deg, #d8b25a, #a67c2d);
+      border-color: #f0d48a;
+      color: #241307;
+      text-shadow: 0 1px 0 rgba(255, 235, 190, 0.4);
+      box-shadow:
+        0 0 20px rgba(216, 178, 90, 0.28),
+        inset 0 1px 0 rgba(255, 240, 200, 0.55);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(180deg, #ecd07e, #bb8d36);
+        color: #1b0d04;
+        border-color: #ffe3a0;
+      }
+    }
+
+    &.is-danger {
+      border-color: rgba(141, 42, 34, 0.8);
+      color: #e8a09a;
+
+      &:hover:not(:disabled) {
+        border-color: #d76a5d;
+        color: #ffb3a8;
+        background: rgba(60, 12, 10, 0.82);
+      }
+    }
+
+    &:disabled {
+      opacity: 0.38;
+      cursor: default;
+    }
+  }
+
+  .char-action-icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .char-sel-hint {
+    margin: 0;
+    color: @mucura-beige-dim;
+    font-family: @mucura-serif;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    text-shadow: @mucura-shadow;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  // Name plate over the hovered (else focused) line-up character. Positioned
+  // each frame by CharacterSelectionPlate via `transform`.
+  .char-sel-plate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 5px 13px;
+    background: rgba(8, 5, 5, 0.82);
+    border: 1px solid rgba(231, 199, 119, 0.45);
+    border-radius: 4px;
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: @mucura-shadow;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .char-sel-plate-name {
+    color: @mucura-gold;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .char-sel-plate-info {
+    color: @mucura-beige;
+    font-size: 11px;
+  }
+
+  .char-sel-plate-hint {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 3px;
+    color: @mucura-gold-dim;
+    font-size: 10px;
+    opacity: 0.85;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+  }
+
+  // `CCharMakeWin`. `UIMng.cpp:269` puts it at
+  //   ((screenWidth - 454) / 2, (screenHeight - 406) / 2)
+  // i.e. dead centre. Everything inside is absolutely positioned from the
+  // window's top-left, exactly as `SetPosition` does it - MU's UI is authored at
+  // fixed pixel sizes and must never reflow.
+  .char-make-win {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    pointer-events: auto;
+  }
+
+  // The 410x335 hole `RenderCreateCharacter` draws the class model into. It has
+  // no background of its own; it only has to not swallow clicks meant for the
+  // scene behind it.
+  .char-make-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+  }
+
+  // `m_asprBack[CMW_SPR_STAT]` and `[CMW_SPR_DESC]`: the original's untextured
+  // black quads, now the same black glass as every other MUCURA panel.
+  .char-make-panel {
+    position: absolute;
+    box-sizing: border-box;
+    background: rgba(8, 5, 5, 0.86);
+    border: 1px solid @mucura-red;
+    border-radius: 4px;
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.5),
+      inset 0 0 0 1px rgba(231, 199, 119, 0.07);
+    pointer-events: none;
+  }
+
+  // `RenderControls` switches to `g_hFixFont` for the stats and the description,
+  // so both are monospaced in the original.
+  .char-make-stat,
+  .char-make-desc {
+    position: absolute;
+    color: @mucura-beige;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+    text-shadow: @mucura-shadow;
+    pointer-events: none;
+  }
+
+  // `CLRDW_ORANGE` = ARGB(255, 255, 180, 0) (`UIBaseDef.h:16`).
+  .char-make-stat-value {
+    color: @mucura-gold;
+  }
+
+  // The `cha_id` plate is the field's background, so the input itself is
+  // invisible chrome sitting on top of it, sized to `InputTextWidth`.
+  .char-make-input {
+    position: absolute;
+    height: 16px;
+    padding: 0 5px;
+    box-sizing: border-box;
+    pointer-events: auto;
+
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid #5c4a32;
+    border-radius: 2px;
+    outline: none;
+
+    color: @mucura-beige;
+    font-family: @mucura-serif;
+    font-size: 12px;
+    line-height: 1;
+
+    &:focus {
+      border-color: @mucura-gold;
+    }
   }
 }
 
-.char-sel-plate-name {
-  font-size: 13px;
-  letter-spacing: 0.08em;
+@media (max-width: 900px) {
+  .characters-page {
+    .char-roster-panel {
+      right: 2%;
+      width: 220px;
+      top: 27%;
+    }
+
+    .char-roster-card {
+      min-height: 54px;
+      gap: 9px;
+      padding: 6px 9px;
+    }
+
+    .char-roster-badge {
+      width: 32px;
+      height: 32px;
+      font-size: 11px;
+    }
+
+    .char-sel-heading h1 {
+      font-size: clamp(20px, 3.4vw, 30px);
+    }
+  }
 }
 
-.char-sel-plate-info {
-  font-size: 11px;
-}
+@media (max-width: 720px) {
+  .characters-page {
+    // The line-up is the roster on a phone; the cards would cover it.
+    .char-roster-panel {
+      display: none;
+    }
 
-.char-sel-plate-hint {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 3px;
-  font-size: 10px;
-  color: #ffd927;
-  opacity: 0.85;
+    .char-sel-bar {
+      bottom: 4%;
+    }
 
-  span {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
+    .char-action {
+      min-width: 0;
+      height: 34px;
+      padding: 0 12px;
+      font-size: 11px;
+    }
+
+    .char-action.is-primary {
+      min-width: 96px;
+    }
+
+    .char-sel-hint {
+      font-size: 10px;
+    }
   }
 }

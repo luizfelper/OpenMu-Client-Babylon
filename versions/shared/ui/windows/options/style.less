@@ -1,9 +1,10 @@
 @import (reference) '@/controllers/interface/components/mu_text/style.less';
+@import (reference) '@/controllers/interface/theme.less';
 
-@gold: #e8c877;
-@gold-dim: #b9a87e;
-@text: #e2e2e2;
-@shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+@gold: @mucura-gold;
+@gold-dim: @mucura-beige-dim;
+@text: @mucura-beige;
+@shadow: @mucura-shadow;
 
 .options-window-page {
   position: absolute;
@@ -21,25 +22,67 @@
     pointer-events: auto;
   }
 
-  // Over the dark bar of `op2_back1`, and the handle the window is dragged by.
-  .options-titlebar {
+  .options-frame {
     position: absolute;
     left: 0;
     top: 0;
+    box-sizing: border-box;
+    background: @mucura-panel;
+    border: 1px solid @mucura-red;
+    border-radius: 6px;
+    box-shadow:
+      0 18px 40px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(231, 199, 119, 0.08);
+    pointer-events: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      top: 5px;
+      height: 30px;
+      .mucura-title-bar();
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 7px;
+      right: 7px;
+      top: 36px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(231, 199, 119, 0.45),
+        transparent
+      );
+    }
+  }
+
+  // Over the red bar of the frame, and the handle the window is dragged by.
+  .options-titlebar {
+    position: absolute;
+    left: 0;
+    top: 5px;
     height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
-    font-size: 12px;
-    letter-spacing: 1px;
+    color: @mucura-gold;
+    font-family: @mucura-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     text-shadow: @shadow;
     cursor: move;
   }
 
   // The inset tables the rail, the page and the help strip sit in.
   .options-panel {
-    background: rgba(0, 0, 0, 0.38);
+    background: rgba(8, 5, 5, 0.62);
   }
 
   .options-rail {
@@ -585,6 +628,40 @@
     color: #ffffff;
     font-size: 11px;
     text-shadow: @shadow;
+  }
+}
+
+// The options buttons are MUCURA text buttons: the sprite art stays in the DOM
+// only for its hit area; the skin is the same dark red glass as the system menu.
+.options-window-page {
+  .mucura-options-button {
+    background-image: none !important;
+    background: linear-gradient(180deg, rgba(74, 16, 12, 0.6), rgba(18, 8, 7, 0.82)) !important;
+    border: 1px solid rgba(231, 199, 119, 0.3) !important;
+    border-radius: 3px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 200, 150, 0.08);
+
+    &:hover {
+      background: linear-gradient(180deg, rgba(112, 26, 18, 0.7), rgba(24, 9, 8, 0.86)) !important;
+      border-color: @mucura-gold !important;
+    }
+  }
+}
+
+// The options confirmation box: the same glass as every other MUCURA dialog.
+.options-exit-confirm {
+  .mucura-confirm-frame {
+    background-image: none !important;
+    background: @mucura-panel;
+    border: 1px solid @mucura-red;
+    border-radius: 5px;
+    box-shadow:
+      0 14px 32px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(231, 199, 119, 0.08);
+  }
+
+  .options-exit-text {
+    color: @text;
   }
 }
 

@@ -1,0 +1,21 @@
+@import (reference) '@/controllers/interface/theme.less';
+
+// The shared three-slice message box, now the same black glass as the rest of
+// MUCURA's menus. The old art is kept in the DOM only so the box's callers can
+// keep their geometry; the skin itself is this border.
+.mu-msgbox-frame {
+  position: relative;
+  box-sizing: border-box;
+  background: @mucura-panel;
+  border: 1px solid @mucura-red;
+  border-radius: 5px;
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(231, 199, 119, 0.08);
+  color: @mucura-beige;
+  font-family: @mucura-serif;
+}
+
+.mu-msgbox-art {
+  display: none;
+}
