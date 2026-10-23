@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'پہنے ہوئے سے موازنہ',
   'options.eventTimers': 'ایونٹ ٹائمر',
   'options.questTracker': 'مہم ٹریکر',
+  'options.targetHealthBarPosition': 'عفریت کی صحت کی پٹی',
+  'options.targetHealthBarPosition.top': 'اسکرین کے اوپر',
+  'options.targetHealthBarPosition.head': 'عفریت کے اوپر',
   'options.stateWarnings': 'انتباہی اطلاعات',
   'options.lowHealthWarning': 'کم HP کا انتباہ',
   'options.lowHealthPercent': 'کم HP کی حد',
@@ -351,6 +354,8 @@ export default {
     'اوپر دائیں کونے میں ایک چھوٹا نقشہ۔ چھوٹے نقشے کی کلید اب بھی پورا نقشہ کھولتی ہے۔',
   'options.help.eventTimers': 'اگلے Blood Castle، Devil Square اور Chaos Castle کی الٹی گنتی۔',
   'options.help.questTracker': 'آپ کی جاری مہمات اور ان کی ہلاکتوں کی گنتی، اسکرین پر۔',
+  'options.help.targetHealthBarPosition':
+    'جس عفریت پر حملہ کر رہے ہیں اس کی صحت کی پٹی کہاں دکھے: اس کے سر کے اوپر یا اسکرین کے اوپر۔',
   'options.help.performanceReadout': 'فریم ریٹ، فریم ٹائم اور پنگ، کونے میں ایک چھوٹے خانے میں۔',
   'options.help.fullscreen':
     'پوری اسکرین اور عام براؤزر ونڈو کے درمیان بدلتا ہے۔ F11 بھی یہی کرتا ہے۔',

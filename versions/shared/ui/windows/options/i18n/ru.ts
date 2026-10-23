@@ -77,6 +77,9 @@ export default {
   'options.compareTooltips': 'Сравнение с надетым',
   'options.eventTimers': 'Таймеры событий',
   'options.questTracker': 'Отслеживание заданий',
+  'options.targetHealthBarPosition': 'Полоса здоровья монстра',
+  'options.targetHealthBarPosition.top': 'Сверху экрана',
+  'options.targetHealthBarPosition.head': 'Над монстром',
   'options.stateWarnings': 'Предупреждения',
   'options.lowHealthWarning': 'Предупреждение о жизни',
   'options.lowHealthPercent': 'Порог жизни',
@@ -403,6 +406,8 @@ export default {
     'Обратный отсчёт до следующих Blood Castle, Devil Square и Chaos Castle.',
   'options.help.questTracker':
     'Текущие задания и счётчики убийств на экране.',
+  'options.help.targetHealthBarPosition':
+    'Где показывать полосу здоровья монстра, которого вы атакуете: над его головой или в верхней части экрана.',
   'options.help.performanceReadout':
     'Частота кадров, время кадра и пинг в маленьком окошке в углу.',
   'options.help.fullscreen':

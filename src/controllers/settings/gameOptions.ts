@@ -466,6 +466,12 @@ export type GameOptions = {
    */
   questTracker: boolean;
   /**
+   * Where the health bar of the monster being attacked shows (ours): 0 across
+   * the top of the screen, as the original did / 1 over the monster's own head.
+   * The bar is the same either way - the client counts the damage it sees.
+   */
+  targetHealthBarPosition: number;
+  /**
    * Item names in English whatever the interface language is. The language
    * packs translate them (`Data/Local/<pack>/item_<lang>.bmd`), which reads
    * well but leaves a trader unable to match what a forum or a price list
@@ -580,6 +586,9 @@ const RANGES: Partial<Record<keyof GameOptions, readonly [number, number]>> = {
   // Literal for the same reason: `CHAT_EMOJI_SIZE_MAX`.
   chatEmojiSize: [0, 3],
   partyInviteReply: [0, 2],
+  // Literal rather than a `target_health_bar` constant: the HUD imports this
+  // module, so naming it here would close an import cycle.
+  targetHealthBarPosition: [0, 1],
   lowHealthPercent: [LOW_VITAL.min, LOW_VITAL.max],
   lowManaPercent: [LOW_VITAL.min, LOW_VITAL.max],
   uiScale: [0, UI_SCALE_MAX],
@@ -721,6 +730,7 @@ const DEFAULTS: GameOptions = {
   compareTooltips: 2,
   eventTimers: true,
   questTracker: true,
+  targetHealthBarPosition: 1,
   englishItemNames: false,
   helperItemFilters: false,
   partyInviteReply: 0,

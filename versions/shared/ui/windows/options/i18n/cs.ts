@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Porovnat s nasazeným',
   'options.eventTimers': 'Časovače událostí',
   'options.questTracker': 'Sledování úkolů',
+  'options.targetHealthBarPosition': 'Ukazatel života nestvůry',
+  'options.targetHealthBarPosition.top': 'Nahoře na obrazovce',
+  'options.targetHealthBarPosition.head': 'Nad nestvůrou',
   'options.stateWarnings': 'Varování',
   'options.lowHealthWarning': 'Varování při nízkém zdraví',
   'options.lowHealthPercent': 'Práh zdraví',
@@ -324,6 +327,8 @@ export default {
     'Malá mapa v pravém horním rohu. Klávesa Minimapa dál otevírá celou mapu.',
   'options.help.eventTimers': 'Odpočet do příštího Blood Castle, Devil Square a Chaos Castle.',
   'options.help.questTracker': 'Tvoje probíhající úkoly a počty zabitých příšer na obrazovce.',
+  'options.help.targetHealthBarPosition':
+    'Kde se ukazuje ukazatel života nestvůry, kterou útočíte: nad její hlavou, nebo v horní části obrazovky.',
   'options.help.performanceReadout':
     'Snímková frekvence, doba snímku a ping v malém ukazateli v rohu.',
   'options.help.fullscreen':

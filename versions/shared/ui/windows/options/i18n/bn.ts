@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'পরিহিত আইটেমের সাথে তুলনা',
   'options.eventTimers': 'ইভেন্ট টাইমার',
   'options.questTracker': 'কোয়েস্ট ট্র্যাকার',
+  'options.targetHealthBarPosition': 'দানবের স্বাস্থ্য বার',
+  'options.targetHealthBarPosition.top': 'স্ক্রিনের উপরে',
+  'options.targetHealthBarPosition.head': 'দানবের উপরে',
   'options.stateWarnings': 'সতর্কবার্তা',
   'options.lowHealthWarning': 'জীবন কম হলে সতর্কতা',
   'options.lowHealthPercent': 'জীবনের সীমা',
@@ -321,6 +324,8 @@ export default {
   'options.help.eventTimers':
     'পরবর্তী Blood Castle, Devil Square ও Chaos Castle পর্যন্ত কাউন্টডাউন।',
   'options.help.questTracker': 'আপনার চলমান কোয়েস্ট ও সেগুলোর হত্যার হিসাব, স্ক্রিনে।',
+  'options.help.targetHealthBarPosition':
+    'আপনি যে দানবে আক্রমণ করছেন তার স্বাস্থ্য বার কোথায় দেখাবে: তার মাথার উপরে বা স্ক্রিনের উপরে।',
   'options.help.performanceReadout': 'ফ্রেম রেট, ফ্রেম টাইম ও পিং, কোণের একটি ছোট ঘরে।',
   'options.help.fullscreen':
     'ফুলস্ক্রিন ও সাধারণ ব্রাউজার উইন্ডোর মধ্যে বদল করে। F11 চাপলেও একই কাজ হয়।',

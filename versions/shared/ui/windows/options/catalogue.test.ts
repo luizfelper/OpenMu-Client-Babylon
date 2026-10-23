@@ -21,6 +21,20 @@ describe('the party invitations row', () => {
   });
 });
 
+// Ours: the monster health bar over the head by default, the screen top by choice.
+describe('the monster health bar row', () => {
+  it('picks the top of the screen or over the monster, over the head by default', async () => {
+    const row = rows.find(r => 'key' in r && r.key === 'targetHealthBarPosition');
+    if (!row || row.kind !== 'choice') throw new Error('no targetHealthBarPosition row');
+    expect([0, 1].map(row.display)).toEqual([
+      t('options.targetHealthBarPosition.top'),
+      t('options.targetHealthBarPosition.head'),
+    ]);
+    const { defaultGameOption } = await import('@/controllers/settings');
+    expect(defaultGameOption('targetHealthBarPosition')).toBe(1);
+  });
+});
+
 // Gameplay automation is the world's to allow (`server.json`): greyed and inert on the original.
 describe('the automation rows', () => {
   it('do nothing where the server does not allow them', () => {

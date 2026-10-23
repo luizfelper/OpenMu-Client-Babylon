@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'مقایسه با تجهیزات پوشیده',
   'options.eventTimers': 'زمان‌سنج رویدادها',
   'options.questTracker': 'ردیاب مأموریت',
+  'options.targetHealthBarPosition': 'نوار جان هیولا',
+  'options.targetHealthBarPosition.top': 'بالای صفحه',
+  'options.targetHealthBarPosition.head': 'بالای هیولا',
   'options.stateWarnings': 'اعلان‌های هشدار',
   'options.lowHealthWarning': 'هشدار کمبود جان',
   'options.lowHealthPercent': 'آستانه جان',
@@ -348,6 +351,8 @@ export default {
     'نقشه‌ای کوچک در گوشه بالا سمت راست. کلید نقشه کوچک همچنان نقشه کامل را باز می‌کند.',
   'options.help.eventTimers': 'شمارش معکوس تا Blood Castle، Devil Square و Chaos Castle بعدی.',
   'options.help.questTracker': 'مأموریت‌های جاری و شمار کشتارشان، روی صفحه.',
+  'options.help.targetHealthBarPosition':
+    'محل نمایش نوار جان هیولایی که به آن حمله می‌کنید: بالای سر آن یا بالای صفحه.',
   'options.help.performanceReadout': 'نرخ فریم، زمان فریم و پینگ در نمایشگری کوچک در گوشه.',
   'options.help.fullscreen':
     'میان حالت تمام‌صفحه و پنجره عادی مرورگر جابه‌جا می‌شود. F11 هم همین کار را می‌کند.',

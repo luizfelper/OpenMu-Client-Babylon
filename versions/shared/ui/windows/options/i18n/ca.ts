@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Compara amb l\'equipat',
   'options.eventTimers': 'Temporitzadors d\'esdeveniments',
   'options.questTracker': 'Seguiment de missions',
+  'options.targetHealthBarPosition': 'Barra de vida del monstre',
+  'options.targetHealthBarPosition.top': 'A la part superior',
+  'options.targetHealthBarPosition.head': 'Sobre el monstre',
   'options.stateWarnings': 'Avisos d\'estat',
   'options.lowHealthWarning': 'Avís de vida baixa',
   'options.lowHealthPercent': 'Llindar de vida',
@@ -343,6 +346,8 @@ export default {
     'Comptes enrere fins al pròxim Blood Castle, Devil Square i Chaos Castle.',
   'options.help.questTracker':
     'Les teves missions en curs i els monstres que portes morts, a la pantalla.',
+  'options.help.targetHealthBarPosition':
+    'On es mostra la barra de vida del monstre que ataques: sobre el seu cap o a la part superior de la pantalla.',
   'options.help.performanceReadout':
     'Fotogrames per segon, temps per fotograma i ping en un petit indicador a la cantonada.',
   'options.help.fullscreen':

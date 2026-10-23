@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'Compară cu ce e echipat',
   'options.eventTimers': 'Cronometre pentru evenimente',
   'options.questTracker': 'Urmărirea misiunilor',
+  'options.targetHealthBarPosition': 'Bara de viață a monstrului',
+  'options.targetHealthBarPosition.top': 'Sus pe ecran',
+  'options.targetHealthBarPosition.head': 'Deasupra monstrului',
   'options.stateWarnings': 'Avertismente',
   'options.lowHealthWarning': 'Avertizare viață scăzută',
   'options.lowHealthPercent': 'Prag viață',
@@ -382,6 +385,8 @@ export default {
   'options.help.eventTimers':
     'Numărătoare inversă până la următorul Blood Castle, Devil Square și Chaos Castle.',
   'options.help.questTracker': 'Misiunile în desfășurare și numărul de monștri uciși, pe ecran.',
+  'options.help.targetHealthBarPosition':
+    'Unde apare bara de viață a monstrului pe care îl ataci: deasupra capului sau în partea de sus a ecranului.',
   'options.help.performanceReadout':
     'FPS, timpul de cadru și ping-ul, într-un mic afișaj în colț.',
   'options.help.fullscreen':

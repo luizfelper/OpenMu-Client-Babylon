@@ -77,6 +77,9 @@ export default {
   'options.compareTooltips': '装備中と比較',
   'options.eventTimers': 'イベントタイマー',
   'options.questTracker': 'クエスト追跡',
+  'options.targetHealthBarPosition': 'モンスターの体力バー',
+  'options.targetHealthBarPosition.top': '画面上部',
+  'options.targetHealthBarPosition.head': 'モンスターの頭上',
   'options.stateWarnings': '警告表示',
   'options.lowHealthWarning': 'HP低下の警告',
   'options.lowHealthPercent': 'HPのしきい値',
@@ -315,6 +318,8 @@ export default {
   'options.help.minimapCorner': '右上の隅に小さな地図を表示します。「ミニマップ」キーでは今までどおり全体マップが開きます。',
   'options.help.eventTimers': '次のブラッドキャッスル、デビルスクエア、カオスキャッスルまでのカウントダウン。',
   'options.help.questTracker': '進行中のクエストと討伐数を画面に表示します。',
+  'options.help.targetHealthBarPosition':
+    '攻撃中のモンスターの体力バーを表示する場所：頭の上、または画面の上部。',
   'options.help.performanceReadout': 'フレームレート、フレーム時間、Ping を隅に小さく表示します。',
   'options.help.fullscreen': 'フルスクリーンと通常のブラウザウィンドウを切り替えます。F11 でも切り替えられます。',
   'options.help.install': 'ゲームを、専用のウィンドウとアイコンを持つアプリとしてインストールします。',

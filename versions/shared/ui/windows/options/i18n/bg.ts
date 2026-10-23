@@ -77,6 +77,9 @@ export default {
   'options.compareTooltips': 'Сравнение с носеното',
   'options.eventTimers': 'Таймери за събития',
   'options.questTracker': 'Проследяване на задачи',
+  'options.targetHealthBarPosition': 'Лента за живот на чудовището',
+  'options.targetHealthBarPosition.top': 'В горната част',
+  'options.targetHealthBarPosition.head': 'Над чудовището',
   'options.stateWarnings': 'Предупреждения',
   'options.lowHealthWarning': 'Предупреждение за живот',
   'options.lowHealthPercent': 'Праг на живота',
@@ -359,6 +362,8 @@ export default {
     'Малка карта в горния десен ъгъл. Клавишът Мини-карта пак отваря голямата карта.',
   'options.help.eventTimers': 'Обратно броене до следващите Blood Castle, Devil Square и Chaos Castle.',
   'options.help.questTracker': 'Текущите ти мисии и броячите им на убийства, показани на екрана.',
+  'options.help.targetHealthBarPosition':
+    'Къде да се показва лентата за живот на чудовището, което атакувате: над главата му или в горната част на екрана.',
   'options.help.performanceReadout': 'FPS, време за кадър и пинг в малко поле в ъгъла.',
   'options.help.fullscreen':
     'Превключва между цял екран и нормален прозорец на браузъра. F11 прави същото.',

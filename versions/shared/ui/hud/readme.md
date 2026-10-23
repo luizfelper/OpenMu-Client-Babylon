@@ -21,7 +21,7 @@ Always-on interface elements, one folder per element, same shape as a window. Re
 | `low_health_overlay` | low_health_overlay (world, 10) | red or blue screen-edge pulse at low health or mana | Hero, options |
 | `world_objects` | world_objects (world, 20) | drop names and tooltips (ALT), and hosts name tags, party bars, emoji bubbles | Ecs.world, drops, options |
 | `damage_numbers` | damage_numbers (world, 30) | floating damage, miss and shield numbers | `objectDamaged` events |
-| `target_health_bar` | target_health_bar (hud, 10) | the target's name and health bar | Ecs.world |
+| `target_health_bar` | target_health_bar (hud, 10) | the target's name and health bar, over its head or across the screen top (`targetHealthBarPosition`) | Ecs.world, GameOptions |
 | `map_name_banner` | map_name_banner (hud, 20) | the map name picture on entering a map | Loading.sceneLoading, events |
 | `perf_readout` | perf_readout (hud, 30) | frames, frame time and server round trip | Ecs.world, options |
 | `notices` | notices (hud, 40) | the centred notice stack | chat |

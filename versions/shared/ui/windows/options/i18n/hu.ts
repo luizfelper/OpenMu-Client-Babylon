@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Összevetés a viselttel',
   'options.eventTimers': 'Eseményidőzítők',
   'options.questTracker': 'Küldetéskövető',
+  'options.targetHealthBarPosition': 'Szörny életerő-sáv',
+  'options.targetHealthBarPosition.top': 'A képernyő tetején',
+  'options.targetHealthBarPosition.head': 'A szörny fölött',
   'options.stateWarnings': 'Figyelmeztetések',
   'options.lowHealthWarning': 'Figyelmeztetés alacsony életerőnél',
   'options.lowHealthPercent': 'Életerőküszöb',
@@ -331,6 +334,8 @@ export default {
   'options.help.eventTimers':
     'Visszaszámlálás a következő Blood Castle, Devil Square és Chaos Castle eseményig.',
   'options.help.questTracker': 'A futó küldetéseid és az ölésszámlálóik a képernyőn.',
+  'options.help.targetHealthBarPosition':
+    'Hol jelenjen meg a támadott szörny életerő-sávja: a feje fölött vagy a képernyő tetején.',
   'options.help.performanceReadout': 'Képkockasebesség, képkockaidő és ping egy kis sarokkijelzőn.',
   'options.help.fullscreen':
     'Vált a teljes képernyő és a normál böngészőablak között. Az F11 ugyanezt teszi.',

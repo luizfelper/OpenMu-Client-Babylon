@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Kuşanılanla karşılaştır',
   'options.eventTimers': 'Etkinlik sayaçları',
   'options.questTracker': 'Görev takibi',
+  'options.targetHealthBarPosition': 'Canavar can çubuğu',
+  'options.targetHealthBarPosition.top': 'Ekranın üstünde',
+  'options.targetHealthBarPosition.head': 'Canavarın üstünde',
   'options.stateWarnings': 'Uyarı bildirimleri',
   'options.lowHealthWarning': 'Düşük sağlık uyarısı',
   'options.lowHealthPercent': 'Sağlık eşiği',
@@ -332,6 +335,8 @@ export default {
   'options.help.eventTimers':
     'Bir sonraki Blood Castle, Devil Square ve Chaos Castle için geri sayımlar.',
   'options.help.questTracker': 'Devam eden görevlerin ve öldürme sayıları ekranda.',
+  'options.help.targetHealthBarPosition':
+    'Saldırdığın canavarın can çubuğunun nerede görüneceği: kafasının üstünde ya da ekranın üst kısmında.',
   'options.help.performanceReadout': 'Kare hızı, kare süresi ve ping köşede küçük bir göstergede.',
   'options.help.fullscreen':
     'Tam ekran ile normal tarayıcı penceresi arasında geçiş yapar. F11 de aynı işi yapar.',

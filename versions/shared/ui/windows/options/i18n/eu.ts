@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Konparatu jantzitakoarekin',
   'options.eventTimers': 'Ekitaldien tenporizadoreak',
   'options.questTracker': 'Misioen jarraipena',
+  'options.targetHealthBarPosition': 'Munstroaren bizitza-barra',
+  'options.targetHealthBarPosition.top': 'Pantailaren goiko aldean',
+  'options.targetHealthBarPosition.head': 'Munstroaren gainean',
   'options.stateWarnings': 'Abisu-oharrak',
   'options.lowHealthWarning': 'Bizitza baxuaren abisua',
   'options.lowHealthPercent': 'Bizitzaren muga',
@@ -341,6 +344,8 @@ export default {
   'options.help.eventTimers':
     'Hurrengo Blood Castle, Devil Square eta Chaos Castle ekitaldietarako atzerako kontaketak.',
   'options.help.questTracker': 'Abian dituzun misioak eta haien hilketa-kopuruak, pantailan.',
+  'options.help.targetHealthBarPosition':
+    'Non agertzen den erasotzen ari zaren munstroaren bizitza-barra: buruaren gainean edo pantailaren goiko aldean.',
   'options.help.performanceReadout':
     'Fotograma-tasa, fotograma-denbora eta ping-a izkinako adierazle txiki batean.',
   'options.help.fullscreen':

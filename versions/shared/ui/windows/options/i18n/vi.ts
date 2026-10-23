@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'So với đồ đang mặc',
   'options.eventTimers': 'Giờ sự kiện',
   'options.questTracker': 'Theo dõi nhiệm vụ',
+  'options.targetHealthBarPosition': 'Thanh máu quái vật',
+  'options.targetHealthBarPosition.top': 'Đầu màn hình',
+  'options.targetHealthBarPosition.head': 'Trên đầu quái vật',
   'options.stateWarnings': 'Thông báo cảnh báo',
   'options.lowHealthWarning': 'Cảnh báo máu thấp',
   'options.lowHealthPercent': 'Ngưỡng máu',
@@ -364,6 +367,8 @@ export default {
   'options.help.eventTimers':
     'Đếm ngược đến Blood Castle, Devil Square và Chaos Castle tiếp theo.',
   'options.help.questTracker': 'Nhiệm vụ đang làm và số quái đã hạ, hiện trên màn hình.',
+  'options.help.targetHealthBarPosition':
+    'Nơi hiển thị thanh máu của quái vật bạn đang tấn công: trên đầu nó hoặc ở đầu màn hình.',
   'options.help.performanceReadout':
     'Tốc độ khung hình, thời gian khung hình và ping trong một ô nhỏ ở góc.',
   'options.help.fullscreen':

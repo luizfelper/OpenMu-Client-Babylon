@@ -16,12 +16,12 @@ Format version: **1**
 | 0 | 1 | Format version. Anything else means a different table. |
 | 1 | 1 | Number of flag bytes that follow (currently 9). |
 | 2 | 9 | The on/off settings, one bit each, first in bit 0 of the first byte. |
-| 11 | 1 | Number of value bytes that follow (currently 64). |
-| 12 | 64 | The numeric settings, one byte each, each stored as value + 128. |
-| 76 | 2 | Language, two ASCII letters (`65 73` is `es`). |
-| 78 | 2 | Texture pack digest, `0000` when the original textures are in use. |
+| 11 | 1 | Number of value bytes that follow (currently 65). |
+| 12 | 65 | The numeric settings, one byte each, each stored as value + 128. |
+| 77 | 2 | Language, two ASCII letters (`65 73` is `es`). |
+| 79 | 2 | Texture pack digest, `0000` when the original textures are in use. |
 
-Total: **80 bytes**, 160 hex characters.
+Total: **81 bytes**, 162 hex characters.
 
 ## On/off settings
 
@@ -160,12 +160,13 @@ Each is one byte; subtract 128 to get the value. Index 0 is the first byte after
 | 55 | `stepsVolume` |
 | 56 | `styleStrength` |
 | 57 | `sunShafts` |
-| 58 | `toneMapper` |
-| 59 | `uiScale` |
-| 60 | `uiVolume` |
-| 61 | `upscale` |
-| 62 | `vignette` |
-| 63 | `volume` |
+| 58 | `targetHealthBarPosition` |
+| 59 | `toneMapper` |
+| 60 | `uiScale` |
+| 61 | `uiVolume` |
+| 62 | `upscale` |
+| 63 | `vignette` |
+| 64 | `volume` |
 
 ## Worked example
 

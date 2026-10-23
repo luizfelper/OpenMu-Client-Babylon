@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'पहने हुए से तुलना',
   'options.eventTimers': 'इवेंट टाइमर',
   'options.questTracker': 'क्वेस्ट ट्रैकर',
+  'options.targetHealthBarPosition': 'राक्षस की स्वास्थ्य पट्टी',
+  'options.targetHealthBarPosition.top': 'स्क्रीन के ऊपर',
+  'options.targetHealthBarPosition.head': 'राक्षस के ऊपर',
   'options.stateWarnings': 'चेतावनी सूचनाएं',
   'options.lowHealthWarning': 'कम HP की चेतावनी',
   'options.lowHealthPercent': 'HP की सीमा',
@@ -326,6 +329,8 @@ export default {
     'ऊपर दाएं कोने में एक छोटा नक्शा। मिनीमैप कुंजी अब भी पूरा नक्शा खोलती है।',
   'options.help.eventTimers': 'अगले Blood Castle, Devil Square और Chaos Castle की उलटी गिनती।',
   'options.help.questTracker': 'आपके चल रहे क्वेस्ट और उनकी शिकार गिनती, स्क्रीन पर।',
+  'options.help.targetHealthBarPosition':
+    'जिस राक्षस पर आप हमला कर रहे हैं उसकी स्वास्थ्य पट्टी कहाँ दिखे: उसके सिर के ऊपर या स्क्रीन के ऊपर।',
   'options.help.performanceReadout':
     'फ़्रेम रेट, फ़्रेम टाइम और पिंग, कोने के एक छोटे डिस्प्ले में।',
   'options.help.fullscreen':

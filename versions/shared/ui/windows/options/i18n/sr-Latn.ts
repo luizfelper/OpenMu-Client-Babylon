@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Uporedi sa opremljenim',
   'options.eventTimers': 'Tajmeri događaja',
   'options.questTracker': 'Praćenje zadataka',
+  'options.targetHealthBarPosition': 'Traka života čudovišta',
+  'options.targetHealthBarPosition.top': 'Na vrhu ekrana',
+  'options.targetHealthBarPosition.head': 'Iznad čudovišta',
   'options.stateWarnings': 'Upozorenja',
   'options.lowHealthWarning': 'Upozorenje o niskom zdravlju',
   'options.lowHealthPercent': 'Prag zdravlja',
@@ -320,6 +323,8 @@ export default {
   'options.help.eventTimers':
     'Odbrojavanje do sledećih događaja Blood Castle, Devil Square i Chaos Castle.',
   'options.help.questTracker': 'Tvoji aktivni zadaci i broj ubistava, na ekranu.',
+  'options.help.targetHealthBarPosition':
+    'Gde se prikazuje traka života čudovišta koje napadaš: iznad njegove glave ili na vrhu ekrana.',
   'options.help.performanceReadout':
     'Broj sličica u sekundi, vreme sličice i ping u malom polju u uglu.',
   'options.help.fullscreen':

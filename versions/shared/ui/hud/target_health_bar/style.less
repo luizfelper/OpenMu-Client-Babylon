@@ -47,3 +47,13 @@
     position: absolute;
   }
 }
+
+// Over the monster's head (`targetHealthBarPosition` 1): the transform is
+// written every frame by `usePositionOnScreen`, and the panel has no width of
+// its own, so the pieces' `left: 50%` lands on the projected head and the
+// half-width translate centres them there.
+.target-health-bar.over-head {
+  right: auto;
+  width: 0;
+  will-change: transform;
+}

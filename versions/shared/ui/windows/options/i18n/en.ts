@@ -78,6 +78,9 @@ const en = {
   'options.compareTooltips': 'Compare with worn',
   'options.eventTimers': 'Event timers',
   'options.questTracker': 'Quest tracker',
+  'options.targetHealthBarPosition': 'Monster health bar',
+  'options.targetHealthBarPosition.top': 'Top of the screen',
+  'options.targetHealthBarPosition.head': 'Over the monster',
   'options.stateWarnings': 'Warning notices',
   'options.lowHealthWarning': 'Low health warning',
   'options.lowHealthPercent': 'Health threshold',
@@ -401,6 +404,8 @@ const en = {
     'Countdowns to the next Blood Castle, Devil Square and Chaos Castle.',
   'options.help.questTracker':
     'Your running quests and their kill counts, on screen.',
+  'options.help.targetHealthBarPosition':
+    'Where the health bar of the monster you are attacking shows: over its head, or across the top of the screen.',
   'options.help.performanceReadout':
     'Frame rate, frame time and ping in a small corner readout.',
   'options.help.fullscreen':

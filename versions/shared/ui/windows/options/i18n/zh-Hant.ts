@@ -77,6 +77,9 @@ export default {
   'options.compareTooltips': '與已裝備的比較',
   'options.eventTimers': '活動計時器',
   'options.questTracker': '任務追蹤',
+  'options.targetHealthBarPosition': '怪物生命條',
+  'options.targetHealthBarPosition.top': '螢幕頂端',
+  'options.targetHealthBarPosition.head': '怪物頭頂',
   'options.stateWarnings': '警告提示',
   'options.lowHealthWarning': '生命值過低警告',
   'options.lowHealthPercent': '生命值門檻',
@@ -302,6 +305,8 @@ export default {
   'options.help.minimapCorner': '右上角的小地圖。小地圖鍵仍會開啟完整地圖。',
   'options.help.eventTimers': '距離下一場血色城堡、惡魔廣場與赤色要塞的倒數計時。',
   'options.help.questTracker': '在畫面上顯示進行中的任務與擊殺數。',
+  'options.help.targetHealthBarPosition':
+    '正在攻擊的怪物生命條顯示在哪裡：頭頂上方或螢幕頂端。',
   'options.help.performanceReadout': '在畫面角落以小字顯示影格率、影格時間與延遲。',
   'options.help.fullscreen': '在全螢幕與一般瀏覽器視窗之間切換。按 F11 效果相同。',
   'options.help.install': '將遊戲安裝為應用程式，擁有獨立的視窗與圖示。',

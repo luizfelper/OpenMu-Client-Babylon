@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Σύγκριση με τον εξοπλισμό',
   'options.eventTimers': 'Χρονόμετρα εκδηλώσεων',
   'options.questTracker': 'Παρακολούθηση αποστολών',
+  'options.targetHealthBarPosition': 'Μπάρα ζωής τέρατος',
+  'options.targetHealthBarPosition.top': 'Πάνω στην οθόνη',
+  'options.targetHealthBarPosition.head': 'Πάνω από το τέρας',
   'options.stateWarnings': 'Ειδοποιήσεις προειδοποίησης',
   'options.lowHealthWarning': 'Προειδοποίηση χαμηλής ζωής',
   'options.lowHealthPercent': 'Όριο ζωής',
@@ -337,6 +340,8 @@ export default {
   'options.help.eventTimers':
     'Αντίστροφη μέτρηση για το επόμενο Blood Castle, Devil Square και Chaos Castle.',
   'options.help.questTracker': 'Οι τρέχουσες αποστολές σας και οι εξοντώσεις τους, στην οθόνη.',
+  'options.help.targetHealthBarPosition':
+    'Πού εμφανίζεται η μπάρα ζωής του τέρατος στο οποίο επιτίθεσαι: πάνω από το κεφάλι του ή στο πάνω μέρος της οθόνης.',
   'options.help.performanceReadout':
     'Ρυθμός καρέ, χρόνος καρέ και ping σε μια μικρή ένδειξη στη γωνία.',
   'options.help.fullscreen':

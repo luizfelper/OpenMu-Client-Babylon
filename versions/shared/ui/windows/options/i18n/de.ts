@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'Mit Getragenem vergleichen',
   'options.eventTimers': 'Event-Timer',
   'options.questTracker': 'Quest-Verfolgung',
+  'options.targetHealthBarPosition': 'Lebensbalken des Monsters',
+  'options.targetHealthBarPosition.top': 'Oben am Bildschirm',
+  'options.targetHealthBarPosition.head': 'Über dem Monster',
   'options.stateWarnings': 'Warnhinweise',
   'options.lowHealthWarning': 'Warnung bei wenig Leben',
   'options.lowHealthPercent': 'Lebensgrenze',
@@ -407,6 +410,8 @@ export default {
     'Restzeit bis zum nächsten Blood Castle, Devil Square und Chaos Castle.',
   'options.help.questTracker':
     'Deine laufenden Quests und ihre Kill-Zähler auf dem Bildschirm.',
+  'options.help.targetHealthBarPosition':
+    'Wo der Lebensbalken des Monsters erscheint, das du angreifst: über seinem Kopf oder oben am Bildschirmrand.',
   'options.help.performanceReadout':
     'Bildrate, Bildzeit und Ping in einer kleinen Anzeige in der Ecke.',
   'options.help.fullscreen':

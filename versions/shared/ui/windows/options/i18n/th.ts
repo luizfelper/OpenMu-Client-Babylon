@@ -77,6 +77,9 @@ export default {
   'options.compareTooltips': 'เทียบกับที่สวมใส่',
   'options.eventTimers': 'ตัวจับเวลากิจกรรม',
   'options.questTracker': 'ติดตามเควสต์',
+  'options.targetHealthBarPosition': 'แถบพลังชีวิตมอนสเตอร์',
+  'options.targetHealthBarPosition.top': 'ด้านบนหน้าจอ',
+  'options.targetHealthBarPosition.head': 'เหนือหัวมอนสเตอร์',
   'options.stateWarnings': 'ข้อความเตือน',
   'options.lowHealthWarning': 'เตือนเมื่อพลังชีวิตต่ำ',
   'options.lowHealthPercent': 'เกณฑ์พลังชีวิต',
@@ -350,6 +353,8 @@ export default {
     'แผนที่ขนาดเล็กที่มุมขวาบน ปุ่ม "แผนที่ย่อ" ยังเปิดแผนที่เต็มได้เหมือนเดิม',
   'options.help.eventTimers': 'นับถอยหลังถึงรอบถัดไปของบลัดคาสเซิล เดวิลสแควร์ และเคออสคาสเซิล',
   'options.help.questTracker': 'เควสต์ที่กำลังทำและจำนวนมอนสเตอร์ที่สังหาร แสดงบนหน้าจอ',
+  'options.help.targetHealthBarPosition':
+    'ตำแหน่งที่แสดงแถบพลังชีวิตของมอนสเตอร์ที่คุณกำลังโจมตี: เหนือหัวหรือด้านบนของหน้าจอ',
   'options.help.performanceReadout': 'เฟรมเรต เวลาเฟรม และ Ping แสดงเล็ก ๆ ที่มุมจอ',
   'options.help.fullscreen':
     'สลับระหว่างเต็มหน้าจอกับหน้าต่างเบราว์เซอร์ปกติ กด F11 ได้ผลเหมือนกัน',

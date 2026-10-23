@@ -77,6 +77,9 @@ export default {
   'options.compareTooltips': '착용 중인 장비와 비교',
   'options.eventTimers': '이벤트 타이머',
   'options.questTracker': '퀘스트 추적',
+  'options.targetHealthBarPosition': '몬스터 체력 바',
+  'options.targetHealthBarPosition.top': '화면 상단',
+  'options.targetHealthBarPosition.head': '몬스터 머리 위',
   'options.stateWarnings': '경고 알림',
   'options.lowHealthWarning': '생명력 부족 경고',
   'options.lowHealthPercent': '생명력 기준',
@@ -317,6 +320,8 @@ export default {
   'options.help.minimapCorner': '오른쪽 위 구석의 작은 지도입니다. 미니맵 키로는 여전히 전체 지도가 열립니다.',
   'options.help.eventTimers': '다음 블러드 캐슬, 데빌 스퀘어, 카오스 캐슬까지 남은 시간입니다.',
   'options.help.questTracker': '진행 중인 퀘스트와 처치 수를 화면에 표시합니다.',
+  'options.help.targetHealthBarPosition':
+    '공격 중인 몬스터의 체력 바를 표시할 위치: 머리 위 또는 화면 상단.',
   'options.help.performanceReadout': '프레임 레이트, 프레임 시간, 핑을 구석에 작게 표시합니다.',
   'options.help.fullscreen': '전체 화면과 일반 브라우저 창을 전환합니다. F11로도 할 수 있습니다.',
   'options.help.install': '게임을 전용 창과 아이콘이 있는 앱으로 설치합니다.',

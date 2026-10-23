@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'Comparer à l’équipé',
   'options.eventTimers': 'Minuteurs des événements',
   'options.questTracker': 'Suivi des quêtes',
+  'options.targetHealthBarPosition': 'Barre de vie du monstre',
+  'options.targetHealthBarPosition.top': 'En haut de l’écran',
+  'options.targetHealthBarPosition.head': 'Au-dessus du monstre',
   'options.stateWarnings': 'Avertissements',
   'options.lowHealthWarning': 'Alerte de vie basse',
   'options.lowHealthPercent': 'Seuil de vie',
@@ -373,6 +376,8 @@ export default {
   'options.help.eventTimers':
     'Les comptes à rebours jusqu’aux prochains Blood Castle, Devil Square et Chaos Castle.',
   'options.help.questTracker': 'Vos quêtes en cours et leurs compteurs d’éliminations, à l’écran.',
+  'options.help.targetHealthBarPosition':
+    'Où s’affiche la barre de vie du monstre que vous attaquez : au-dessus de sa tête ou en haut de l’écran.',
   'options.help.performanceReadout':
     'Images par seconde, temps d’image et ping, dans un petit encart en coin d’écran.',
   'options.help.fullscreen':

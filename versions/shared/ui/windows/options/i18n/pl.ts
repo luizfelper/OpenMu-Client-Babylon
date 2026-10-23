@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'Porównuj z założonym',
   'options.eventTimers': 'Liczniki wydarzeń',
   'options.questTracker': 'Śledzenie zadań',
+  'options.targetHealthBarPosition': 'Pasek życia potwora',
+  'options.targetHealthBarPosition.top': 'U góry ekranu',
+  'options.targetHealthBarPosition.head': 'Nad potworem',
   'options.stateWarnings': 'Ostrzeżenia',
   'options.lowHealthWarning': 'Ostrzeżenie o niskim zdrowiu',
   'options.lowHealthPercent': 'Próg zdrowia',
@@ -373,6 +376,8 @@ export default {
   'options.help.eventTimers':
     'Odliczanie do następnych Blood Castle, Devil Square i Chaos Castle.',
   'options.help.questTracker': 'Twoje aktywne zadania i liczniki zabitych potworów na ekranie.',
+  'options.help.targetHealthBarPosition':
+    'Gdzie pokazuje się pasek życia potwora, którego atakujesz: nad jego głową albo u góry ekranu.',
   'options.help.performanceReadout': 'Klatki na sekundę, czas klatki i ping w małym polu w rogu.',
   'options.help.fullscreen':
     'Przełącza między pełnym ekranem a zwykłym oknem przeglądarki. F11 robi to samo.',

@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'المقارنة مع العتاد الملبوس',
   'options.eventTimers': 'مؤقتات الأحداث',
   'options.questTracker': 'متتبع المهام',
+  'options.targetHealthBarPosition': 'شريط صحة الوحش',
+  'options.targetHealthBarPosition.top': 'أعلى الشاشة',
+  'options.targetHealthBarPosition.head': 'فوق الوحش',
   'options.stateWarnings': 'إشعارات التحذير',
   'options.lowHealthWarning': 'تحذير انخفاض الصحة',
   'options.lowHealthPercent': 'حد الصحة',
@@ -313,6 +316,8 @@ export default {
     'خريطة صغيرة في الزاوية العلوية اليمنى. مفتاح «الخريطة المصغرة» لا يزال يفتح الخريطة الكاملة.',
   'options.help.eventTimers': 'عد تنازلي حتى Blood Castle و Devil Square و Chaos Castle التالية.',
   'options.help.questTracker': 'مهامك الجارية وعدد مرات القتل فيها، على الشاشة.',
+  'options.help.targetHealthBarPosition':
+    'أين يظهر شريط صحة الوحش الذي تهاجمه: فوق رأسه أو أعلى الشاشة.',
   'options.help.performanceReadout':
     'معدل الإطارات وزمن الإطار وزمن الاستجابة في لوحة صغيرة في الزاوية.',
   'options.help.fullscreen':

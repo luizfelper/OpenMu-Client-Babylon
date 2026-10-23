@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'Comparar con lo puesto',
   'options.eventTimers': 'Temporizadores de eventos',
   'options.questTracker': 'Seguimiento de misiones',
+  'options.targetHealthBarPosition': 'Barra de vida del monstruo',
+  'options.targetHealthBarPosition.top': 'En la parte superior',
+  'options.targetHealthBarPosition.head': 'Sobre el monstruo',
   'options.stateWarnings': 'Avisos',
   'options.lowHealthWarning': 'Aviso de vida baja',
   'options.lowHealthPercent': 'Umbral de vida',
@@ -412,6 +415,8 @@ export default {
     'Cuentas atrás para los próximos Blood Castle, Devil Square y Chaos Castle.',
   'options.help.questTracker':
     'Muestra en pantalla tus misiones en curso y cuántos monstruos llevas eliminados.',
+  'options.help.targetHealthBarPosition':
+    'Dónde aparece la barra de vida del monstruo al que atacas: sobre su cabeza o en la parte superior de la pantalla.',
   'options.help.performanceReadout':
     'FPS, tiempo de fotograma y ping en un pequeño recuadro de esquina.',
   'options.help.fullscreen':

@@ -78,6 +78,9 @@ export default {
   'options.compareTooltips': 'Ihambing sa suot',
   'options.eventTimers': 'Oras ng mga event',
   'options.questTracker': 'Tagasubaybay ng quest',
+  'options.targetHealthBarPosition': 'Bar ng buhay ng halimaw',
+  'options.targetHealthBarPosition.top': 'Sa tuktok ng screen',
+  'options.targetHealthBarPosition.head': 'Sa ibabaw ng halimaw',
   'options.stateWarnings': 'Mga babala',
   'options.lowHealthWarning': 'Babala sa mababang HP',
   'options.lowHealthPercent': 'Hangganan ng HP',
@@ -383,6 +386,8 @@ export default {
   'options.help.eventTimers': 'Countdown sa susunod na Blood Castle, Devil Square at Chaos Castle.',
   'options.help.questTracker':
     'Ang iyong mga kasalukuyang quest at bilang ng napatay, nasa screen.',
+  'options.help.targetHealthBarPosition':
+    'Saan ipapakita ang bar ng buhay ng halimaw na inaatake mo: sa ibabaw ng ulo nito o sa tuktok ng screen.',
   'options.help.performanceReadout':
     'Frame rate, frame time at ping sa isang maliit na ulat sa sulok.',
   'options.help.fullscreen':

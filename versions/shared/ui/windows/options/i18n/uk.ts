@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Порівняння з вдягнутим',
   'options.eventTimers': 'Таймери подій',
   'options.questTracker': 'Відстеження завдань',
+  'options.targetHealthBarPosition': 'Смуга здоров’я монстра',
+  'options.targetHealthBarPosition.top': 'Угорі екрана',
+  'options.targetHealthBarPosition.head': 'Над монстром',
   'options.stateWarnings': 'Попередження',
   'options.lowHealthWarning': 'Попередження про низьке здоров’я',
   'options.lowHealthPercent': 'Поріг здоров’я',
@@ -327,6 +330,8 @@ export default {
   'options.help.eventTimers':
     'Зворотний відлік до наступних Blood Castle, Devil Square і Chaos Castle.',
   'options.help.questTracker': 'Ваші поточні завдання та лічильники вбивств на екрані.',
+  'options.help.targetHealthBarPosition':
+    'Де показувати смугу здоров’я монстра, якого ви атакуєте: над його головою або у верхній частині екрана.',
   'options.help.performanceReadout':
     'Частота кадрів, час кадру й пінг у маленькому віконці в куті.',
   'options.help.fullscreen':

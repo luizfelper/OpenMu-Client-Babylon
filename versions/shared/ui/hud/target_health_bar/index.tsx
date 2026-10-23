@@ -1,8 +1,11 @@
 import './style.less';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 import { Ecs } from '@/ecs/current';
+import { GameOptions } from '@/controllers/settings';
+import { usePositionOnScreen } from '@/controllers/interface/hooks';
 import { isNpcOrTrapType } from '@/ecs/systems/attackSystem';
+import type { Entity } from '@/ecs/world';
 
 const STEPS = 20;
 const BORDER_WIDTH = 2;
@@ -14,24 +17,40 @@ const BAR_Y = 15;
 const BAR_HEIGHT = 5;
 const NAME_Y = 2;
 
+/**
+ * The same pieces anchored on the target instead of on the screen: the
+ * projected point is already the head (`screenPosition.worldOffsetZ`), so the
+ * bar sits just above it and the name above the bar.
+ */
+const HEAD_BAR_Y = -13;
+const HEAD_NAME_Y = -28;
+
 const FRAME_COLOUR = 'rgb(51, 0, 0)';
 const TRACK_COLOUR = 'rgb(50, 10, 0)';
 const FILL_COLOUR = 'rgb(250, 10, 0)';
+
+/** `GameOptions.targetHealthBarPosition`: 0 the top of the screen / 1 over the monster. */
+const TOP_OF_SCREEN = 0;
 
 /**
  * What the panel shows: the target's name, and its health in whole steps when
  * anything knows it. `showBar` is the original's `HealthStatus > 0` - the name
  * is unconditional, the bar is not (NewUINameWindow.cpp:138-144).
  */
-type Target = { name: string; steps: number; showBar: boolean };
+type Target = { entity: Entity; name: string; steps: number; showBar: boolean };
 
 /**
  * Reads the current target into the scratch record without allocating.
  * Returns `false` when there is nothing to show.
  */
-const scratch: Target = { name: '', steps: 0, showBar: false };
+const scratch: {
+  entity: Entity | null;
+  name: string;
+  steps: number;
+  showBar: boolean;
+} = { entity: null, name: '', steps: 0, showBar: false };
 
-function readTarget(out: Target): boolean {
+function readTarget(out: typeof scratch): boolean {
   const world = Ecs.world;
   if (!world) return false;
 
@@ -55,6 +74,7 @@ function readTarget(out: Target): boolean {
   const current = attributes ? attributes.getValue('currentHealth') : 0;
   const health = max > 0 ? Math.min(1, Math.max(0, current / max)) : 0;
 
+  out.entity = entity;
   out.name = name;
   out.steps = Math.trunc(health * STEPS);
   out.showBar = health > 0;
@@ -70,8 +90,11 @@ const PIP_STYLES = Array.from({ length: STEPS }, (_, k) => ({
   backgroundColor: FILL_COLOUR,
 }));
 
-const BAR_STYLE = { top: BAR_Y, width: TOTAL_WIDTH, height: BAR_HEIGHT };
-const NAME_STYLE = { top: NAME_Y };
+const BAR_SIZE = { width: TOTAL_WIDTH, height: BAR_HEIGHT };
+const TOP_BAR_STYLE = { ...BAR_SIZE, top: BAR_Y };
+const HEAD_BAR_STYLE = { ...BAR_SIZE, top: HEAD_BAR_Y };
+const TOP_NAME_STYLE = { top: NAME_Y };
+const HEAD_NAME_STYLE = { top: HEAD_NAME_Y };
 const FRAME_STYLE = { backgroundColor: FRAME_COLOUR };
 const TRACK_STYLE = {
   left: BORDER_WIDTH,
@@ -82,13 +105,92 @@ const TRACK_STYLE = {
 };
 
 /**
- * The target's name and twenty-step health bar over the screen centre. The
- * pointer target is plain per-frame state, so it is polled once a frame -
- * into a reused record, and React only hears about it when the name or the
- * step count actually changes.
+ * Half the bar: how far the panel reaches either side of its anchor, and how
+ * tall it is above it, so a monster at the edge of the screen still shows all.
+ */
+const PANEL_HALF_WIDTH = TOTAL_WIDTH / 2;
+const PANEL_HEIGHT = -HEAD_NAME_Y;
+
+/** Keeps the anchored panel on screen when the target is close to an edge. */
+function keepOnScreen(point: { x: number; y: number }) {
+  const minX = PANEL_HALF_WIDTH + 2;
+  const maxX = Math.max(minX, window.innerWidth - PANEL_HALF_WIDTH - 2);
+
+  point.x = Math.min(Math.max(point.x, minX), maxX);
+  point.y = Math.max(point.y, PANEL_HEIGHT + 2);
+}
+
+type PanelProps = {
+  name: string;
+  steps: number;
+  showBar: boolean;
+  /** Over the monster (the anchored mode) rather than across the screen top. */
+  overHead: boolean;
+  panelRef?: Ref<HTMLDivElement>;
+};
+
+/**
+ * The panel itself, in either position. Exported for the test that pins the
+ * two layouts; the window below picks the one the player chose.
+ */
+export const TargetPanel = observer(function TargetPanel({
+  name,
+  steps,
+  showBar,
+  overHead,
+  panelRef,
+}: PanelProps) {
+  return (
+    <div ref={panelRef} className={`target-health-bar${overHead ? ' over-head' : ''}`}>
+      <div className="target-name" style={overHead ? HEAD_NAME_STYLE : TOP_NAME_STYLE}>
+        {name}
+      </div>
+
+      {showBar && (
+        <div className="target-bar" style={overHead ? HEAD_BAR_STYLE : TOP_BAR_STYLE}>
+          <div className="bar-shadow" />
+          <div className="bar-frame" style={FRAME_STYLE} />
+          <div className="bar-track" style={TRACK_STYLE} />
+          {PIP_STYLES.slice(0, steps).map((style, k) => (
+            <div key={k} className="bar-step" style={style} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
+/**
+ * The panel pinned over the target's head. `usePositionOnScreen` writes the
+ * transform every frame straight onto the element, so the bar follows a
+ * walking monster without a React render.
+ */
+const OverHeadPanel = observer(function OverHeadPanel({ target }: { target: Target }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  usePositionOnScreen(target.entity, ref, 0, 0, keepOnScreen);
+
+  return (
+    <TargetPanel
+      name={target.name}
+      steps={target.steps}
+      showBar={target.showBar}
+      overHead
+      panelRef={ref}
+    />
+  );
+});
+
+/**
+ * The target's name and twenty-step health bar, over the monster's head or
+ * across the screen centre (`targetHealthBarPosition`). The pointer target is
+ * plain per-frame state, so it is polled once a frame - into a reused record,
+ * and React only hears about it when the target, the name or the step count
+ * actually changes.
  */
 export const TargetHealthBar = observer(() => {
   const [target, setTarget] = useState<Target | null>(null);
+  const overHead = GameOptions.targetHealthBarPosition !== TOP_OF_SCREEN;
 
   useEffect(() => {
     let frame = 0;
@@ -105,8 +207,12 @@ export const TargetHealthBar = observer(() => {
         return;
       }
 
+      const entity = scratch.entity;
+      if (!entity) return;
+
       if (
         shown &&
+        shown.entity === entity &&
         shown.name === scratch.name &&
         shown.steps === scratch.steps &&
         shown.showBar === scratch.showBar
@@ -114,7 +220,12 @@ export const TargetHealthBar = observer(() => {
         return;
       }
 
-      shown = { name: scratch.name, steps: scratch.steps, showBar: scratch.showBar };
+      shown = {
+        entity,
+        name: scratch.name,
+        steps: scratch.steps,
+        showBar: scratch.showBar,
+      };
       setTarget(shown);
     };
 
@@ -125,22 +236,16 @@ export const TargetHealthBar = observer(() => {
 
   if (!target) return null;
 
-  return (
-    <div className="target-health-bar">
-      <div className="target-name" style={NAME_STYLE}>
-        {target.name}
-      </div>
+  if (!overHead) {
+    return (
+      <TargetPanel
+        name={target.name}
+        steps={target.steps}
+        showBar={target.showBar}
+        overHead={false}
+      />
+    );
+  }
 
-      {target.showBar && (
-        <div className="target-bar" style={BAR_STYLE}>
-          <div className="bar-shadow" />
-          <div className="bar-frame" style={FRAME_STYLE} />
-          <div className="bar-track" style={TRACK_STYLE} />
-          {PIP_STYLES.slice(0, target.steps).map((style, k) => (
-            <div key={k} className="bar-step" style={style} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return <OverHeadPanel target={target} />;
 });

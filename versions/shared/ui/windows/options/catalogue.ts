@@ -199,6 +199,12 @@ const PARTY_INVITE_REPLY_LABEL_KEYS: readonly TextKey[] = [
   'options.partyInviteReply.accept',
 ];
 
+/** `targetHealthBarPosition`: 0 the top of the screen, 1 over the target's head. */
+const TARGET_BAR_LABEL_KEYS: readonly TextKey[] = [
+  'options.targetHealthBarPosition.top',
+  'options.targetHealthBarPosition.head',
+];
+
 const named =
   (keys: readonly TextKey[] | Record<number, TextKey>) => (value: number) => {
     const key = (keys as Record<number, TextKey>)[value];
@@ -823,6 +829,7 @@ export const CATEGORIES: Category[] = [
           {
             titleKey: 'options.section.hud',
             rows: [
+              choice('targetHealthBarPosition', 1, named(TARGET_BAR_LABEL_KEYS)),
               toggle('minimapCorner'),
               toggle('eventTimers'),
               toggle('questTracker'),

@@ -72,6 +72,9 @@ export default {
   'options.compareTooltips': 'Bandingkan dengan yang dipakai',
   'options.eventTimers': 'Timer event',
   'options.questTracker': 'Pelacak misi',
+  'options.targetHealthBarPosition': 'Bilah nyawa monster',
+  'options.targetHealthBarPosition.top': 'Di atas layar',
+  'options.targetHealthBarPosition.head': 'Di atas monster',
   'options.stateWarnings': 'Pemberitahuan peringatan',
   'options.lowHealthWarning': 'Peringatan HP rendah',
   'options.lowHealthPercent': 'Batas HP',
@@ -335,6 +338,8 @@ export default {
     'Hitung mundur ke Blood Castle, Devil Square, dan Chaos Castle berikutnya.',
   'options.help.questTracker':
     'Misi yang sedang berjalan dan jumlah monster yang dikalahkan, di layar.',
+  'options.help.targetHealthBarPosition':
+    'Di mana bilah nyawa monster yang kamu serang ditampilkan: di atas kepalanya atau di bagian atas layar.',
   'options.help.performanceReadout':
     'Frame rate, waktu frame, dan ping dalam tampilan kecil di sudut.',
   'options.help.fullscreen': 'Beralih antara layar penuh dan jendela browser biasa. F11 juga sama.',

@@ -77,6 +77,9 @@ export default {
   'options.compareTooltips': '与已装备对比',
   'options.eventTimers': '活动计时',
   'options.questTracker': '任务追踪',
+  'options.targetHealthBarPosition': '怪物生命条',
+  'options.targetHealthBarPosition.top': '屏幕顶部',
+  'options.targetHealthBarPosition.head': '怪物头顶',
   'options.stateWarnings': '警告提示',
   'options.lowHealthWarning': '生命过低警告',
   'options.lowHealthPercent': '生命阈值',
@@ -311,6 +314,8 @@ export default {
   'options.help.minimapCorner': '右上角的小地图。小地图键仍会打开完整地图。',
   'options.help.eventTimers': '距离下一场血色城堡、恶魔广场和混沌城堡开始的倒计时。',
   'options.help.questTracker': '在屏幕上显示进行中的任务及其击杀数。',
+  'options.help.targetHealthBarPosition':
+    '正在攻击的怪物生命条显示在哪里：头顶上方或屏幕顶部。',
   'options.help.performanceReadout': '在屏幕角落以小字显示帧率、帧时间和延迟。',
   'options.help.fullscreen': '在全屏和普通浏览器窗口之间切换。按 F11 效果相同。',
   'options.help.install': '将游戏安装为应用，拥有独立的窗口和图标。',
