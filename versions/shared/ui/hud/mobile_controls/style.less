@@ -20,6 +20,8 @@
   // Every button opts back in; the layer stays transparent to taps.
   .mobile-move-button,
   .mobile-menu-button,
+  .mobile-hamburger,
+  .mobile-helper-plate,
   .mobile-skill-slot,
   .mobile-picker-slot,
   .mobile-picker-action {
@@ -51,7 +53,7 @@
   }
 }
 
-// ---- the five main-frame buttons, top right --------------------------------
+// ---- the five main-frame buttons, behind the top-right hamburger -----------
 
 .mobile-menu-cluster {
   position: absolute;
@@ -69,6 +71,107 @@
   &.landscape {
     flex-direction: row;
     align-items: flex-start;
+  }
+
+  // Unfolded by the hamburger: a compact row under it, wrapping on a narrow
+  // screen instead of a column half the height of the glass.
+  &.docked {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    max-width: 92vw;
+  }
+}
+
+// ---- the two hamburgers, top right -----------------------------------------
+
+.mobile-top-menus {
+  position: absolute;
+  top: @edge-gap;
+  right: @edge-gap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: @button-gap;
+  max-width: 92vw;
+}
+
+.mobile-hamburgers {
+  display: flex;
+  flex-direction: row;
+  gap: @button-gap;
+}
+
+// The MU Helper's plate, small: dark translucent red, gold trim, gold bars.
+// `clamp` keeps it a thumb target on a phone and out of the way on a watch-wide
+// screen, without a media query per device.
+.mobile-hamburger {
+  width: clamp(28px, 9vw, 38px);
+  height: clamp(28px, 9vw, 38px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(214, 178, 106, 0.55);
+  background: rgba(58, 10, 10, 0.72);
+
+  &:active,
+  &.open {
+    background: rgba(92, 18, 18, 0.9);
+    border-color: rgba(240, 208, 138, 0.9);
+  }
+
+  // The helper is running: the desktop plate's green, as a lamp.
+  &.running {
+    border-color: rgba(124, 252, 124, 0.75);
+  }
+
+  .mobile-hamburger-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 60%;
+
+    span {
+      display: block;
+      height: 2px;
+      background: #ffd700;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+    }
+  }
+}
+
+.mobile-helper-panel {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: @button-gap;
+
+  .mobile-helper-plate {
+    min-height: 32px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1.15;
+    text-align: center;
+    color: #ffd700;
+    background: rgba(58, 10, 10, 0.72);
+    border: 1px solid rgba(214, 178, 106, 0.55);
+
+    &:active {
+      background: rgba(92, 18, 18, 0.9);
+      border-color: rgba(240, 208, 138, 0.9);
+    }
+
+    // The desktop plate's green while the helper runs.
+    &.running {
+      color: #7cfc7c;
+    }
   }
 }
 

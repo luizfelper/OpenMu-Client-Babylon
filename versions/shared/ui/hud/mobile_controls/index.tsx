@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { AppState, UIState } from '@/controllers/interface/uiState';
 import { useIsMobile } from '@/controllers/interface/mobile';
 import { MoveButton } from './moveButton';
-import { MenuCluster } from './menuCluster';
+import { TopMenus } from './topMenus';
 import { SkillPad } from './skillPad';
 
 /**
@@ -24,7 +24,7 @@ export const MobileControls = observer(() => {
   return (
     <div className="mobile-controls">
       <MoveButton />
-      <MenuCluster />
+      <TopMenus />
       <SkillPad />
     </div>
   );
