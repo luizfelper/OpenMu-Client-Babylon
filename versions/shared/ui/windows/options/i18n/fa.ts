@@ -363,6 +363,7 @@ export default {
   'options.help.englishItemNames':
     'نام آیتم‌ها را در هر زبانی انگلیسی نگه می‌دارد تا با راهنماها و فهرست قیمت‌ها جور باشد.',
   'options.exitGame': 'خروج از بازی',
+  'options.vip': 'VIP',
   'options.selectServer': 'انتخاب سرور',
   'options.switchCharacter': 'تعویض کاراکتر',
   'options.performanceReadout': 'نمایشگر کارایی',

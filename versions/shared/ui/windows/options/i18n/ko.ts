@@ -330,6 +330,7 @@ export default {
   'options.help.language': '인터페이스, 퀘스트, NPC 대화, 몬스터와 아이템 이름의 언어입니다.',
   'options.help.englishItemNames': '언어와 상관없이 아이템 이름을 영어로 유지해 공략이나 시세표와 맞춥니다.',
   'options.exitGame': '게임 종료',
+  'options.vip': 'VIP',
   'options.selectServer': '서버 선택',
   'options.switchCharacter': '캐릭터 변경',
   'options.performanceReadout': '성능 표시',

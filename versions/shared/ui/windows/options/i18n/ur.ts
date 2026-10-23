@@ -366,6 +366,7 @@ export default {
   'options.help.englishItemNames':
     'زبان کوئی بھی ہو، آئٹم کے نام انگریزی میں رکھتا ہے، تاکہ گائیڈز اور قیمتوں کی فہرستوں سے میل کھائیں۔',
   'options.exitGame': 'گیم سے باہر نکلیں',
+  'options.vip': 'VIP',
   'options.selectServer': 'سرور منتخب کریں',
   'options.switchCharacter': 'کردار بدلیں',
   'options.performanceReadout': 'کارکردگی کا خانہ',

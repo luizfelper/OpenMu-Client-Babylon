@@ -60,5 +60,10 @@ export default tseslint.config(
     // where there is no glob. See versions/shared/items/all.ts.
     files: ['versions/shared/*/all.ts', 'tools/itemFiles.ts', 'tools/monsterFiles.ts'],
     rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
+    // The public site and its admin panel are plain browser scripts, not modules of the client build.
+    files: ['site/web/**/*.js'],
+    languageOptions: { globals: { ...globals.browser } },
   }
 );

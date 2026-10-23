@@ -356,6 +356,7 @@ export default {
   'options.help.englishItemNames':
     'Objektu-izenak ingelesez mantentzen ditu hizkuntza edozein dela ere, gidekin eta prezio-zerrendekin bat etortzeko.',
   'options.exitGame': 'Jokotik irten',
+  'options.vip': 'VIP',
   'options.selectServer': 'Aukeratu zerbitzaria',
   'options.switchCharacter': 'Aldatu pertsonaia',
   'options.performanceReadout': 'Errendimendu-adierazlea',

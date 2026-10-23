@@ -49,14 +49,24 @@ describe('Escape on the server list and the character screen', () => {
 describe('CSysMenuWin', () => {
   const labels = () => {
     runInAction(() => MuWindows.setOpen(PREGAME_MENU, true));
-    return [...renderToStaticMarkup(<PregameSystemMenu />).matchAll(/>(Exit Game|Select Server|Option|Close)</g)].map(m => m[1]);
+    return [...renderToStaticMarkup(<PregameSystemMenu />).matchAll(/>(Exit Game|Select Server|VIP|Option|Close)</g)].map(m => m[1]);
   };
 
-  it('lists Exit Game, Option and Close on the server list, Select Server too on the character screen', () => {
+  it('lists Exit Game, VIP, Option and Close on the server list, Select Server too on the character screen', () => {
     on(UIState.Servers);
-    expect(labels()).toEqual(['Exit Game', 'Option', 'Close']);
+    expect(labels()).toEqual(['Exit Game', 'VIP', 'Option', 'Close']);
     on(UIState.Characters);
-    expect(labels()).toEqual(['Exit Game', 'Select Server', 'Option', 'Close']);
+    expect(labels()).toEqual(['Exit Game', 'Select Server', 'VIP', 'Option', 'Close']);
+  });
+
+  it('opens the public VIP store', () => {
+    const open = vi.fn();
+    const globals = globalThis as unknown as { open?: typeof open };
+    globals.open = open;
+    on(UIState.Servers);
+    chooseSysMenu('vip');
+    expect(open).toHaveBeenCalledWith(expect.stringContaining('/vip'), '_blank', 'noopener,noreferrer');
+    delete globals.open;
   });
 
   it('opens Options and leaves for the server list', () => {

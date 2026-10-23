@@ -61,7 +61,13 @@ export async function adopt(p: Paths): Promise<void> {
   const sqlite = sqliteFiles();
   ui.note([`Database: ${old} (migration ${migration})`, ...sqlite.map(f => `${f.from}  ->  ${f.to}`)].join('\n'), 'Found');
 
-  let c: Config = { ...DEFAULTS, escrowSecret: newSecret(), marketTicketSecret: newSecret(), shopTicketSecret: newSecret() };
+  let c: Config = {
+    ...DEFAULTS,
+    escrowSecret: newSecret(),
+    marketTicketSecret: newSecret(),
+    shopTicketSecret: newSecret(),
+    siteSecret: newSecret(),
+  };
   for (const group of ['address', 'listing', 'passwords', 'features'] as Group[]) c = await ask(c, group);
 
   // The OpenMU we run must know the database's last migration, or it refuses to start.

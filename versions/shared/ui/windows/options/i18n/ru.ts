@@ -421,6 +421,7 @@ export default {
   'options.help.englishItemNames':
     'Оставляет названия предметов на английском при любом языке, как в гайдах и прайс-листах.',
   'options.exitGame': 'Выйти из игры',
+  'options.vip': 'VIP',
   'options.selectServer': 'Выбор сервера',
   'options.switchCharacter': 'Смена персонажа',
   'options.performanceReadout': 'Показатели работы',

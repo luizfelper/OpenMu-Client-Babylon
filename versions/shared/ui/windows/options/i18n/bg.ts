@@ -375,6 +375,7 @@ export default {
   'options.help.englishItemNames':
     'Оставя имената на предметите на английски независимо от езика, за да съвпадат с ръководствата и ценоразписите.',
   'options.exitGame': 'Изход от играта',
+  'options.vip': 'VIP',
   'options.selectServer': 'Избор на сървър',
   'options.switchCharacter': 'Смяна на героя',
   'options.performanceReadout': 'Показатели на работата',

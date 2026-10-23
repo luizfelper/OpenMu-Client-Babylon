@@ -346,6 +346,7 @@ export default {
   'options.help.englishItemNames':
     'Rehberler ve fiyat listeleriyle uyuşması için dil ne olursa olsun eşya adlarını İngilizce tutar.',
   'options.exitGame': 'Oyundan Çık',
+  'options.vip': 'VIP',
   'options.selectServer': 'Sunucu Seç',
   'options.switchCharacter': 'Karakter Değiştir',
   'options.performanceReadout': 'Performans göstergesi',

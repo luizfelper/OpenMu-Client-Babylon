@@ -358,6 +358,7 @@ export default {
   'options.help.englishItemNames':
     'Manté els noms dels objectes en anglès sigui quin sigui l\'idioma, perquè coincideixin amb les guies i les llistes de preus.',
   'options.exitGame': 'Surt del joc',
+  'options.vip': 'VIP',
   'options.selectServer': 'Tria el servidor',
   'options.switchCharacter': 'Canvia de personatge',
   'options.performanceReadout': 'Indicador de rendiment',

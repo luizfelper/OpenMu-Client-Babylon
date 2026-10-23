@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0908" />
+    <title>Painel MUCURA</title>
+    <link rel="icon" href="/assets/mucura.webp" type="image/webp" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body class="admin-body">
+    <div class="login-shell" id="login-view">
+      <form class="login-card" id="login-form">
+        <a class="brand login-brand" href="/">
+          <img src="/assets/mucura.webp" alt="" width="54" height="54" />
+          <span class="brand-text"><strong>MUCURA</strong><small>Painel administrativo</small></span>
+        </a>
+        <p class="eyebrow">Acesso restrito</p>
+        <h1>Entrar no painel</h1>
+        <p class="login-text">
+          Use o mesmo usuário e senha do painel OpenMU. A sessão dura oito horas.
+        </p>
+        <label>
+          Usuário
+          <input id="login-user" name="username" autocomplete="username" required />
+        </label>
+        <label>
+          Senha
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required />
+        </label>
+        <p class="form-error" id="login-error" hidden></p>
+        <button class="btn btn-primary btn-wide" type="submit" id="login-submit">Entrar</button>
+        <a class="text-link login-back" href="/">← Voltar para o site</a>
+      </form>
+    </div>
+
+    <div id="app-view" hidden>
+      <header class="admin-topbar">
+        <div class="container admin-topbar-inner">
+          <a class="brand" href="/">
+            <img src="/assets/mucura.webp" alt="" width="40" height="40" />
+            <span class="brand-text"><strong>MUCURA</strong><small>Administração</small></span>
+          </a>
+          <div class="admin-user">
+            <span id="admin-user"></span>
+            <button class="btn btn-ghost btn-small" type="button" id="logout-button">Sair</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="container admin-shell">
+        <nav class="admin-tabs" aria-label="Seções do painel">
+          <button type="button" data-tab="dashboard" class="active">Visão geral</button>
+          <button type="button" data-tab="news">Notícias</button>
+          <button type="button" data-tab="vip">VIP e pedidos</button>
+          <button type="button" data-tab="payments">Mercado Pago</button>
+          <button type="button" data-tab="content">Conteúdo</button>
+          <button type="button" data-tab="extras">FAQ, links e redes</button>
+        </nav>
+
+        <main class="admin-main">
+          <section class="admin-panel" data-panel="dashboard">
+            <div class="admin-head">
+              <div>
+                <p class="eyebrow">Resumo</p>
+                <h1>Visão geral</h1>
+              </div>
+              <button class="btn btn-ghost btn-small" type="button" id="refresh-button">Atualizar</button>
+            </div>
+            <p class="admin-warning" id="admin-warning" hidden></p>
+            <div class="stats-grid">
+              <article class="stat-card"><span>Notícias</span><strong id="stat-news">—</strong><small id="stat-news-sub"></small></article>
+              <article class="stat-card"><span>Pedidos VIP</span><strong id="stat-orders">—</strong><small id="stat-orders-sub"></small></article>
+              <article class="stat-card"><span>Receita aprovada</span><strong id="stat-revenue">—</strong><small>pedidos pagos</small></article>
+              <article class="stat-card"><span>VIPs ativos</span><strong id="stat-vip">—</strong><small>contas com VIP vigente</small></article>
+            </div>
+            <div class="admin-grid-2">
+              <article class="panel admin-card">
+                <div class="panel-head"><h2>Como publicar</h2></div>
+                <ol class="admin-help">
+                  <li>Abra <strong>Notícias</strong> e clique em <strong>Nova notícia</strong>.</li>
+                  <li>Escreva o título e o conteúdo. O texto aceita Markdown simples.</li>
+                  <li>Marque <strong>Publicada</strong> e salve. A notícia aparece no site na hora.</li>
+                </ol>
+              </article>
+              <article class="panel admin-card">
+                <div class="panel-head"><h2>Checklist do Mercado Pago</h2></div>
+                <ol class="admin-help">
+                  <li>Cole o <strong>Access Token</strong> de produção ou teste.</li>
+                  <li>Ative as compras e salve.</li>
+                  <li>Cadastre a URL de webhook no Mercado Pago: <code id="webhook-hint"></code></li>
+                  <li>Faça uma compra de teste antes de divulgar.</li>
+                </ol>
+              </article>
+            </div>
+          </section>
+
+          <section class="admin-panel" data-panel="news" hidden>
+            <div class="admin-head">
+              <div>
+                <p class="eyebrow">Conteúdo</p>
+                <h1>Notícias</h1>
+              </div>
+              <button class="btn btn-primary btn-small" type="button" id="new-news-button">Nova notícia</button>
+            </div>
+            <div class="admin-grid-news">
+              <div class="panel admin-card news-admin-list">
+                <div class="panel-head"><h2>Publicadas e rascunhos</h2></div>
+                <div id="news-list" class="admin-list"></div>
+              </div>
+              <form class="panel admin-card admin-form" id="news-form" hidden>
+                <input type="hidden" id="news-id" />
+                <div class="panel-head">
+                  <h2 id="news-form-title">Nova notícia</h2>
+                  <button class="icon-button" type="button" id="news-cancel" aria-label="Cancelar">×</button>
+                </div>
+                <label>
+                  Título
+                  <input id="news-title" maxlength="140" required />
+                </label>
+                <div class="form-row">
+                  <label>
+                    Categoria
+                    <input id="news-category" maxlength="40" placeholder="Notícias" />
+                  </label>
+                  <label>
+                    Imagem (URL opcional)
+                    <input id="news-image" maxlength="500" placeholder="https://..." />
+                  </label>
+                </div>
+                <label>
+                  Resumo
+                  <textarea id="news-excerpt" rows="3" maxlength="300" placeholder="Aparece no card da notícia."></textarea>
+                </label>
+                <label>
+                  Conteúdo
+                  <textarea id="news-body" rows="14" maxlength="20000" required placeholder="# Título&#10;&#10;Texto da notícia..."></textarea>
+                  <small>Markdown simples: # título, ## subtítulo, **negrito**, listas com - e links [texto](https://...).</small>
+                </label>
+                <div class="check-row">
+                  <label class="check"><input type="checkbox" id="news-published" checked /> Publicada</label>
+                  <label class="check"><input type="checkbox" id="news-pinned" /> Fixada no topo</label>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-primary" type="submit" id="news-save">Salvar notícia</button>
+                  <button class="btn btn-ghost" type="button" id="news-cancel-2">Cancelar</button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <section class="admin-panel" data-panel="vip" hidden>
+            <div class="admin-head">
+              <div>
+                <p class="eyebrow">Monetização</p>
+                <h1>VIP e pedidos</h1>
+              </div>
+              <button class="btn btn-primary btn-small" type="button" id="save-vip-button">Salvar planos</button>
+            </div>
+            <div class="panel admin-card">
+              <div class="panel-head">
+                <h2>Planos</h2>
+                <button class="btn btn-ghost btn-small" type="button" id="add-plan-button">Adicionar plano</button>
+              </div>
+              <p class="admin-hint">
+                O identificador é usado no checkout e não deve ser alterado depois que o plano estiver em uso.
+                O preço é em reais.
+              </p>
+              <div id="plans-editor" class="plans-editor"></div>
+            </div>
+            <div class="panel admin-card">
+              <div class="panel-head">
+                <h2>Pedidos</h2>
+                <select id="orders-filter" class="small-select">
+                  <option value="">Todos</option>
+                  <option value="pending">Pendentes</option>
+                  <option value="approved">Aprovados</option>
+                  <option value="error">Com erro</option>
+                </select>
+              </div>
+              <div id="orders-list" class="admin-list"></div>
+            </div>
+          </section>
+
+          <section class="admin-panel" data-panel="payments" hidden>
+            <div class="admin-head">
+              <div>
+                <p class="eyebrow">Checkout</p>
+                <h1>Mercado Pago</h1>
+              </div>
+              <div class="admin-head-actions">
+                <button class="btn btn-ghost btn-small" type="button" id="test-mp-button">Testar conexão</button>
+                <button class="btn btn-primary btn-small" type="button" id="save-payments-button">Salvar</button>
+              </div>
+            </div>
+            <form class="panel admin-card admin-form" id="payments-form">
+              <label class="check check-strong"><input type="checkbox" id="mp-enabled" /> Aceitar compras de VIP</label>
+              <label>
+                Access Token
+                <input id="mp-access-token" type="password" autocomplete="off" placeholder="APP_USR-... (deixe vazio para manter o atual)" />
+                <small id="mp-token-hint">Nenhum token salvo ainda.</small>
+              </label>
+              <div class="form-row">
+                <label>
+                  Public Key
+                  <input id="mp-public-key" maxlength="500" placeholder="APP_USR-..." />
+                </label>
+                <label>
+                  Webhook secret
+                  <input id="mp-webhook-secret" type="password" autocomplete="off" placeholder="Deixe vazio para manter o atual" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Nome na fatura
+                  <input id="mp-statement-descriptor" maxlength="22" placeholder="MUCURA VIP" />
+                </label>
+                <label class="check check-inline"><input type="checkbox" id="mp-sandbox" /> Modo de teste (sandbox)</label>
+              </div>
+              <p class="admin-hint">
+                O webhook deve apontar para <code id="webhook-url"></code>. No Mercado Pago, use o evento
+                <strong>Pagamentos</strong>. O access token de produção começa com <code>APP_USR-</code>.
+              </p>
+              <p class="form-status" id="mp-status"></p>
+            </form>
+          </section>
+
+          <section class="admin-panel" data-panel="content" hidden>
+            <div class="admin-head">
+              <div>
+                <p class="eyebrow">Site</p>
+                <h1>Conteúdo</h1>
+              </div>
+              <button class="btn btn-primary btn-small" type="button" id="save-content-button">Salvar conteúdo</button>
+            </div>
+            <form class="panel admin-card admin-form" id="content-form">
+              <h2>Identidade</h2>
+              <div class="form-row">
+                <label>Nome do site<input id="site-name" maxlength="60" required /></label>
+                <label>Slogan<input id="site-tagline" maxlength="120" /></label>
+              </div>
+              <label>Chamada do topo<input id="hero-eyebrow" maxlength="80" /></label>
+              <label>Título principal<input id="hero-title" maxlength="100" required /></label>
+              <label>Subtítulo<input id="hero-subtitle" maxlength="180" /></label>
+              <label>Texto de apresentação<textarea id="hero-text" rows="3" maxlength="600"></textarea></label>
+
+              <h2>Servidor</h2>
+              <div class="form-row">
+                <label>Nome<input id="server-name" maxlength="60" required /></label>
+                <label>Versão<input id="server-version" maxlength="40" /></label>
+              </div>
+              <label>Descrição<input id="server-description" maxlength="300" /></label>
+              <div class="form-row form-row-3">
+                <label>EXP<input id="rate-exp" maxlength="20" /></label>
+                <label>Drop<input id="rate-drop" maxlength="20" /></label>
+                <label>Master EXP<input id="rate-master" maxlength="20" /></label>
+              </div>
+              <label>
+                Informações (uma por linha, <code>rótulo | valor</code>)
+                <textarea id="server-facts" rows="6"></textarea>
+              </label>
+              <label>
+                Eventos (um por linha, <code>título | horário | descrição</code>)
+                <textarea id="server-events" rows="6"></textarea>
+              </label>
+              <label>
+                Regras (uma por linha)
+                <textarea id="server-rules" rows="10"></textarea>
+              </label>
+            </form>
+          </section>
+
+          <section class="admin-panel" data-panel="extras" hidden>
+            <div class="admin-head">
+              <div>
+                <p class="eyebrow">Apoio</p>
+                <h1>FAQ, links e redes</h1>
+              </div>
+              <button class="btn btn-primary btn-small" type="button" id="save-extras-button">Salvar</button>
+            </div>
+            <form class="panel admin-card admin-form" id="extras-form">
+              <label>
+                Perguntas frequentes (uma por linha, <code>pergunta | resposta</code>)
+                <textarea id="faq-text" rows="12"></textarea>
+              </label>
+              <label>
+                Links úteis (um por linha, <code>nome | URL | descrição</code>)
+                <textarea id="links-text" rows="8"></textarea>
+                <small>Use <code>@register</code> e <code>@play</code> para apontar ao registro e ao cliente.</small>
+              </label>
+              <h2>Redes sociais</h2>
+              <p class="admin-hint">Os ícones aparecem no rodapé, mas ficam desativados até você pedir para ativá-los.</p>
+              <div class="form-row form-row-3">
+                <label>Discord<input id="social-discord" placeholder="https://discord.gg/..." /></label>
+                <label>Instagram<input id="social-instagram" placeholder="https://instagram.com/..." /></label>
+                <label>YouTube<input id="social-youtube" placeholder="https://youtube.com/..." /></label>
+              </div>
+              <div class="form-row form-row-3">
+                <label>Facebook<input id="social-facebook" placeholder="https://facebook.com/..." /></label>
+                <label>TikTok<input id="social-tiktok" placeholder="https://tiktok.com/..." /></label>
+                <label>WhatsApp<input id="social-whatsapp" placeholder="https://wa.me/..." /></label>
+              </div>
+            </form>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>

@@ -8,14 +8,16 @@ export const PORTS = {
   register: 3100,
   cashshop: 3200,
   marketplace: 3300,
+  site: 3400,
   admin: 8080,
   connect: 44405,
   /** OpenMU 0.9.x seeds its game servers here; the newer versions seed `newerFirstGame`. */
   firstGame: 55901,
   newerFirstGame: 45901,
   gameServers: 6,
-  /** IP mode only: the register site on its own port. */
+  /** IP mode only: the public site and the register site on their own ports. */
   registerSite: 8081,
+  siteSite: 8082,
   /** The webmail behind Caddy, and the mail server's public ports (the `mail` profile only). */
   webmail: 80,
   smtp: 25,
@@ -31,10 +33,22 @@ export const HOSTS = {
   register: 'register',
   cashshop: 'cashshop',
   marketplace: 'marketplace',
+  site: 'site',
   webmail: 'webmail',
 } as const;
 
-export type Service = 'database' | 'openmu' | 'proxy' | 'register' | 'cashshop' | 'marketplace' | 'ops' | 'web' | 'mailserver' | 'webmail';
+export type Service =
+  | 'database'
+  | 'openmu'
+  | 'proxy'
+  | 'register'
+  | 'cashshop'
+  | 'marketplace'
+  | 'site'
+  | 'ops'
+  | 'web'
+  | 'mailserver'
+  | 'webmail';
 
 /** The Compose profile the mail server and webmail run under. */
 export const MAIL_PROFILE = 'mail';
@@ -45,6 +59,7 @@ export const DATA = {
   register: '/data/register/signups.sqlite',
   cashshop: '/data/cashshop/shop.sqlite',
   marketplace: '/data/marketplace/market.sqlite',
+  site: '/data/site/site.sqlite',
   ops: '/data/ops/ops.sqlite',
   openmuLogs: '/openmu-logs',
 } as const;

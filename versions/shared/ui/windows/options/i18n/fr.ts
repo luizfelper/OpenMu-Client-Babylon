@@ -390,6 +390,7 @@ export default {
   'options.help.englishItemNames':
     'Garde les noms d’objets en anglais quelle que soit la langue, comme dans les guides et les listes de prix.',
   'options.exitGame': 'Quitter le jeu',
+  'options.vip': 'VIP',
   'options.selectServer': 'Choisir un serveur',
   'options.switchCharacter': 'Changer de personnage',
   'options.performanceReadout': 'Infos de performance',

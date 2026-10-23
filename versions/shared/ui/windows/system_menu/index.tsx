@@ -10,15 +10,17 @@ import { UI_STAGE_HEIGHT, UI_STAGE_WIDTH, useUiViewport } from '@/controllers/in
 import { playUiSound } from '@/controllers/sound/sfx';
 import { isTypingInField } from '@/ecs/systems/keyboardInputSystem';
 import { SessionExit, type ExitKind } from '@/modules/session/sessionExit';
+import { openVipStore } from '@/modules/site/site';
 import { menuLabelStyle } from './labelFit';
 
 /**
- * `CSystemMenuMsgBox` (NewUICustomMessageBox.cpp:2155-2435): Escape in the world. Five
- * `MSGBOX_BTN_EMPTY` buttons down a message box of five middle slices, 100 from the top of the
- * stage; the three ways out log out at once, Option opens the Options window. Reads `SessionExit`.
+ * `CSystemMenuMsgBox` (NewUICustomMessageBox.cpp:2155-2435): Escape in the world. Six
+ * `MSGBOX_BTN_EMPTY` buttons down a message box of six middle slices, 100 from the top of the
+ * stage; the three ways out log out at once, Option opens the Options window, VIP opens the
+ * public site's store. Reads `SessionExit`.
  */
 
-const LINES = 5;
+const LINES = 6;
 const TOP = 100;
 const BUTTON = { width: 120, height: 29 };
 const FIRST_BUTTON_Y = 23;
@@ -30,6 +32,7 @@ const BUTTONS: { key: TextKey; exit?: ExitKind }[] = [
   { key: 'options.selectServer', exit: 'servers' },
   { key: 'options.switchCharacter', exit: 'characters' },
   { key: 'options.title' },
+  { key: 'options.vip' },
   { key: 'common.cancel' },
 ];
 
@@ -39,6 +42,8 @@ function choose(index: number): void {
   if (exit) SessionExit.request(exit);
   // `OptionBtnDown`: the fourth button.
   else if (index === 3) runInAction(() => MuWindows.setOpen('options', true));
+  // The VIP store lives on the public site, not in the client.
+  else if (index === 4) openVipStore();
 }
 
 export const SystemMenuWindow = observer(() => {

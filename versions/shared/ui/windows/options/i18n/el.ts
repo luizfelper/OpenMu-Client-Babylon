@@ -352,6 +352,7 @@ export default {
   'options.help.englishItemNames':
     'Κρατά τα ονόματα αντικειμένων στα αγγλικά σε οποιαδήποτε γλώσσα, ώστε να ταιριάζουν με οδηγούς και τιμοκαταλόγους.',
   'options.exitGame': 'Έξοδος από το παιχνίδι',
+  'options.vip': 'VIP',
   'options.selectServer': 'Επιλογή διακομιστή',
   'options.switchCharacter': 'Αλλαγή χαρακτήρα',
   'options.performanceReadout': 'Ένδειξη επιδόσεων',

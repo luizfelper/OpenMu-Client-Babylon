@@ -381,6 +381,7 @@ export default {
   'options.help.englishItemNames':
     'Giữ tên vật phẩm bằng tiếng Anh dù chọn ngôn ngữ nào, để khớp với hướng dẫn và bảng giá.',
   'options.exitGame': 'Thoát game',
+  'options.vip': 'VIP',
   'options.selectServer': 'Chọn máy chủ',
   'options.switchCharacter': 'Đổi nhân vật',
   'options.performanceReadout': 'Chỉ số hiệu năng',

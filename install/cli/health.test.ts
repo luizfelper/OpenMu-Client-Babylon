@@ -8,8 +8,8 @@ beforeEach(() => vi.stubGlobal('Bun', { sleep: () => Promise.resolve() }));
 afterEach(() => vi.unstubAllGlobals());
 
 const config: Config = { ...DEFAULTS };
-// No mail: 5 TCP probes (connect, game, admin, proxy, register) + 2 HTTP (cash shop, marketplace).
-const CHECK_COUNT = 7;
+// No mail: 5 TCP probes (connect, game, admin, proxy, register) + 3 HTTP (cash shop, marketplace, site).
+const CHECK_COUNT = 8;
 
 /** A Stack whose `exec` answers each round with the given per-check results (1 = ok). */
 function fakeStack(rounds: string[][], onExec?: () => void): Stack {
@@ -38,6 +38,7 @@ describe('checks', () => {
       'Register',
       'Cash shop',
       'Marketplace',
+      'Site',
     ]);
     expect(results.every(r => r.ok)).toBe(true);
   });

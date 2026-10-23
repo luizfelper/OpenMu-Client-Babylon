@@ -21,6 +21,8 @@ export type Config = {
   escrowSecret: string;
   marketTicketSecret: string;
   shopTicketSecret: string;
+  /** Signs the public site's admin session cookie. */
+  siteSecret: string;
   band: boolean;
   ping: boolean;
   weather: boolean;
@@ -73,6 +75,7 @@ const KEYS: Record<keyof Config, string> = {
   escrowSecret: 'MARKETPLACE_ESCROW_SECRET',
   marketTicketSecret: 'MARKETPLACE_TICKET_SECRET',
   shopTicketSecret: 'CASHSHOP_TICKET_SECRET',
+  siteSecret: 'MU_SITE_SECRET',
   band: 'MU_BAND',
   ping: 'MU_PING',
   weather: 'MU_WEATHER',
@@ -112,6 +115,7 @@ export const DEFAULTS: Config = {
   escrowSecret: '',
   marketTicketSecret: '',
   shopTicketSecret: '',
+  siteSecret: '',
   band: true,
   ping: true,
   weather: true,

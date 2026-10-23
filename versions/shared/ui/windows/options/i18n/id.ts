@@ -348,6 +348,7 @@ export default {
   'options.help.englishItemNames':
     'Mempertahankan nama item dalam bahasa Inggris apa pun bahasanya, agar sesuai dengan panduan dan daftar harga.',
   'options.exitGame': 'Keluar Game',
+  'options.vip': 'VIP',
   'options.selectServer': 'Pilih Server',
   'options.switchCharacter': 'Ganti Karakter',
   'options.performanceReadout': 'Tampilan performa',

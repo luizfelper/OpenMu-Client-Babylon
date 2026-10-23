@@ -12,7 +12,8 @@ Current working ~somewhat version is S6EP3; 0.97d ships beside it (tag V097D) an
 
 One command sets up everything: OpenMU (installed the OpenMU way, with our plugin added), the
 websocket proxy with the band system, map ping and weather, account signup, cash shop,
-marketplace, the admin panel and this client. It asks you a few questions and does the rest.
+marketplace, the public server site with news/rankings/VIP, the admin panel and this client. It asks
+you a few questions and does the rest.
 
 ### What you need
 
@@ -43,8 +44,8 @@ installer.
 ### Step 3: answer the questions
 
 - **Address:** your domain (for example `example.com`) or the server's IP. With a domain, create the
-  DNS **A records** the installer lists (`play.`, `ws.`, `register.`, `api.`, `admin.`) pointing at
-  your server's IP.
+  DNS **A records** the installer lists (`play.`, `ws.`, `register.`, `api.`, `site.`, `admin.`)
+  pointing at your server's IP.
 - **Passwords:** you create them (database, admin panel, Game Master account). **Write them down.**
 - **Features:** band system, map ping, weather, cash shop delivery, marketplace fees. The defaults
   are fine.
@@ -54,6 +55,11 @@ The first build takes 10 to 20 minutes. When it finishes, it prints the addresse
 ### Step 4: play
 
 Open `https://play.<your-domain>` (or `http://YOUR.SERVER.IP`), create an account and log in.
+
+The public site is at `https://site.<your-domain>` (IP mode: `http://YOUR.SERVER.IP:8082`). It has
+news, rankings, server information, rules, events, FAQ, useful links, online players and the VIP
+store. The panel is at `/admin` on the same site and uses the same login as the OpenMU admin panel.
+News, prices, content and Mercado Pago credentials are edited there; nothing needs a deploy.
 
 ### Afterwards: the `mu` command
 

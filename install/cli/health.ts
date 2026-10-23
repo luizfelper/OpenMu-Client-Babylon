@@ -17,6 +17,7 @@ const TCP: [string, string, number[]][] = [
 const HTTP: [string, string][] = [
   ['Cash shop', `http://${HOSTS.cashshop}:${PORTS.cashshop}/api/catalog`],
   ['Marketplace', `http://${HOSTS.marketplace}:${PORTS.marketplace}/api/market/listings`],
+  ['Site', `http://${HOSTS.site}:${PORTS.site}/api/health`],
 ];
 
 export async function checks(stack: Stack): Promise<Check[]> {

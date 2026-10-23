@@ -338,6 +338,7 @@ export default {
   'options.help.englishItemNames':
     'Ponechá názvy předmětů v angličtině bez ohledu na jazyk, aby odpovídaly návodům a ceníkům.',
   'options.exitGame': 'Ukončit hru',
+  'options.vip': 'VIP',
   'options.selectServer': 'Vybrat server',
   'options.switchCharacter': 'Změnit postavu',
   'options.performanceReadout': 'Ukazatel výkonu',

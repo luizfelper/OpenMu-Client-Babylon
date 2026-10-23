@@ -345,6 +345,7 @@ export default {
   'options.help.englishItemNames':
     'A tárgynevek bármely nyelven angolul maradnak, hogy egyezzenek az útmutatókkal és az árlistákkal.',
   'options.exitGame': 'Kilépés a játékból',
+  'options.vip': 'VIP',
   'options.selectServer': 'Szerverválasztás',
   'options.switchCharacter': 'Karakterváltás',
   'options.performanceReadout': 'Teljesítménykijelző',

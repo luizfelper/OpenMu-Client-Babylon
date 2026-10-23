@@ -10,11 +10,13 @@ import { useWindowStackEntry } from '@/controllers/interface/components/mu_windo
 import { AppState, UIState } from '@/controllers/interface/uiState';
 import { PREGAME_MENU } from '@/ecs/systems/keyboardInputSystem';
 import { SessionExit } from '@/modules/session/sessionExit';
+import { openVipStore } from '@/modules/site/site';
 
 /**
  * `CSysMenuWin` (SysMenuWin.cpp): the server list's and the character screen's system menu, a
- * `CWinEx` frame of 6 or 10 side lines centred on the stage. Exit Game counts five seconds down,
- * Select Server (the character screen only) leaves for the server list, Option opens Options.
+ * `CWinEx` frame of 10 or 14 side lines centred on the stage. Exit Game counts five seconds down,
+ * Select Server (the character screen only) leaves for the server list, Option opens Options, VIP
+ * opens the public site's store.
  */
 
 const WIDTH = 213;
@@ -32,11 +34,12 @@ const CLOSE_FROM_BOTTOM = 52;
 /** `MESSAGE_GAME_END_COUNTDOWN`'s `m_nGameExit`. */
 const EXIT_SECONDS = 5;
 
-export type SysMenuButton = 'exit' | 'servers' | 'option' | 'close';
+export type SysMenuButton = 'exit' | 'servers' | 'vip' | 'option' | 'close';
 
 const LABEL: Record<SysMenuButton, TextKey> = {
   exit: 'options.exitGame',
   servers: 'options.selectServer',
+  vip: 'options.vip',
   option: 'options.title',
   close: 'common.close',
 };
@@ -70,6 +73,7 @@ export function chooseSysMenu(button: SysMenuButton): void {
   });
   if (button === 'exit') exitCountdown();
   else if (button === 'servers') SessionExit.request('servers');
+  else if (button === 'vip') openVipStore();
 }
 
 export const PregameSystemMenu = observer(() => {
@@ -80,20 +84,22 @@ export const PregameSystemMenu = observer(() => {
   useWindowStackEntry(PREGAME_MENU, open, close);
   if (!open) return null;
 
-  // `SetLine`: 6 lines on the login scene, 10 on the character scene, where Select Server is enabled.
+  // `SetLine`: 10 lines on the login scene, 14 on the character scene, where Select Server is
+  // enabled. The extra lines make room for the VIP store without moving Exit Game.
   const characters = screen === UIState.Characters;
-  const boxHeight = TOP_HEIGHT + BOTTOM_HEIGHT + LINE * (characters ? 10 : 6);
+  const boxHeight = TOP_HEIGHT + BOTTOM_HEIGHT + LINE * (characters ? 14 : 10);
   const closeY = boxHeight - CLOSE_FROM_BOTTOM;
   // A disabled Select Server is not drawn (`CButton::Render`, no disable frame).
   const buttons: [SysMenuButton, number][] = [
     ['exit', FIRST_BUTTON_Y],
     ...(characters ? [['servers', FIRST_BUTTON_Y + BUTTON_STEP] as [SysMenuButton, number]] : []),
+    ['vip', closeY - BUTTON_STEP * 2],
     ['option', closeY - BUTTON_STEP],
     ['close', closeY],
   ];
   const left = (width - UI_STAGE_WIDTH * scale) / 2 + ((UI_STAGE_WIDTH - WIDTH) / 2) * scale;
   const top = (height - UI_STAGE_HEIGHT * scale) / 2 + ((UI_STAGE_HEIGHT - boxHeight) / 2) * scale;
-  const sides = LINE * (characters ? 10 : 6);
+  const sides = LINE * (characters ? 14 : 10);
 
   return (
     <div className="system-menu-layer">

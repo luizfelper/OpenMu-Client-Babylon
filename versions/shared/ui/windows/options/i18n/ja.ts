@@ -328,6 +328,7 @@ export default {
   'options.help.language': 'インターフェース、クエスト、NPC の台詞、モンスター名とアイテム名の言語です。',
   'options.help.englishItemNames': '攻略サイトや価格表と合わせられるよう、言語に関係なくアイテム名を英語で表示します。',
   'options.exitGame': 'ゲーム終了',
+  'options.vip': 'VIP',
   'options.selectServer': 'サーバー選択',
   'options.switchCharacter': 'キャラクター変更',
   'options.performanceReadout': 'パフォーマンス表示',

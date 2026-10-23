@@ -334,6 +334,7 @@ export default {
   'options.help.englishItemNames':
     'গাইড ও দামের তালিকার সাথে মেলাতে, ভাষা যা-ই হোক, আইটেমের নাম ইংরেজিতে রাখে।',
   'options.exitGame': 'গেম থেকে প্রস্থান',
+  'options.vip': 'VIP',
   'options.selectServer': 'সার্ভার নির্বাচন',
   'options.switchCharacter': 'চরিত্র বদল',
   'options.performanceReadout': 'পারফরম্যান্সের তথ্য',

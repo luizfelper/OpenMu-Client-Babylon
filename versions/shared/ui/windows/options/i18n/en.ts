@@ -421,6 +421,7 @@ const en = {
 
   // The system menu's three ways out (GlobalText 381 / 382 / 383).
   'options.exitGame': 'Exit Game',
+  'options.vip': 'VIP',
   'options.selectServer': 'Select Server',
   'options.switchCharacter': 'Switch Character',
   'options.performanceReadout': 'Performance readout',

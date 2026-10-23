@@ -314,6 +314,7 @@ export default {
   'options.help.language': '介面、任務、NPC 對話，以及怪物與物品名稱所使用的語言。',
   'options.help.englishItemNames': '無論使用哪種語言，物品名稱都維持英文，方便對照攻略與價格表。',
   'options.exitGame': '離開遊戲',
+  'options.vip': 'VIP',
   'options.selectServer': '選擇伺服器',
   'options.switchCharacter': '更換角色',
   'options.performanceReadout': '效能資訊',

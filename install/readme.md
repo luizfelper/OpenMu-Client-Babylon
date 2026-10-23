@@ -28,17 +28,39 @@ checked out at the release tag) with `stack/compose.yml` layered over it.
 | database | OpenMU's compose, `postgres:18` | our password; not published |
 | openmu-startup | `munique/openmu:<release>` + `../openmu` (our plugins) | not published; advertises loopback |
 | proxy | `stack/services.Dockerfile` | shares OpenMU's network namespace; band, ping, weather, presence, tracker |
-| register, cashshop, marketplace, ops | same image, other command | |
+| register, cashshop, marketplace, site, ops | same image, other command | |
 | web | `stack/web.Dockerfile` (client + register site) on Caddy | the only published ports |
 | mailserver, webmail | `mailserver/docker-mailserver:16.0.1`, `roundcube/roundcubemail:1.7.4-apache` | optional, profile `mail` ([Mail server](#mail-server)) |
 
 OpenMU's nginx is switched off (profile `openmu-nginx`); Caddy serves the client, routes to every
 service, gets HTTPS certificates in domain mode (the certificate e-mail is optional) and asks for the
 admin panel login. Only the web
-container publishes ports: 80/443 (domain mode) or 80, 3000, 8080, 8081 (IP mode, `stack/compose.ip.yml`),
-plus the mail server's 25, 465, 587 and 993 when it is on.
+container publishes ports: 80/443 (domain mode) or 80, 3000, 8080, 8081, 8082 (IP mode,
+`stack/compose.ip.yml`), plus the mail server's 25, 465, 587 and 993 when it is on.
 Postgres, presence and the OpenMU game ports are never reachable from outside; the cash shop gate
 relies on that.
+
+## Public site, VIP and Mercado Pago
+
+The `site` service (`site/server/main.ts`) serves the public site, the news API, rankings, online
+count and the VIP checkout. It keeps its own SQLite database at `/data/site/site.sqlite`; it only
+reads OpenMU's Postgres (`data."Character"`, `data."StatAttribute"`, `data."Account"`). In domain mode
+Caddy exposes it at `site.<domain>`; in IP mode it is port `8082`. Its panel is `/admin` on the same
+origin, with the same login and bcrypt hash as the OpenMU admin panel. The session cookie is signed
+with `MU_SITE_SECRET` (older state files fall back to the shop ticket secret).
+
+Mercado Pago is configured in the panel, never in the repository:
+
+1. Create a Checkout Pro application at Mercado Pago and copy its **Access Token** (and public key).
+2. In `/admin` → **Mercado Pago**, paste the token, enable purchases, save, and use **Testar conexão**.
+3. Register the webhook URL shown in the panel (`https://site.<domain>/api/vip/webhook`, event
+   **Pagamentos**). If Mercado Pago gives you a signing secret, paste it in the same form.
+4. Make a low-value test purchase. The order only unlocks VIP after the payment is approved and its
+   amount/currency match the order.
+
+The site also has a manual approval button for orders. VIP plans, prices, benefits, news, rules,
+events and FAQ are all editable in the panel. `SITE_ACCOUNT_CHECK=off` exists only for a preview
+without OpenMU; production keeps account validation on.
 
 ## Where things live on the server
 
@@ -265,6 +287,6 @@ it makes the DKIM key first if there is none yet.
 | build failed | the log path it prints (`/etc/mu-server/logs/`) |
 | OpenMU did not start in time | `mu logs openmu-startup` |
 | a service DOWN in `mu status` | `mu logs <service>` |
-| HTTPS not working | DNS A records for play., ws., register., api., admin. must point here; `mu logs web` |
+| HTTPS not working | DNS A records for play., ws., register., api., site., admin. must point here; `mu logs web` |
 | mail does not arrive or leave | port 25 open at the VPS provider; `mu mail dns` records in place; `mu logs mailserver` |
 | Mail server (IMAPS) DOWN | Caddy has no certificate for mail.<domain> yet: its A record; `mu logs web` |

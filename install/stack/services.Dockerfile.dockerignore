@@ -8,6 +8,7 @@
 !register/server/**
 !cashshop/server/**
 !marketplace/server/**
+!site/**
 !ops/server/**
 !tools/sqliteMigrate.ts
 !tools/sqliteBackup.ts

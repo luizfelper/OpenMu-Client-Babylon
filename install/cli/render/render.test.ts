@@ -48,7 +48,24 @@ describe('service env', () => {
   });
 
   it('lets the services believe Caddy and nobody else', () => {
-    for (const s of [env.register, env.cashshop, env.marketplace]) expect(s?.TRUSTED_PROXIES).toBe(WEB_IP);
+    for (const s of [env.register, env.cashshop, env.marketplace, env.site]) expect(s?.TRUSTED_PROXIES).toBe(WEB_IP);
+  });
+
+  it('gives the public site its own database, login and origins', () => {
+    expect(env.site).toMatchObject({
+      PORT: '3400',
+      SITE_DB: '/data/site/site.sqlite',
+      SITE_BASE_URL: 'https://site.example.com',
+      SITE_ADMIN_USER: DEFAULTS.adminUser,
+      SITE_ADMIN_HASH: domain.adminHash,
+      SITE_SESSION_SECRET: 'shop-secret',
+      SITE_ACCOUNT_CHECK: 'on',
+      CLIENT_URL: 'https://play.example.com',
+      REGISTER_URL: 'https://register.example.com',
+    });
+    expect(serviceEnv({ ...domain, siteSecret: 'site-secret' }).site?.SITE_SESSION_SECRET).toBe('site-secret');
+    expect(serviceEnv(ip).site?.SITE_BASE_URL).toBe('http://203.0.113.7:8082');
+    expect(serviceEnv(ip).site?.REGISTER_URL).toBe('http://203.0.113.7:8081');
   });
 
   it('allows the client origin for CORS', () => {
@@ -201,7 +218,7 @@ describe('server.json', () => {
 describe('caddyfile', () => {
   it('serves every subdomain over HTTPS in domain mode', () => {
     const text = caddyfile(domain);
-    for (const host of ['play', 'api', 'ws', 'register', 'admin']) expect(text).toContain(`${host}.example.com {`);
+    for (const host of ['play', 'api', 'ws', 'register', 'site', 'admin']) expect(text).toContain(`${host}.example.com {`);
     expect(text).toContain('email ops@example.com');
     expect(text.indexOf('/api/market*')).toBeLessThan(text.indexOf('/api/*'));
     expect(text).not.toContain('auto_https off');
@@ -220,7 +237,7 @@ describe('caddyfile', () => {
   it('uses plain ports in IP mode', () => {
     const text = caddyfile(ip);
     expect(text).toContain('auto_https off');
-    for (const port of [':80 {', ':3000 {', ':8081 {', ':8080 {']) expect(text).toContain(port);
+    for (const port of [':80 {', ':3000 {', ':8081 {', ':8082 {', ':8080 {']) expect(text).toContain(port);
   });
 
   it('balances its braces', () => {
@@ -233,6 +250,7 @@ describe('caddyfile', () => {
   it('opens only what is served', () => {
     expect(publicPorts(domain)).toEqual([22, 80, 443]);
     expect(publicPorts(ip)).not.toContain(5432);
+    expect(publicPorts(ip)).toContain(8082);
   });
 });
 
@@ -254,6 +272,25 @@ describe('lighter assets', () => {
   it('tell the client in server.json', () => {
     expect(JSON.parse(serverManifest(domain)).settings.liteAssets).toBe(false);
     expect(JSON.parse(serverManifest({ ...domain, liteAssets: true })).settings.liteAssets).toBe(true);
+  });
+});
+
+describe('public site URL', () => {
+  it('reaches the client build and the site env', () => {
+    expect(clientBuildArgs(domain).VITE_SITE_URL).toBe('https://site.example.com');
+    expect(clientBuildArgs(ip).VITE_SITE_URL).toBe('http://203.0.113.7:8082');
+    expect(stackEnv(domain, { repo: '/opt/mu', state: '/etc/mu-server' }).VITE_SITE_URL).toBe(
+      'https://site.example.com'
+    );
+  });
+
+  it('is passed by compose and the web Dockerfile to the client build', () => {
+    const stack = `${import.meta.dirname}/../../stack`;
+    expect(readFileSync(`${stack}/compose.yml`, 'utf8')).toContain('VITE_SITE_URL: ${VITE_SITE_URL}');
+    const docker = readFileSync(`${stack}/web.Dockerfile`, 'utf8');
+    expect(docker).toMatch(/ARG [^\n]*VITE_SITE_URL/);
+    expect(docker).toContain('VITE_SITE_URL="$VITE_SITE_URL"');
+    expect(readFileSync(`${stack}/compose.ip.yml`, 'utf8')).toContain('"8082:8082"');
   });
 });
 

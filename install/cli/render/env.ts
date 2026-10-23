@@ -11,6 +11,19 @@ export function databaseUrl(c: Config): string {
   return `postgres://postgres:${encodeURIComponent(c.postgresPassword)}@${HOSTS.database}:5432/openmu`;
 }
 
+/** The public site's origin: its own subdomain, or a plain port in IP mode. */
+export function siteOrigin(c: Config): string {
+  return c.mode === 'domain'
+    ? `https://site.${c.domain}`
+    : `http://${c.publicIp}:${PORTS.siteSite}`;
+}
+
+function registerOrigin(c: Config): string {
+  return c.mode === 'domain'
+    ? `https://register.${c.domain}`
+    : `http://${c.publicIp}:${PORTS.registerSite}`;
+}
+
 /** The OpenMU ports the proxy may dial: connect server and game servers, on loopback only. */
 export function allowTargets(): string {
   return [PORTS.connect, ...gamePorts()].map(p => `127.0.0.1:${p}`).join(',');
@@ -84,6 +97,27 @@ export function serviceEnv(c: Config): Partial<Record<Service, Env>> {
       PRESENCE_URL: presence,
       TRUSTED_PROXIES: WEB_IP,
     },
+    site: {
+      PORT: String(PORTS.site),
+      HOSTNAME: '0.0.0.0',
+      SITE_DB: DATA.site,
+      DATABASE_URL: db,
+      PRESENCE_URL: presence,
+      SITE_BASE_URL: siteOrigin(c),
+      SITE_ADMIN_USER: c.adminUser,
+      SITE_ADMIN_HASH: c.adminHash,
+      // Older state files have no MU_SITE_SECRET; the shop secret is a safe fallback.
+      SITE_SESSION_SECRET: c.siteSecret || c.shopTicketSecret,
+      CORS_ORIGIN: origin,
+      SITE_ACCOUNT_CHECK: 'on',
+      SERVER_NAME: c.serverName,
+      SERVER_DESCRIPTION: c.serverDescription,
+      SERVER_VERSION: c.openmuVersion,
+      SERVER_LANGUAGE: c.serverLanguage,
+      CLIENT_URL: origin,
+      REGISTER_URL: registerOrigin(c),
+      TRUSTED_PROXIES: WEB_IP,
+    },
     ops: {
       OPENMU_LOG_DIR: DATA.openmuLogs,
       OPS_DB_PATH: DATA.ops,
@@ -138,6 +172,7 @@ function siteBuildArgs(c: Config): Env {
       VITE_REGISTER_URL: `https://register.${c.domain}`,
       VITE_REGISTER_API: `https://register.${c.domain}/api/register`,
       VITE_DATA_URL_REGISTER: `https://play.${c.domain}/Data/`,
+      VITE_SITE_URL: siteOrigin(c),
     };
   }
   return {
@@ -147,5 +182,6 @@ function siteBuildArgs(c: Config): Env {
     VITE_REGISTER_URL: `http://${c.publicIp}:${PORTS.registerSite}`,
     VITE_REGISTER_API: `http://${c.publicIp}:${PORTS.registerSite}/api/register`,
     VITE_DATA_URL_REGISTER: `http://${c.publicIp}/Data/`,
+    VITE_SITE_URL: siteOrigin(c),
   };
 }

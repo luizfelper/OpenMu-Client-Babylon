@@ -400,6 +400,7 @@ export default {
   'options.help.englishItemNames':
     'Pinananatiling Ingles ang pangalan ng item anuman ang wika, para tumugma sa mga gabay at listahan ng presyo.',
   'options.exitGame': 'Lumabas sa Laro',
+  'options.vip': 'VIP',
   'options.selectServer': 'Pumili ng Server',
   'options.switchCharacter': 'Magpalit ng Karakter',
   'options.performanceReadout': 'Ulat ng pagganap',

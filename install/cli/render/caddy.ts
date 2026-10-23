@@ -47,6 +47,11 @@ function registerSite(): string {
   ].join('\n');
 }
 
+/** The public site: its own server process, including /admin and /api. */
+function publicSite(): string {
+  return `\thandle {\n\t\treverse_proxy ${HOSTS.site}:${PORTS.site}\n\t}`;
+}
+
 const block = (address: string, body: string) => `${address} {\n${body}\n}\n`;
 const proxyTo = (port: number) => `\treverse_proxy ${HOSTS.openmu}:${port}`;
 
@@ -64,6 +69,7 @@ export function caddyfile(c: Config): string {
       block(`api.${d}`, apiRoutes()),
       block(`ws.${d}`, proxySite()),
       block(`register.${d}`, registerSite()),
+      block(`site.${d}`, publicSite()),
       block(`admin.${d}`, adminSite(c)),
       // Let's Encrypt only, so the mail server finds the certificate at a known path (mail.ts certFiles).
       ...(mailOn(c) ? [block(mailHost(c), `\ttls {\n\t\tissuer acme\n\t}\n\treverse_proxy ${HOSTS.webmail}:${PORTS.webmail}`)] : []),
@@ -74,12 +80,15 @@ export function caddyfile(c: Config): string {
     block(':80', clientSite(`http://${c.publicIp}:${PORTS.registerSite}`)),
     block(`:${PORTS.proxy}`, proxySite()),
     block(`:${PORTS.registerSite}`, registerSite()),
+    block(`:${PORTS.siteSite}`, publicSite()),
     block(`:${PORTS.admin}`, adminSite(c)),
   ].join('\n');
 }
 
 /** Ports the firewall opens. SSH stays open so the installer never locks you out. */
 export function publicPorts(c: Config): number[] {
-  if (c.mode !== 'domain') return [22, 80, PORTS.proxy, PORTS.registerSite, PORTS.admin];
+  if (c.mode !== 'domain') {
+    return [22, 80, PORTS.proxy, PORTS.registerSite, PORTS.siteSite, PORTS.admin];
+  }
   return [22, 80, 443, ...(mailOn(c) ? MAIL_PORTS : [])];
 }

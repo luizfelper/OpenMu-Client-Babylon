@@ -2,7 +2,7 @@
 // Usage: MU_STATE=<empty folder> bun install/cli/e2e.ts [all|config|build|start|check|backup|down]
 // `config` only checks out OpenMU and validates the merged compose files (no images; what CI runs).
 // `check` also plays the game through the proxy as the test GM (loginCheck.ts).
-// Ports 80, 3000, 8080, 8081 must be free. `down` removes the containers and volumes again.
+// Ports 80, 3000, 8080, 8081, 8082 must be free. `down` removes the containers and volumes again.
 import { backup } from './backup';
 import { createGm, buildAll, lockTestAccounts, logFile } from './commands/install';
 import { DEFAULTS, type Config } from './config';
@@ -29,6 +29,7 @@ const c: Config = loadConfig(p) ?? {
   escrowSecret: newSecret(),
   marketTicketSecret: newSecret(),
   shopTicketSecret: newSecret(),
+  siteSecret: newSecret(),
 };
 saveState(c, p);
 const stack = new Stack(c, p);

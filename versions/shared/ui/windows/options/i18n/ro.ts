@@ -399,6 +399,7 @@ export default {
   'options.help.englishItemNames':
     'Păstrează numele obiectelor în engleză indiferent de limbă, ca să se potrivească cu ghidurile și listele de prețuri.',
   'options.exitGame': 'Ieși din joc',
+  'options.vip': 'VIP',
   'options.selectServer': 'Alege serverul',
   'options.switchCharacter': 'Schimbă personajul',
   'options.performanceReadout': 'Date de performanță',

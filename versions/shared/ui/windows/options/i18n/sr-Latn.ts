@@ -335,6 +335,7 @@ export default {
   'options.help.englishItemNames':
     'Zadržava engleske nazive predmeta bez obzira na jezik, da se poklapaju sa vodičima i cenovnicima.',
   'options.exitGame': 'Izađi iz igre',
+  'options.vip': 'VIP',
   'options.selectServer': 'Izaberi server',
   'options.switchCharacter': 'Promeni lika',
   'options.performanceReadout': 'Prikaz performansi',

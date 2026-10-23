@@ -327,6 +327,7 @@ export default {
   'options.help.englishItemNames':
     'يبقي أسماء الأغراض بالإنجليزية أيا كانت اللغة، لتطابق الأدلة وقوائم الأسعار.',
   'options.exitGame': 'الخروج من اللعبة',
+  'options.vip': 'VIP',
   'options.selectServer': 'اختيار الخادم',
   'options.switchCharacter': 'تبديل الشخصية',
   'options.performanceReadout': 'مؤشرات الأداء',

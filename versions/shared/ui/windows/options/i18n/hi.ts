@@ -340,6 +340,7 @@ export default {
   'options.help.englishItemNames':
     'भाषा कोई भी हो, आइटम के नाम अंग्रेज़ी में रखता है, ताकि वे गाइड और कीमत सूचियों से मेल खाएं।',
   'options.exitGame': 'गेम से बाहर निकलें',
+  'options.vip': 'VIP',
   'options.selectServer': 'सर्वर चुनें',
   'options.switchCharacter': 'किरदार बदलें',
   'options.performanceReadout': 'परफ़ॉर्मेंस डिस्प्ले',

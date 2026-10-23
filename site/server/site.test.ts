@@ -1,0 +1,119 @@
+import { createHmac } from 'node:crypto';
+import { describe, expect, it } from 'vitest';
+import { renderMarkdown } from './markdown';
+import { verifyWebhookSignature } from './mpSignature';
+import { DEFAULT_PLANS, findPlan, formatBrl, parsePlans } from './plans';
+import { slugify } from './slug';
+
+describe('slugify', () => {
+  it('folds Portuguese accents instead of dropping the letters', () => {
+    expect(slugify('Notícia em Ação')).toBe('noticia-em-acao');
+    expect(slugify('  Atualização   do Servidor!  ')).toBe('atualizacao-do-servidor');
+  });
+
+  it('never returns an empty path segment', () => {
+    expect(slugify('!!!')).toBe('noticia');
+    expect(slugify('a'.repeat(120))).toHaveLength(80);
+  });
+});
+
+describe('VIP plans', () => {
+  it('ships usable defaults', () => {
+    expect(DEFAULT_PLANS.length).toBeGreaterThan(0);
+    expect(new Set(DEFAULT_PLANS.map(plan => plan.id)).size).toBe(DEFAULT_PLANS.length);
+    expect(findPlan(DEFAULT_PLANS, 'ouro')?.highlight).toBe(true);
+    expect(formatBrl(1990)).toContain('19,90');
+  });
+
+  it('normalizes admin input and drops unsafe extras', () => {
+    const plans = parsePlans([
+      {
+        id: '  OURO ',
+        name: '  VIP Ouro  ',
+        days: '30',
+        price_cents: '4990',
+        description: '  completo  ',
+        benefits: [' Tudo ', '', 42, 'Badge'],
+        highlight: true,
+        unknown: 'ignored',
+      },
+    ]);
+    expect(plans).toEqual([
+      {
+        id: 'ouro',
+        name: 'VIP Ouro',
+        days: 30,
+        price_cents: 4990,
+        description: 'completo',
+        benefits: ['Tudo', 'Badge'],
+        highlight: true,
+      },
+    ]);
+  });
+
+  it('rejects duplicates, bad identifiers, durations and prices', () => {
+    const base = { name: 'VIP', days: 30, price_cents: 1990, description: '', benefits: [] };
+    expect(() => parsePlans([])).toThrow(/pelo menos um plano/i);
+    expect(() => parsePlans([{ ...base, id: 'a' }])).toThrow(/identificador/i);
+    expect(() => parsePlans([{ ...base, id: 'x y' }])).toThrow(/identificador/i);
+    expect(() => parsePlans([{ ...base, id: 'a1' }, { ...base, id: 'A1' }])).toThrow(/repetido/i);
+    expect(() => parsePlans([{ ...base, id: 'a1', days: 0 }])).toThrow(/Duração/i);
+    expect(() => parsePlans([{ ...base, id: 'a1', price_cents: 99 }])).toThrow(/Preço/i);
+    expect(() => parsePlans(Array.from({ length: 13 }, (_, index) => ({ ...base, id: `p${index}` })))).toThrow(
+      /12 planos/i
+    );
+  });
+});
+
+describe('news Markdown', () => {
+  it('renders the supported blocks', () => {
+    const html = renderMarkdown(
+      ['# Título', '', 'Texto **forte** e *leve*.', '', '- um', '- dois', '', '1. primeiro', '2. segundo', '', '> aviso', '', '---', '', '[site](https://example.com)'].join('\n')
+    );
+    expect(html).toContain('<h1>Título</h1>');
+    expect(html).toContain('<strong>forte</strong>');
+    expect(html).toContain('<em>leve</em>');
+    expect(html).toContain('<ul><li>um</li><li>dois</li></ul>');
+    expect(html).toContain('<ol><li>primeiro</li><li>segundo</li></ol>');
+    expect(html).toContain('<blockquote>aviso</blockquote>');
+    expect(html).toContain('<hr>');
+    expect(html).toContain('<a href="https://example.com/" rel="noopener noreferrer">site</a>');
+  });
+
+  it('escapes HTML and refuses script URLs', () => {
+    const html = renderMarkdown('<script>alert(1)</script>\n\n[clique](javascript:alert(1))');
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).not.toContain('<a ');
+  });
+
+  it('turns single newlines into line breaks inside a paragraph', () => {
+    expect(renderMarkdown('linha um\nlinha dois')).toBe('<p>linha um<br>linha dois</p>');
+  });
+});
+
+describe('Mercado Pago webhook signature', () => {
+  const secret = 'webhook-secret';
+  const dataId = '123456';
+  const requestId = 'request-abc';
+  const ts = '1704908010';
+  const v1 = createHmac('sha256', secret)
+    .update(`id:${dataId};request-id:${requestId};ts:${ts};`)
+    .digest('hex');
+
+  it('accepts the manifest Mercado Pago signs', () => {
+    expect(verifyWebhookSignature(`ts=${ts},v1=${v1}`, requestId, dataId, secret)).toBe(true);
+  });
+
+  it('rejects a wrong secret, missing headers, and a tampered id', () => {
+    expect(verifyWebhookSignature(`ts=${ts},v1=${v1}`, requestId, dataId, 'other')).toBe(false);
+    expect(verifyWebhookSignature(null, requestId, dataId, secret)).toBe(false);
+    expect(verifyWebhookSignature(`ts=${ts},v1=${v1}`, null, dataId, secret)).toBe(false);
+    expect(verifyWebhookSignature(`ts=${ts},v1=${v1}`, requestId, '999', secret)).toBe(false);
+    expect(verifyWebhookSignature('garbage', requestId, dataId, secret)).toBe(false);
+  });
+
+  it('is permissive only when no secret is configured', () => {
+    expect(verifyWebhookSignature(null, null, '', '')).toBe(true);
+  });
+});

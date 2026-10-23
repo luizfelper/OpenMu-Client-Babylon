@@ -10,6 +10,7 @@ import { busyPorts, holder } from '../ports';
 import { buildOpenMuFromSource, checkoutOpenMu } from '../openmu';
 import type { Paths } from '../paths';
 import { saveState } from '../state';
+import { PORTS } from '../stack';
 import { stamp } from '../backup';
 import { ui, pc } from '../ui';
 import { newSecret } from '../validate';
@@ -76,6 +77,7 @@ export async function finish(stack: Stack): Promise<void> {
   ui.note(
     [
       `Play:         ${pc.cyan(clientOrigin(c))}`,
+      `Site:         ${pc.cyan(c.mode === 'domain' ? `https://site.${c.domain}` : `http://${c.publicIp}:${PORTS.siteSite}`)}`,
       `Admin panel:  ${pc.cyan(admin)}  (login ${c.adminUser})`,
       ...(mailOn(c) ? [`Webmail:      ${pc.cyan(`https://${mailHost(c)}`)}  (login ${adminMailbox(c)})`] : []),
       `Settings:     ${stack.paths.state}`,
@@ -96,6 +98,7 @@ export async function install(p: Paths): Promise<void> {
     escrowSecret: newSecret(),
     marketTicketSecret: newSecret(),
     shopTicketSecret: newSecret(),
+    siteSecret: newSecret(),
   };
   for (const group of ['address', 'listing', 'passwords', 'features'] as Group[]) c = await ask(c, group);
   const gm = await askGm();
