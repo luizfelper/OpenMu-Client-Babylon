@@ -23,3 +23,16 @@ export const DOCKED_MAX_SCALE = 1.2;
 
 /** Between the docked buttons, in screen pixels (the stylesheet's `gap`). */
 export const DOCKED_GAP = 6;
+
+/**
+ * The MU Helper hamburger's glyph: the macro system's wrench (`MacroUI_Setup.OZT`),
+ * 18x13 frames stacked every 13 px (normal, lit, dim). Drawn at 27x20 inside the plate.
+ */
+export const HELPER_ICON = {
+  sprite: 'MacroUI/MacroUI_Setup.OZT',
+  width: 18,
+  height: 13,
+  scale: 1.5,
+  lit: 13,
+  dim: 26,
+} as const;

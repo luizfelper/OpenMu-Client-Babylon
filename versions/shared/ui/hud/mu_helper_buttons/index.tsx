@@ -1,6 +1,7 @@
 import './style.less';
 import { observer } from 'mobx-react-lite';
 import { GameOptions, improvementOnChoice, uiScaleFactor } from '@/controllers/settings';
+import { useIsMobile } from '@/controllers/interface/mobile';
 import { uiClick } from '@/controllers/sound/sfx';
 import { Ecs } from '@/ecs/current';
 import { MuHelper } from '@/modules/mu_helper';
@@ -29,12 +30,15 @@ export function helperButtonsSpan(): number {
 
 /**
  * Ours (`muHelperButtons`): the Home and End keys as square buttons, stacked against the
- * left side of the corner minimap and exactly as tall as it. Draws nothing on Classic.
+ * left side of the corner minimap and exactly as tall as it. Draws nothing on Classic,
+ * and nothing on a phone: there is no minimap corner to hang them on, and the touch HUD
+ * carries the same two actions behind its top-right hamburger (`mobile_controls/topMenus.tsx`).
  */
 export const MuHelperButtons = observer(() => {
+  const mobile = useIsMobile();
   // `improvementOnChoice`, not `isOn`: it reads the observable choice, so flipping
   // the checkbox in Options shows or hides the buttons at once.
-  if (!improvementOnChoice('muHelperButtons') || !Ecs.world?.playerEntity) return null;
+  if (mobile || !improvementOnChoice('muHelperButtons') || !Ecs.world?.playerEntity) return null;
 
   const ui = uiScaleFactor(GameOptions.uiScale);
   const size = buttonSize();

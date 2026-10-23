@@ -4,15 +4,17 @@ import { t } from '@/i18n';
 import { MuHelper } from '@/modules/mu_helper';
 import { moduleOn } from '@/modules/module';
 import { MuHelperState, toggleMuHelperWindow } from '@/modules/mu_helper/state';
-import { MobileButton } from './mobileButton';
+import { MobileButton, ScaledFrame } from './mobileButton';
 import { MenuCluster } from './menuCluster';
+import { HELPER_ICON } from './consts';
 
 /**
  * The two hamburgers at the top right of a phone, in the MU Helper's own plate
- * (dark translucent red, gold trim, gold bars). The left one unfolds the five
- * main-frame buttons (`MenuCluster`); the right one unfolds the helper's pair
- * of plates, which on a desktop sit against the minimap - a phone has no room
- * there, and the touch cluster would sit on top of them.
+ * (dark translucent red, gold trim). The left one, three gold bars, unfolds the
+ * five main-frame buttons (`MenuCluster`); the right one, the macro system's
+ * gold wrench, unfolds the helper's pair of plates, which on a desktop sit
+ * against the minimap - a phone has no room there, and the touch cluster would
+ * sit on top of them.
  *
  * One panel at a time, and the row keeps the art small: the buttons are
  * `clamp()`ed in the stylesheet and the cluster scales to the screen.
@@ -44,7 +46,15 @@ export const TopMenus = observer(() => {
             title={t('muHelperButtons.settings')}
             onTap={() => toggle('helper')}
           >
-            {() => BARS}
+            {pressed => (
+              <ScaledFrame
+                file={HELPER_ICON.sprite}
+                y={pressed ? HELPER_ICON.dim : HELPER_ICON.lit}
+                width={HELPER_ICON.width}
+                height={HELPER_ICON.height}
+                scale={HELPER_ICON.scale}
+              />
+            )}
           </MobileButton>
         )}
       </div>
