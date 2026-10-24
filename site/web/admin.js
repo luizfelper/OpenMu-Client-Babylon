@@ -246,6 +246,8 @@ async function deleteNews(id) {
 }
 
 function planTemplate(plan, index) {
+  const game = plan.game || {};
+  const number = (key, fallback) => (Number(game[key] ?? fallback) || fallback);
   return `
     <div class="plan-editor" data-plan-index="${index}">
       <div class="plan-head">
@@ -260,6 +262,17 @@ function planTemplate(plan, index) {
       <label>Nome<input class="plan-name" maxlength="60" value="${escapeHtml(plan.name)}" /></label>
       <label>Descrição<input class="plan-description" maxlength="300" value="${escapeHtml(plan.description || '')}" /></label>
       <label>Benefícios (um por linha)<textarea class="plan-benefits" rows="4">${escapeHtml((plan.benefits || []).join('\n'))}</textarea></label>
+      <fieldset class="plan-game">
+        <legend>Benefícios no jogo</legend>
+        <p class="admin-hint">Multiplicador aplicado pelo servidor do jogo. 1 = sem bônus, 2 = dobrado.</p>
+        <div class="plan-grid">
+          <label>XP de UP (x)<input class="plan-xp" type="number" min="0.1" max="100" step="0.1" value="${number('xp_multiplier', 1)}" /></label>
+          <label>XP Master (x)<input class="plan-master-xp" type="number" min="0.1" max="100" step="0.1" value="${number('master_xp_multiplier', 1)}" /></label>
+          <label>Drop (x)<input class="plan-drop" type="number" min="0.1" max="100" step="0.1" value="${number('drop_multiplier', 1)}" /></label>
+          <label>Zen (x)<input class="plan-zen" type="number" min="0.1" max="100" step="0.1" value="${number('zen_multiplier', 1)}" /></label>
+          <label>XP em party (x)<input class="plan-party-xp" type="number" min="0.1" max="100" step="0.1" value="${number('party_xp_multiplier', 1)}" /></label>
+        </div>
+      </fieldset>
       <label class="check"><input type="checkbox" class="plan-highlight" ${plan.highlight ? 'checked' : ''} /> Destacar este plano</label>
     </div>`;
 }
@@ -286,6 +299,13 @@ function gatherPlans() {
       .map(line => line.trim())
       .filter(Boolean),
     highlight: Boolean($('.plan-highlight', row)?.checked),
+    game: {
+      xp_multiplier: Number($('.plan-xp', row)?.value || 1),
+      master_xp_multiplier: Number($('.plan-master-xp', row)?.value || 1),
+      drop_multiplier: Number($('.plan-drop', row)?.value || 1),
+      zen_multiplier: Number($('.plan-zen', row)?.value || 1),
+      party_xp_multiplier: Number($('.plan-party-xp', row)?.value || 1),
+    },
   }));
 }
 
@@ -299,6 +319,7 @@ function addPlan() {
     description: '',
     benefits: [],
     highlight: false,
+    game: { xp_multiplier: 1, master_xp_multiplier: 1, drop_multiplier: 1, zen_multiplier: 1, party_xp_multiplier: 1 },
   });
   renderPlans(plans);
 }
@@ -634,6 +655,7 @@ function bindEvents() {
   });
   $('#save-vip-button').addEventListener('click', saveSettings);
   $('#save-players-button').addEventListener('click', saveSettings);
+  bindAccountSearch();
   $('#save-payments-button').addEventListener('click', saveSettings);
   $('#save-content-button').addEventListener('click', saveSettings);
   $('#save-extras-button').addEventListener('click', saveSettings);
@@ -642,6 +664,63 @@ function bindEvents() {
   $('#orders-list').addEventListener('click', event => {
     const button = event.target.closest('[data-approve-order]');
     if (button) approveOrder(button.dataset.approveOrder);
+  });
+}
+
+/** Account search and deletion: the game database is the source, so a deleted account is gone. */
+function bindAccountSearch() {
+  const input = $('#account-search');
+  const results = $('#account-results');
+  if (!input || !results) return;
+
+  let timer = null;
+  const search = async () => {
+    const term = input.value.trim();
+    if (term.length < 2) {
+      results.innerHTML = '';
+      return;
+    }
+    try {
+      const data = await api(`/api/admin/accounts?q=${encodeURIComponent(term)}`);
+      const accounts = data.accounts || [];
+      results.innerHTML = accounts.length
+        ? accounts
+            .map(
+              account => `
+              <div class="admin-row account-row">
+                <div>
+                  <strong>${escapeHtml(account.login)}</strong>
+                  <small>${escapeHtml(account.email || 'sem e-mail')} • ${account.characters} personagem(ns)${account.state === 4 ? ' • BANIDA' : ''}</small>
+                </div>
+                <button class="btn btn-ghost btn-small danger" type="button" data-delete-account="${escapeHtml(account.login)}">Excluir</button>
+              </div>`
+            )
+            .join('')
+        : '<div class="empty">Nenhuma conta encontrada.</div>';
+    } catch (error) {
+      results.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+    }
+  };
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(search, 300);
+  });
+
+  results.addEventListener('click', async event => {
+    const button = event.target.closest('[data-delete-account]');
+    if (!button) return;
+    const login = button.dataset.deleteAccount;
+    if (!window.confirm(`Excluir a conta "${login}" com todos os personagens? Não tem volta.`)) return;
+    button.disabled = true;
+    try {
+      const result = await api(`/api/admin/accounts/${encodeURIComponent(login)}`, { method: 'DELETE' });
+      showToast(`Conta ${result.login} excluída com ${result.characters} personagem(ns).`);
+      await search();
+    } catch (error) {
+      button.disabled = false;
+      showToast(error.message || 'Não foi possível excluir a conta.', true);
+    }
   });
 }
 

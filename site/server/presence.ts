@@ -66,6 +66,11 @@ export type PlayerGameState = {
   y: number;
   level: number;
   money: number;
+  cls: number | null;
+  hp: number;
+  maxHp: number;
+  heroState: number;
+  guild: string | null;
 };
 
 const OFFLINE_GAME_STATE: PlayerGameState = {
@@ -78,6 +83,11 @@ const OFFLINE_GAME_STATE: PlayerGameState = {
   y: 0,
   level: 0,
   money: 0,
+  cls: null,
+  hp: 0,
+  maxHp: 0,
+  heroState: 0,
+  guild: null,
 };
 
 function controlHeaders(): HeadersInit {
@@ -103,6 +113,11 @@ function gameState(value: unknown): PlayerGameState {
     y: number('y'),
     level: number('level'),
     money: number('money'),
+    cls: Number.isInteger(body.cls) ? Number(body.cls) : null,
+    hp: number('hp'),
+    maxHp: number('maxHp'),
+    heroState: number('heroState'),
+    guild: typeof body.guild === 'string' ? body.guild : null,
   };
 }
 

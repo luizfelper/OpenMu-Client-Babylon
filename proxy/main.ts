@@ -329,6 +329,11 @@ const playerControl: PlayerControl = {
         y: 0,
         level: 0,
         money: 0,
+        cls: null,
+        hp: 0,
+        maxHp: 0,
+        heroState: 0,
+        guild: null,
       };
     }
     return {
@@ -340,6 +345,11 @@ const playerControl: PlayerControl = {
       y: session.y,
       level: session.level,
       money: session.money,
+      cls: session.cls,
+      hp: session.hp,
+      maxHp: session.maxHp,
+      heroState: session.heroState,
+      guild: session.guild,
     };
   },
   warp(account, index) {

@@ -166,7 +166,8 @@
               </div>
               <p class="admin-hint">
                 O identificador é usado no checkout e não deve ser alterado depois que o plano estiver em uso.
-                O preço é em reais.
+                O preço é em reais. Os multiplicadores de "Benefícios no jogo" são gravados no servidor do jogo
+                assim que você salva, e valem para quem estiver no plano na hora.
               </p>
               <div id="plans-editor" class="plans-editor"></div>
             </div>
@@ -206,6 +207,17 @@
                 A troca é real: o site envia o pedido ao proxy, que injeta a mesma solicitação da
                 lista de warp do cliente. O servidor do jogo continua validando nível, zen e mapa.
               </p>
+            </form>
+            <form class="panel admin-card admin-form" id="accounts-form" onsubmit="return false">
+              <h2>Excluir conta</h2>
+              <p class="admin-hint">
+                Apaga a conta do OpenMU com todos os personagens e tudo o que eles têm (inventário,
+                baú, quests). Não tem volta: confira bem antes de confirmar.
+              </p>
+              <label>Buscar por login ou e-mail
+                <input id="account-search" placeholder="Digite ao menos 2 letras" autocomplete="off" />
+              </label>
+              <div id="account-results" class="admin-list"></div>
             </form>
           </section>
 

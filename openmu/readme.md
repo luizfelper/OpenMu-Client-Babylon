@@ -12,6 +12,11 @@ plugins/            MuPlugins.csproj: one DLL with every plugin, compiled agains
   GameLogic/        marketplace escrow: token check, item and Zen moves (EscrowToken, MarketplaceEscrowAction);
                     Modules/IModulePacketPlugIn and Views/Modules/IModulePacketViewPlugIn (module packets);
                     LoginTokens/: the token table, issue and token login, the upkeep task; Views/LoginTokens
+  GameLogic/Vip/    the VIP plans: VipTierStore reads mu_plugins.vip_plan and mu_plugins.vip_plan_account,
+                    VipExperienceCalculationPlugIn scales a kill's XP and Master XP, VipDropGenerator
+                    (a DefaultDropGenerator) scales drop chance and zen
+  Web/Vip/          AccountDeletionController: DELETE api/mu-plugins/accounts/{login}, operator only,
+                    deletes an account with every character (see "Deleting an account")
   GameServer/       packet group 0xE7: the group handler, the escrow request handler, the result view,
                     the login token handlers (03, 05) and view (04);
                     the module packet 0xE8: ModulePacketHandlerPlugIn and ModulePacketViewPlugIn
@@ -77,6 +82,41 @@ web client's saved login, so no password is kept in a browser.
   drops expired tokens hourly. The store creates it on first use too.
 - The client offers tokens only on a world whose `server.json` says `loginTokens: true`; the
   installer writes that, since this DLL is in every image it builds.
+
+## VIP plans
+
+The site's admin panel (VIP > planos) owns the plans and the account on each one; the game only
+reads them, from two tables of our own in OpenMU's database:
+
+- `mu_plugins.vip_plan`: one row per plan with `xp_multiplier`, `master_xp_multiplier`,
+  `drop_multiplier` and `zen_multiplier`. The site writes every row on each save of the plans, so
+  a change reaches the game within 15 seconds (the store's cache) and no restart is needed.
+- `mu_plugins.vip_plan_account`: `account`, `plan_id`, `expires_at`. The site writes it when a
+  payment is approved and again whenever the player opens the panel, so a failed write is retried;
+  an expired row is ignored by the game without a task.
+
+The hooks: `VipExperienceCalculationPlugIn` multiplies the final experience of a kill (the
+configured rates and the map/monster bonuses apply first), and `VipDropGenerator` replaces the
+drop generator, which is chosen by strategy key in the game server configuration (empty key; the
+default one stays selectable in the admin). It scales the chance groups of the killed monster for
+the length of the call (restored right after, so the shared configuration never stays changed) and
+the zen the monster pays. A free account gets exactly the default answer; a database that is down
+never costs a kill, the game keeps its own rates until the next read works.
+
+## Deleting an account
+
+The admin panel has no delete button for an account, and the panel's Blazor router only walks
+OpenMU's own assembly, so a page from this DLL would never be routed. The button lives in the
+site's admin instead (`/admin` > Jogadores > Excluir conta), which calls the game database
+directly: search by login or e-mail, confirm, and the account row goes. The schema already
+cascades (`onDelete: Cascade` on `FK_Character_Account_AccountId`, and from a character to its
+inventory, warehouse, quests and the rest), so the characters and their data go with it.
+
+`AccountDeletionController` exposes the same operation as an HTTP endpoint for scripts and for a
+future OpenMU page: `DELETE /api/mu-plugins/accounts/{loginName}`. OpenMU's
+`GenericControllerFeatureProvider` discovers it because the DLL is loaded; it answers `200` with
+the login and the character count, `404` for an unknown account, and is operator only (cookie or
+API key, the same pair the admin panel's own account controller requires).
 
 ## Change it
 

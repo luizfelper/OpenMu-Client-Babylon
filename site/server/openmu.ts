@@ -89,7 +89,10 @@ export async function fetchCharacters(limit = 1000): Promise<OpenMuCharacter[]> 
     FROM data."Character" c
     LEFT JOIN data."StatAttribute" sa ON sa."CharacterId" = c."Id"
     LEFT JOIN config."CharacterClass" cc ON cc."Id" = c."CharacterClassId"
+    JOIN data."Account" a ON a."Id" = c."AccountId"
     WHERE c."CharacterStatus" = 0
+      AND a."State" <> 4
+      AND c."AccountId" IS NOT NULL
     GROUP BY c."Id", c."Name", c."Experience", c."MasterExperience", c."CharacterClassId", cc."Name"
     ORDER BY c."Experience" DESC
     LIMIT ${limit}
@@ -165,4 +168,111 @@ export async function closeOpenmu(): Promise<void> {
   const current = sql;
   sql = null;
   await current.end({ timeout: 5 });
+}
+
+/**
+ * The VIP side in OpenMU's database, read by the MuPlugins VIP hooks: one row per plan and one per
+ * account on a plan. The site owns both tables; the game only reads them.
+ */
+async function ensureVipTables(): Promise<void> {
+  await connection().unsafe(`
+    CREATE SCHEMA IF NOT EXISTS mu_plugins;
+    CREATE TABLE IF NOT EXISTS mu_plugins.vip_plan (
+      id text PRIMARY KEY,
+      xp_multiplier numeric(6,2) NOT NULL DEFAULT 1,
+      master_xp_multiplier numeric(6,2) NOT NULL DEFAULT 1,
+      drop_multiplier numeric(6,2) NOT NULL DEFAULT 1,
+      zen_multiplier numeric(6,2) NOT NULL DEFAULT 1,
+      updated_at timestamptz NOT NULL DEFAULT now());
+    CREATE TABLE IF NOT EXISTS mu_plugins.vip_plan_account (
+      account text PRIMARY KEY,
+      plan_id text NOT NULL,
+      expires_at timestamptz NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now());
+  `);
+}
+
+export type VipGamePlan = {
+  id: string;
+  xp_multiplier: number;
+  master_xp_multiplier: number;
+  drop_multiplier: number;
+  zen_multiplier: number;
+};
+
+/** Replaces the plans the game applies. Plans removed from the site stop applying at once. */
+export async function syncVipPlans(plans: VipGamePlan[]): Promise<void> {
+  await ensureVipTables();
+  const sql = connection();
+  await sql.begin(async transaction => {
+    await transaction.unsafe('DELETE FROM mu_plugins.vip_plan');
+    for (const plan of plans) {
+      await transaction.unsafe(
+        `INSERT INTO mu_plugins.vip_plan (id, xp_multiplier, master_xp_multiplier, drop_multiplier, zen_multiplier, updated_at)
+         VALUES ($1, $2, $3, $4, $5, now())`,
+        [plan.id, plan.xp_multiplier, plan.master_xp_multiplier, plan.drop_multiplier, plan.zen_multiplier]
+      );
+    }
+  });
+}
+
+/** Points an account at a plan until it expires; a date in the past removes the row. */
+export async function syncVipAccount(account: string, planId: string, expiresAt: number | null): Promise<void> {
+  await ensureVipTables();
+  const sql = connection();
+  if (!planId || !expiresAt || expiresAt <= Date.now()) {
+    await sql.unsafe('DELETE FROM mu_plugins.vip_plan_account WHERE lower(account) = lower($1)', [account]);
+    return;
+  }
+  await sql.unsafe(
+    `INSERT INTO mu_plugins.vip_plan_account (account, plan_id, expires_at, updated_at)
+     VALUES ($1, $2, to_timestamp($3 / 1000.0), now())
+     ON CONFLICT (account) DO UPDATE SET plan_id = EXCLUDED.plan_id, expires_at = EXCLUDED.expires_at, updated_at = now()`,
+    [account, planId, expiresAt]
+  );
+}
+export type AccountSearchRow = {
+  login: string;
+  email: string;
+  state: number;
+  registered: string | null;
+  last_login: string | null;
+  characters: number;
+};
+
+/** Accounts matching a login name or e-mail, for the admin's delete tool. */
+export async function searchAccounts(term: string, limit = 20): Promise<AccountSearchRow[]> {
+  const pattern = `%${term.trim()}%`;
+  if (pattern === '%%') return [];
+  const rows = await connection()<AccountSearchRow[]>`
+    SELECT a."LoginName" AS login,
+           a."EMail" AS email,
+           a."State" AS state,
+           a."RegistrationDate"::text AS registered,
+           a."LastLogin"::text AS last_login,
+           (SELECT COUNT(*)::int FROM data."Character" c WHERE c."AccountId" = a."Id") AS characters
+    FROM data."Account" a
+    WHERE a."LoginName" ILIKE ${pattern} OR a."EMail" ILIKE ${pattern}
+    ORDER BY a."LoginName"
+    LIMIT ${Math.min(Math.max(limit, 1), 100)}
+  `;
+  return rows;
+}
+
+/**
+ * Deletes an account and everything it owns. The schema cascades from the account to the
+ * characters and from a character to its own tables, so the account row is the only delete.
+ * Returns how many characters went with it, or null when there is no such account.
+ */
+export async function deleteAccountWithCharacters(login: string): Promise<number | null> {
+  const sql = connection();
+  const [account] = await sql<{ id: string; characters: number }[]>`
+    SELECT a."Id" AS id,
+           (SELECT COUNT(*)::int FROM data."Character" c WHERE c."AccountId" = a."Id") AS characters
+    FROM data."Account" a
+    WHERE lower(a."LoginName") = lower(${login})
+  `;
+  if (!account) return null;
+  await sql`DELETE FROM data."Account" WHERE "Id" = ${account.id}`;
+  return account.characters;
 }

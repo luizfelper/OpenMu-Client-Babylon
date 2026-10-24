@@ -8,7 +8,7 @@ import { accountForSession } from './presence';
 import { getMpSettings, getPlans } from './settings';
 import { createPreference, createPixPayment, getPayment, type MpPayment } from './mercadopago';
 import { findPlan } from './plans';
-import { accountExists } from './openmu';
+import { accountExists, syncVipAccount } from './openmu';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -38,6 +38,8 @@ export type VipStatus = {
   expiresAt: number | null;
   daysLeft: number;
   planName: string;
+  planId: string;
+  startsAt: number | null;
 };
 
 function orderById(id: string): VipOrder | null {
@@ -341,7 +343,20 @@ export function approveOrder(orderId: string, paymentId: string, raw: unknown): 
   transaction();
   const updated = orderById(orderId);
   if (!updated) throw new HttpError(500, 'O pedido não foi atualizado.');
+  pushAccountToGame(updated.account);
   return updated;
+}
+
+/**
+ * Copies an account's current VIP into the game's table. The game keeps working when OpenMU is
+ * down; the sync is retried on the next order and on every panel read, so a failure is logged, not
+ * thrown at a player who already paid.
+ */
+export function pushAccountToGame(account: string): void {
+  const status = vipStatus(account);
+  syncVipAccount(account, status.planId, status.expiresAt).catch(error =>
+    console.warn(`VIP sync for ${account} failed: ${(error as Error).message}`)
+  );
 }
 
 export async function processPayment(paymentId: string): Promise<{ approved: boolean; orderId?: string }> {
@@ -381,21 +396,43 @@ export function processPaymentObject(payment: MpPayment): { approved: boolean; o
 }
 
 export function vipStatus(account: string): VipStatus {
-  const row = one<{ expires_at: number; plan_name: string }>(
-    `SELECT expires_at, plan_name FROM vip_entitlements
+  const row = one<{ expires_at: number; plan_name: string; plan_id: string; starts_at: number }>(
+    `SELECT expires_at, plan_name, plan_id, starts_at FROM vip_entitlements
      WHERE lower(account) = lower(?) AND expires_at > ?
      ORDER BY expires_at DESC LIMIT 1`,
     account,
     Date.now()
   );
-  if (!row) return { active: false, account, expiresAt: null, daysLeft: 0, planName: '' };
+  if (!row) return { active: false, account, expiresAt: null, daysLeft: 0, planName: '', planId: '', startsAt: null };
   return {
     active: true,
     account,
     expiresAt: row.expires_at,
     daysLeft: Math.max(1, Math.ceil((row.expires_at - Date.now()) / DAY)),
     planName: row.plan_name,
+    planId: row.plan_id || '',
+    startsAt: row.starts_at,
   };
+}
+
+/** The account's whole VIP history, newest first. Powers the player panel's history block. */
+export function vipHistory(account: string): Record<string, unknown>[] {
+  const rows = all<{ plan_name: string; plan_id: string; starts_at: number; expires_at: number; source_order: string; created_at: number }>(
+    `SELECT plan_name, plan_id, starts_at, expires_at, source_order, created_at FROM vip_entitlements
+     WHERE lower(account) = lower(?)
+     ORDER BY starts_at DESC, created_at DESC
+     LIMIT 20`,
+    account
+  );
+  const now = Date.now();
+  return rows.map(row => ({
+    plan_name: row.plan_name,
+    plan_id: row.plan_id || '',
+    starts_at: row.starts_at,
+    expires_at: row.expires_at,
+    active: row.expires_at > now,
+    created_at: row.created_at,
+  }));
 }
 
 export async function vipStatusForSession(nonce: string): Promise<VipStatus> {

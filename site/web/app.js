@@ -165,6 +165,52 @@ function closeUserPanel() {
   if (toggle) toggle.setAttribute('aria-expanded', 'false');
 }
 
+function renderVipHistory(history) {
+  const box = $('#user-vip-history');
+  if (!box) return;
+  const rows = Array.isArray(history) ? history : [];
+  if (!rows.length) {
+    box.hidden = true;
+    box.innerHTML = '';
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML =
+    '<span class="user-game-label">Histórico VIP</span>' +
+    `<ul>${rows
+      .map(
+        row => `<li class="${row.active ? 'active' : 'past'}">` +
+          `<strong>${escapeHtml(row.plan_name || 'VIP')}</strong>` +
+          `<span>${escapeHtml(formatDate(row.starts_at))} até ${escapeHtml(formatDate(row.expires_at))}</span>` +
+          (row.active ? '<em>ativo</em>' : '') +
+          '</li>'
+      )
+      .join('')}</ul>`;
+}
+
+function renderGameStats(game) {
+  const box = $('#user-game-stats');
+  if (!box) return;
+  if (!game?.available || !game.online || !game.inWorld) {
+    box.hidden = true;
+    box.innerHTML = '';
+    return;
+  }
+  box.hidden = false;
+  const rows = [
+    ['Personagem', game.character || '—'],
+    ['Classe', game.class_name || '—'],
+    ['Nível', formatNumber(game.level)],
+    ['Zen', formatNumber(game.money)],
+    ['Vida', game.maxHp > 0 ? `${formatNumber(game.hp)} / ${formatNumber(game.maxHp)}` : '—'],
+    ['Estado', game.hero_state_name || '—'],
+    ['Mapa', game.map_name || '—'],
+    ['Posição', `${formatNumber(game.x)}, ${formatNumber(game.y)}`],
+    ['Guild', game.guild || '—'],
+  ];
+  box.innerHTML = rows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('');
+}
+
 function syncMapButton() {
   const select = $('#user-map-select');
   const button = $('#user-map-button');
@@ -179,12 +225,14 @@ function renderUserPanel() {
   setText('#auth-account-name', state.player.account);
   const initial = $('#auth-account-initial');
   if (initial) initial.textContent = (state.player.account || '?').slice(0, 1).toUpperCase();
+  const panelButton = $('#user-panel-button');
+  if (panelButton) panelButton.hidden = false;
 
   const panelState = state.playerPanel;
   const vip = panelState?.vip;
   const badge = $('#user-vip-badge');
   if (badge) {
-    badge.textContent = vip?.active ? 'VIP' : 'Jogador';
+    badge.textContent = vip?.active ? vip.planName || 'VIP' : 'Jogador';
     badge.classList.toggle('active', Boolean(vip?.active));
   }
   const vipStatus = $('#user-vip-status');
@@ -198,6 +246,7 @@ function renderUserPanel() {
       vipStatus.textContent = 'Sua conta ainda não tem VIP ativo.';
     }
   }
+  renderVipHistory(panelState?.vip_history);
 
   const game = panelState?.game;
   const gameStatus = $('#user-game-status');
@@ -210,13 +259,17 @@ function renderUserPanel() {
   }
   if (gameDetail) {
     if (game?.available && game.online && game.inWorld) {
-      gameDetail.textContent = `${game.map_name || 'Mapa'} • Nível ${formatNumber(game.level)} • ${formatNumber(game.money)} zen`;
+      const parts = [game.class_name, game.map_name || 'Mapa', `Nível ${formatNumber(game.level)}`];
+      if (game.hp > 0 || game.maxHp > 0) parts.push(`HP ${formatNumber(game.hp)}/${formatNumber(game.maxHp)}`);
+      if (game.guild) parts.push(`Guild: ${game.guild}`);
+      gameDetail.textContent = parts.filter(Boolean).join(' • ');
     } else if (game?.available && game.online) {
       gameDetail.textContent = 'Entre no mundo com um personagem para trocar de mapa.';
     } else {
       gameDetail.textContent = '';
     }
   }
+  renderGameStats(game);
 
   const panel = panelState?.panel;
   const allowed = Boolean(panel?.allowed);
@@ -460,6 +513,12 @@ function bindAuth() {
 function bindUserPanel() {
   const toggle = $('#user-menu-toggle');
   const panel = $('#user-panel');
+  const openPanel = () => {
+    if (!panel) return;
+    panel.hidden = false;
+    toggle?.setAttribute('aria-expanded', 'true');
+    loadPlayerPanel();
+  };
   toggle?.addEventListener('click', event => {
     event.stopPropagation();
     if (!panel) return;
@@ -467,6 +526,11 @@ function bindUserPanel() {
     panel.hidden = !willOpen;
     toggle.setAttribute('aria-expanded', String(willOpen));
     if (willOpen) loadPlayerPanel();
+  });
+  $('#user-panel-button')?.addEventListener('click', event => {
+    event.stopPropagation();
+    if (panel?.hidden) openPanel();
+    else closeUserPanel();
   });
   document.addEventListener('click', event => {
     if (!event.target.closest('#auth-account')) closeUserPanel();

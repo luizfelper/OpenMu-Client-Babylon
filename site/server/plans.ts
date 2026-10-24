@@ -1,6 +1,23 @@
 // VIP plans are data, not code: the admin panel edits them and the checkout reads them.
 import { HttpError } from './http';
 
+/**
+ * What a plan changes in the game. The game server's VIP plugin reads the same numbers, so a
+ * plan edited here is the plan the player receives.
+ */
+export type VipBenefits = {
+  /** Multiplier on killing experience: 2 means "2x more XP than a free account". */
+  xp_multiplier: number;
+  /** Multiplier on master (Master Level) experience. */
+  master_xp_multiplier: number;
+  /** Multiplier on the chance a monster's item drop group rolls. */
+  drop_multiplier: number;
+  /** Multiplier on the zen a killed monster pays out. */
+  zen_multiplier: number;
+  /** Multiplier on the experience a party member's kill passes on. */
+  party_xp_multiplier: number;
+};
+
 export type VipPlan = {
   id: string;
   name: string;
@@ -9,6 +26,16 @@ export type VipPlan = {
   description: string;
   benefits: string[];
   highlight: boolean;
+  /** Tier of the plan; the game server applies the active entitlement's numbers. */
+  game: VipBenefits;
+};
+
+export const DEFAULT_BENEFITS: VipBenefits = {
+  xp_multiplier: 2,
+  master_xp_multiplier: 2,
+  drop_multiplier: 2,
+  zen_multiplier: 2,
+  party_xp_multiplier: 2,
 };
 
 export const DEFAULT_PLANS: VipPlan[] = [
@@ -18,8 +45,9 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 1990,
     description: 'O primeiro passo para uma jornada com mais vantagens.',
-    benefits: ['Tag VIP no site', 'Canal exclusivo no Discord', '30 dias de benefícios'],
+    benefits: ['2x de XP e 2x de drop', '2x de zen por monstro', 'Tag VIP no site', 'Canal exclusivo no Discord'],
     highlight: false,
+    game: { xp_multiplier: 2, master_xp_multiplier: 2, drop_multiplier: 2, zen_multiplier: 2, party_xp_multiplier: 2 },
   },
   {
     id: 'prata',
@@ -27,8 +55,9 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 2990,
     description: 'Para quem joga todo dia e quer sentir a diferença.',
-    benefits: ['Tudo do Bronze', 'Prioridade em eventos', 'Sorteios mensais'],
+    benefits: ['4x de XP e 4x de drop', '4x de zen por monstro', 'Tudo do Bronze', 'Sorteios mensais'],
     highlight: false,
+    game: { xp_multiplier: 4, master_xp_multiplier: 4, drop_multiplier: 4, zen_multiplier: 4, party_xp_multiplier: 4 },
   },
   {
     id: 'ouro',
@@ -36,10 +65,30 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 4990,
     description: 'A experiência completa MUCURA, sem limites.',
-    benefits: ['Tudo do Prata', 'Badge dourada no site', 'Acesso antecipado a novidades'],
+    benefits: ['8x de XP e 8x de drop', '8x de zen por monstro', 'Tudo do Prata', 'Badge dourada no site'],
     highlight: true,
+    game: { xp_multiplier: 8, master_xp_multiplier: 8, drop_multiplier: 8, zen_multiplier: 8, party_xp_multiplier: 8 },
   },
 ];
+
+const BENEFIT_KEYS = Object.keys(DEFAULT_BENEFITS) as (keyof VipBenefits)[];
+
+/** Reads one multiplier; 1 means "no change", which is what a plan without the field gets. */
+function multiplier(value: unknown, name: string, fallback: number): number {
+  if (value === undefined || value === null || value === '') return fallback;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0.1 || parsed > 100) {
+    throw new HttpError(400, `Multiplicador ${name} deve ficar entre 0,1x e 100x.`);
+  }
+  return Math.round(parsed * 100) / 100;
+}
+
+export function parseBenefits(value: unknown, fallback: VipBenefits = DEFAULT_BENEFITS): VipBenefits {
+  const raw = value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+  const result = { ...fallback };
+  for (const key of BENEFIT_KEYS) result[key] = multiplier(raw[key], key, fallback[key]);
+  return result;
+}
 
 const ID_RE = /^[a-z0-9][a-z0-9_-]{1,31}$/;
 
@@ -92,12 +141,32 @@ export function parsePlans(value: unknown): VipPlan[] {
       description,
       benefits,
       highlight: raw.highlight === true,
+      game: parseBenefits(raw.game),
     };
   });
 }
 
 export function findPlan(plans: VipPlan[], id: string): VipPlan | undefined {
   return plans.find(plan => plan.id === id);
+}
+
+/** Names a plan used to get from a fresh checkout, in order: "Vip 1", "VIP 2", ... */
+const GENERIC_NAME = /^(?:vip|plano)\s*\d+$/i;
+
+/**
+ * Plans saved before the tiers had names keep the admin's price, days and benefits; only a generic
+ * name ("Vip 1") becomes the tier name ("VIP Bronze"), matched by position. Returns the same array
+ * when there is nothing to rename, so the caller can skip the write.
+ */
+export function renameTierPlans(plans: VipPlan[]): VipPlan[] {
+  let changed = false;
+  const renamed = plans.map((plan, index) => {
+    const tier = DEFAULT_PLANS[index];
+    if (!tier || !GENERIC_NAME.test(plan.name.trim())) return plan;
+    changed = true;
+    return { ...plan, name: tier.name };
+  });
+  return changed ? renamed : plans;
 }
 
 export function formatBrl(cents: number): string {

@@ -37,6 +37,7 @@ import {
 } from './news';
 import { getRankings, rankingSnapshotCount } from './rankings';
 import { onlinePlayers } from './presence';
+import { deleteAccountWithCharacters, searchAccounts } from './openmu';
 import { changePlayerMap, playerPanel } from './playerPanel';
 import {
   adminSettings,
@@ -428,6 +429,23 @@ async function handle(request: Request, ip: string): Promise<Response> {
   const approvePath = path.match(/^\/api\/admin\/orders\/([0-9a-f-]{36})\/approve$/);
   if (approvePath && request.method === 'POST') {
     return json({ order: manualApprove(approvePath[1]) }, 200, cors);
+  }
+
+  if (path === '/api/admin/accounts' && request.method === 'GET') {
+    assertSameOrigin(request);
+    const term = (url.searchParams.get('q') || '').trim();
+    if (term.length < 2) return json({ accounts: [] }, 200, cors);
+    return json({ accounts: await searchAccounts(term) }, 200, cors);
+  }
+
+  const deleteAccountPath = path.match(/^\/api\/admin\/accounts\/([^/]+)$/);
+  if (deleteAccountPath && request.method === 'DELETE') {
+    assertSameOrigin(request);
+    const login = decodeURIComponent(deleteAccountPath[1]);
+    const characters = await deleteAccountWithCharacters(login);
+    if (characters === null) return json({ error: 'Conta não encontrada.' }, 404, cors);
+    console.warn(`admin deleted account ${login} with ${characters} character(s)`);
+    return json({ ok: true, login, characters }, 200, cors);
   }
 
   if (path === '/api/admin/mercadopago/test' && request.method === 'POST') {

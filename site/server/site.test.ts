@@ -4,7 +4,7 @@ import { renderMarkdown } from './markdown';
 import { WARP_MAPS, findWarpMap, publicWarpMaps } from './maps';
 import { verifyWebhookSignature } from './mpSignature';
 import { panelAllowed } from './panelRules';
-import { DEFAULT_PLANS, findPlan, formatBrl, parsePlans } from './plans';
+import { DEFAULT_BENEFITS, DEFAULT_PLANS, findPlan, formatBrl, parsePlans, renameTierPlans } from './plans';
 import { slugify } from './slug';
 
 describe('slugify', () => {
@@ -38,6 +38,7 @@ describe('VIP plans', () => {
         benefits: [' Tudo ', '', 42, 'Badge'],
         highlight: true,
         unknown: 'ignored',
+        game: { xp_multiplier: 8, drop_multiplier: 8 },
       },
     ]);
     expect(plans).toEqual([
@@ -49,12 +50,52 @@ describe('VIP plans', () => {
         description: 'completo',
         benefits: ['Tudo', 'Badge'],
         highlight: true,
+        game: { ...DEFAULT_BENEFITS, xp_multiplier: 8, drop_multiplier: 8 },
       },
     ]);
   });
 
+  it('renames generic tier plans and leaves a hand-picked name alone', () => {
+    const generic = parsePlans([
+      { id: 'vip1', name: 'Vip 1', days: 30, price_cents: 1990 },
+      { id: 'vip2', name: ' vip 2 ', days: 60, price_cents: 2990 },
+    ]);
+    const renamed = renameTierPlans(generic);
+    expect(renamed.map(plan => plan.name)).toEqual(['VIP Bronze', 'VIP Prata']);
+    expect(renamed[1].days).toBe(60);
+    expect(renamed[1].price_cents).toBe(2990);
+
+    const custom = parsePlans([{ id: 'diamante', name: 'Membro Diamante', days: 30, price_cents: 1990 }]);
+    expect(renameTierPlans(custom)).toBe(custom);
+  });
+
+  it('keeps the plan\'s game multipliers inside safe limits', () => {
+    const parsed = parsePlans([
+      { id: 'vip1', name: 'VIP 1', days: 30, price_cents: 1990, game: { xp_multiplier: 2, drop_multiplier: '4' } },
+      { id: 'vip2', name: 'VIP 2', days: 30, price_cents: 2990, game: { xp_multiplier: 100 } },
+    ]);
+    expect(parsed[0].game).toEqual({
+      xp_multiplier: 2,
+      master_xp_multiplier: 2,
+      drop_multiplier: 4,
+      zen_multiplier: 2,
+      party_xp_multiplier: 2,
+    });
+    expect(parsed[1].game.xp_multiplier).toBe(100);
+  });
+
+  it('rejects a multiplier outside 0.1x to 100x', () => {
+    const bad = { id: 'bad', name: 'VIP', days: 30, price_cents: 1990, game: { xp_multiplier: 1000 } };
+    expect(() => parsePlans([bad])).toThrow(/entre 0,1x e 100x/);
+  });
+
+  it('defaults a plan without game numbers to no bonus', () => {
+    const parsed = parsePlans([{ id: 'plain', name: 'VIP', days: 30, price_cents: 1990 }]);
+    expect(parsed[0].game).toEqual(DEFAULT_BENEFITS);
+  });
+
   it('rejects duplicates, bad identifiers, durations and prices', () => {
-    const base = { name: 'VIP', days: 30, price_cents: 1990, description: '', benefits: [] };
+    const base = { name: 'VIP', days: 30, price_cents: 1990, description: '', benefits: [], game: DEFAULT_BENEFITS };
     expect(() => parsePlans([])).toThrow(/pelo menos um plano/i);
     expect(() => parsePlans([{ ...base, id: 'a' }])).toThrow(/identificador/i);
     expect(() => parsePlans([{ ...base, id: 'x y' }])).toThrow(/identificador/i);

@@ -1,8 +1,8 @@
 import { SimpleModulusDecryptor } from "../src/controllers/net/encryption/simpleModulus";
-import { Xor32Decryptor } from "../src/controllers/net/encryption/xor32";
 import { Xor3Byte } from "../src/controllers/net/encryption/xor3";
-import { getPacketSize, getSizeOfPacketType } from "../src/controllers/net/wireUtils";
+import { Xor32Decryptor } from "../src/controllers/net/encryption/xor32";
 import { SESSION_NONCE_RE } from "../src/controllers/net/sessionNonce";
+import { getPacketSize, getSizeOfPacketType } from "../src/controllers/net/wireUtils";
 
 /**
  * Who is connected right now, answered on loopback.
@@ -144,6 +144,11 @@ export type PlayerSnapshot = {
   y: number;
   level: number;
   money: number;
+  cls: number | null;
+  hp: number;
+  maxHp: number;
+  heroState: number;
+  guild: string | null;
 };
 
 export type PlayerControl = {
@@ -493,8 +498,8 @@ export function lookup(account: string): PresenceAnswer {
 
   const ports = set
     ? [...new Set([...set].map(c => c.targetPort).filter((p): p is number => p !== null))].sort(
-        (a, b) => a - b
-      )
+      (a, b) => a - b
+    )
     : [];
 
   return {

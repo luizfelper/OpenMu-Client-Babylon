@@ -567,6 +567,11 @@ describe('the player-control routes', () => {
     y: 120,
     level: 400,
     money: 500,
+    cls: 0,
+    hp: 100,
+    maxHp: 200,
+    heroState: 3,
+    guild: null,
   };
 
   function control() {

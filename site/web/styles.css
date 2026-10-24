@@ -216,6 +216,54 @@ button, input, textarea, select { font: inherit; }
 .user-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .user-panel-head .eyebrow { margin: 0 0 4px; }
 .user-panel-head strong { display: block; color: var(--text); font-size: 1rem; }
+.user-vip-history { margin: 12px 0 0; }
+.user-vip-history ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.user-vip-history li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.74rem;
+  color: var(--muted-2);
+  border-left: 2px solid var(--line);
+  padding: 3px 8px;
+}
+.user-vip-history li.active { border-left-color: var(--gold-dim); }
+.user-vip-history li strong { color: var(--text); font-size: 0.78rem; }
+.user-vip-history li em {
+  font-style: normal;
+  color: var(--gold-bright);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.user-game-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 10px;
+  margin: 10px 0 0;
+}
+.user-game-stats > div { min-width: 0; }
+.user-game-stats dt {
+  color: var(--muted-2);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.user-game-stats dd { margin: 1px 0 0; color: var(--text); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; }
+.user-panel-button {
+  border: 1px solid var(--gold-dim);
+  background: rgba(215, 168, 75, 0.1);
+  color: var(--gold-bright);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.user-panel-button[hidden] { display: none; }
+.user-panel-button:hover { background: rgba(215, 168, 75, 0.2); }
 .user-vip-badge {
   flex: none;
   padding: 4px 9px;

@@ -2,13 +2,14 @@
 // map-change action. Authorization is decided here, on the server, not by the
 // browser hiding a button.
 import { mapName } from '../../src/modules/gm/gmMaps';
+import { className, heroStateName } from '../../src/controllers/net/protocols/adminProtocol';
 import { BurstLimit } from '../../src/core/rateLimit';
 import { HttpError } from './http';
 import { findWarpMap, publicWarpMaps } from './maps';
 import { panelAllowed } from './panelRules';
 import { playerGameState, warpPlayer } from './presence';
 import { userPanelVipOnly } from './settings';
-import { vipStatus } from './vip';
+import { pushAccountToGame, vipHistory, vipStatus } from './vip';
 
 const warpAttempts = new BurstLimit(6, 60_000);
 
@@ -18,6 +19,9 @@ function formatZen(value: number): string {
 
 export async function playerPanel(account: string): Promise<Record<string, unknown>> {
   const vip = vipStatus(account);
+  // A paid plan reaches the game from here too: a sync that failed after a payment is retried
+  // the next time the player opens the panel.
+  pushAccountToGame(account);
   const vipOnly = userPanelVipOnly();
   const allowed = panelAllowed(vip.active, vipOnly);
   const game = await playerGameState(account);
@@ -25,6 +29,7 @@ export async function playerPanel(account: string): Promise<Record<string, unkno
   return {
     account,
     vip,
+    vip_history: vipHistory(account),
     panel: {
       vip_only: vipOnly,
       allowed,
@@ -35,6 +40,8 @@ export async function playerPanel(account: string): Promise<Record<string, unkno
     game: {
       ...game,
       map_name: game.map === null ? '' : mapName(game.map),
+      class_name: game.cls === null ? '' : className(game.cls),
+      hero_state_name: game.online ? heroStateName(game.heroState) : '',
     },
     maps: publicWarpMaps(),
   };

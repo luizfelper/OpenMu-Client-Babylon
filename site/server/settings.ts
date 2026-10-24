@@ -10,7 +10,8 @@ import {
 } from './config';
 import { getSetting, setSetting } from './db';
 import { HttpError, booleanField, numberField, optionalString, safeHttpUrl, stringField } from './http';
-import { DEFAULT_PLANS, parsePlans, type VipPlan } from './plans';
+import { syncVipPlans } from './openmu';
+import { DEFAULT_PLANS, parsePlans, renameTierPlans, type VipPlan } from './plans';
 
 export type ServerFact = { label: string; value: string };
 export type EventItem = { title: string; schedule: string; description: string };
@@ -142,6 +143,24 @@ export function ensureDefaults(): void {
   for (const [key, value] of Object.entries(DEFAULTS)) {
     if (getSetting(key) === undefined) setSetting(key, value);
   }
+  upgradePlanNames();
+}
+
+/**
+ * Plans saved before the tiers had names keep whatever the admin priced; only a generic name
+ * ("Vip 1") becomes the tier name ("VIP Bronze"). Writes only when something actually changes,
+ * so a name the admin chose by hand is never touched.
+ */
+function upgradePlanNames(): void {
+  let plans: VipPlan[];
+  try {
+    plans = parsePlans(getJson<unknown>('vip_plans', DEFAULT_PLANS));
+  } catch {
+    return;
+  }
+
+  const renamed = renameTierPlans(plans);
+  if (renamed !== plans) setSetting('vip_plans', JSON.stringify(renamed));
 }
 
 export function get(key: string): string {
@@ -431,6 +450,10 @@ export function saveAdminSettings(body: unknown): AdminSettings {
 
   const plans = parsePlans(root.vip_plans);
   setSetting('vip_plans', JSON.stringify(plans));
+  // The game applies the same numbers the site shows: one row per plan, written on every save.
+  syncVipPlans(plans.map(plan => ({ id: plan.id, ...plan.game }))).catch(error =>
+    console.warn(`VIP plan sync failed: ${(error as Error).message}`)
+  );
 
   setSetting('user_panel_vip_only', booleanField(playerPanel.vip_only, true) ? 'on' : 'off');
 
