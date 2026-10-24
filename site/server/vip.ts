@@ -158,7 +158,7 @@ export async function createPixCheckout(value: unknown): Promise<{
   const cpf = optionalString(raw.cpf, 'CPF', 20);
   const email = optionalString(raw.email, 'E-mail', 160);
   const planId = stringField(raw.planId, 'Plano', 32);
-  if (email && !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     throw new HttpError(400, 'Informe um e-mail válido.');
   }
 

@@ -30,12 +30,24 @@ export type MpPayment = {
 
 function apiError(status: number, body: unknown): HttpError {
   let message = `Mercado Pago respondeu ${status}.`;
+  const details: string[] = [];
   if (body && typeof body === 'object') {
     const record = body as Record<string, unknown>;
     if (typeof record.message === 'string') message = record.message;
     else if (typeof record.error === 'string') message = record.error;
+    if (Array.isArray(record.cause)) {
+      for (const cause of record.cause) {
+        if (cause && typeof cause === 'object') {
+          const entry = cause as Record<string, unknown>;
+          if (typeof entry.description === 'string') details.push(entry.description);
+          else if (typeof entry.code === 'string') details.push(entry.code);
+        }
+      }
+    }
+    if (typeof record.status_detail === 'string') details.push(record.status_detail);
   }
-  return new HttpError(502, `Mercado Pago: ${message}`);
+  const suffix = details.filter(Boolean).join(' — ');
+  return new HttpError(502, `Mercado Pago: ${message}${suffix ? ` (${suffix})` : ''}`);
 }
 
 async function request<T>(path: string, settings: MpSettings, init: RequestInit): Promise<T> {

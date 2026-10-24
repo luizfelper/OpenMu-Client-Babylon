@@ -398,7 +398,10 @@ function openPlanModal(planId) {
   const pixBox = $('#pix-box');
   if (pixBox) pixBox.hidden = true;
   const pixStatus = $('#pix-status');
-  if (pixStatus) pixStatus.textContent = 'Gerando QR Code...';
+  if (pixStatus) {
+    pixStatus.textContent = 'Gerando QR Code...';
+    pixStatus.classList.remove('error');
+  }
   $('#vip-plan-id').value = plan.id;
   $('#vip-modal-title').textContent = plan.name;
   $('#vip-modal-plan').textContent = `${formatBrl(plan.price_cents)} • ${plan.days} dias de VIP`;
@@ -492,11 +495,18 @@ async function submitPix() {
       pixQr.src = `data:image/png;base64,${result.qrCodeBase64}`;
     }
     if (pixCode) pixCode.value = result.qrCode || '';
-    if (pixStatus) pixStatus.textContent = 'Escaneie o QR Code ou copie o código. Aguardando pagamento...';
+    if (pixStatus) {
+      pixStatus.textContent = 'Escaneie o QR Code ou copie o código. Aguardando pagamento...';
+      pixStatus.classList.remove('error');
+    }
     showToast('QR Code Pix gerado.');
     pollOrder(result.order.id);
   } catch (error) {
-    if (pixBox) pixBox.hidden = true;
+    if (pixBox) pixBox.hidden = false;
+    if (pixStatus) {
+      pixStatus.textContent = error.message || 'Não foi possível gerar o QR Code Pix.';
+      pixStatus.classList.add('error');
+    }
     showToast(error.message || 'Não foi possível gerar o QR Code Pix.', true);
   } finally {
     if (submit) {
@@ -516,13 +526,19 @@ function pollOrder(orderId) {
         clearInterval(pixPollTimer);
         pixPollTimer = null;
         const pixStatus = $('#pix-status');
-        if (pixStatus) pixStatus.textContent = 'Pagamento aprovado! VIP liberado.';
+        if (pixStatus) {
+          pixStatus.textContent = 'Pagamento aprovado! VIP liberado.';
+          pixStatus.classList.remove('error');
+        }
         showToast('Pagamento aprovado! VIP liberado.');
       } else if (order.status === 'error') {
         clearInterval(pixPollTimer);
         pixPollTimer = null;
         const pixStatus = $('#pix-status');
-        if (pixStatus) pixStatus.textContent = 'Não foi possível concluir o pagamento.';
+        if (pixStatus) {
+          pixStatus.textContent = 'Não foi possível concluir o pagamento.';
+          pixStatus.classList.add('error');
+        }
         showToast('Não foi possível concluir o pagamento.', true);
       }
     } catch {

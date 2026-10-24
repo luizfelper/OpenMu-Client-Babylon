@@ -680,6 +680,7 @@ button, input, textarea, select { font: inherit; }
 }
 .modal input:focus { border-color: var(--gold-dim); box-shadow: 0 0 0 3px rgba(215, 168, 75, 0.12); }
 .modal .fineprint { margin-top: 16px; line-height: 1.5; }
+.modal .fineprint.error { color: #ffd5cf; }
 
 .toast {
   position: fixed;
