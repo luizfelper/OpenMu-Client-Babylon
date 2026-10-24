@@ -113,7 +113,8 @@ export async function createAccount(
   sql: Sql,
   username: string,
   password: string,
-  state: AccountState = AccountState.Normal
+  state: AccountState = AccountState.Normal,
+  email = ''
 ): Promise<string | null> {
   const existing = await sql`
     SELECT 1 FROM data."Account" WHERE lower("LoginName") = lower(${username}) LIMIT 1
@@ -127,14 +128,14 @@ export async function createAccount(
     // Column list mirrors every NOT NULL column on `data."Account"` that has no
     // default. `VaultId` stays null: OpenMU creates the vault storage itself on
     // first use, and inventing one here would mean writing `ItemStorage` too.
-    // `EMail` is NOT NULL but the form does not ask for one, so it takes the
-    // empty string.
+    // `EMail` is NOT NULL; the standalone register form does not ask for one,
+    // while the site's form does and passes it through.
     await sql`
       INSERT INTO data."Account" (
         "Id", "LoginName", "PasswordHash", "SecurityCode", "EMail",
         "RegistrationDate", "State", "TimeZone", "VaultPassword", "IsVaultExtended"
       ) VALUES (
-        gen_random_uuid(), ${username}, ${passwordHash}, '', '',
+        gen_random_uuid(), ${username}, ${passwordHash}, '', ${email},
         now(), ${state}, 0, '', false
       )
     `;

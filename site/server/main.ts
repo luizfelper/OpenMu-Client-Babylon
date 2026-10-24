@@ -1,5 +1,5 @@
-// The MUCURA public site: news, server information, rankings, online count, VIP checkout and the
-// admin API. One Bun process, one SQLite file, read-only OpenMU Postgres.
+// The MUCURA public site: news, server information, rankings, online count, player login, VIP
+// checkout and the admin API. One Bun process, one SQLite file, OpenMU Postgres for accounts.
 import { resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -10,6 +10,13 @@ import {
 } from './config';
 import { clearSessionCookie, login, readSession, requireAdmin, sessionCookie, sessionConfigured } from './auth';
 import { db, setSetting } from './db';
+import {
+  clearPlayerCookie,
+  loginPlayer,
+  playerCookie,
+  playerFromRequest,
+  registerPlayer,
+} from './playerAuth';
 import { clientIp } from '../../src/core/rateLimit';
 import {
   HttpError,
@@ -267,6 +274,35 @@ async function handle(request: Request, ip: string): Promise<Response> {
     return json(article, 200, cors);
   }
 
+  if (path === '/api/auth/me' && request.method === 'GET') {
+    return json({ player: playerFromRequest(request) }, 200, cors);
+  }
+
+  if (path === '/api/auth/register' && request.method === 'POST') {
+    assertSameOrigin(request);
+    const body = await readJson<unknown>(request);
+    const result = await registerPlayer(body, ip);
+    return json({ ok: true, player: result.player }, 201, {
+      ...cors,
+      'set-cookie': playerCookie(result.token),
+    });
+  }
+
+  if (path === '/api/auth/login' && request.method === 'POST') {
+    assertSameOrigin(request);
+    const body = await readJson<unknown>(request);
+    const result = await loginPlayer(body, ip);
+    return json({ ok: true, player: result.player }, 200, {
+      ...cors,
+      'set-cookie': playerCookie(result.token),
+    });
+  }
+
+  if (path === '/api/auth/logout' && request.method === 'POST') {
+    assertSameOrigin(request);
+    return json({ ok: true }, 200, { ...cors, 'set-cookie': clearPlayerCookie() });
+  }
+
   if (path === '/api/vip/plans' && request.method === 'GET') {
     return json({ plans: getPlans(), payments: publicSite().payments }, 200, cors);
   }
@@ -275,8 +311,10 @@ async function handle(request: Request, ip: string): Promise<Response> {
     if (!checkoutAllowed(ip)) {
       throw new HttpError(429, 'Muitas tentativas de compra. Aguarde um minuto.');
     }
+    const player = playerFromRequest(request);
+    if (!player) throw new HttpError(401, 'Entre na sua conta para comprar VIP.');
     const body = await readJson<unknown>(request);
-    const result = await createCheckout(body);
+    const result = await createCheckout(body, player.account);
     return json(result, 201, cors);
   }
 
@@ -284,8 +322,10 @@ async function handle(request: Request, ip: string): Promise<Response> {
     if (!checkoutAllowed(ip)) {
       throw new HttpError(429, 'Muitas tentativas de compra. Aguarde um minuto.');
     }
+    const player = playerFromRequest(request);
+    if (!player) throw new HttpError(401, 'Entre na sua conta para comprar VIP.');
     const body = await readJson<unknown>(request);
-    const result = await createPixCheckout(body);
+    const result = await createPixCheckout(body, player.account);
     return json(result, 201, cors);
   }
 

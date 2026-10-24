@@ -59,13 +59,18 @@ function publicOrder(order: VipOrder): Record<string, unknown> {
   };
 }
 
-export async function createCheckout(value: unknown): Promise<{
+export async function createCheckout(
+  value: unknown,
+  accountOverride: string
+): Promise<{
   order: Record<string, unknown>;
   initPoint: string;
 }> {
   if (!value || typeof value !== 'object') throw new HttpError(400, 'Pedido inválido.');
   const raw = value as Record<string, unknown>;
-  const account = stringField(raw.account, 'Conta do jogo', 10);
+  // The account comes from the signed site session, never from the request body: a player cannot
+  // buy VIP for somebody else's login by editing the form.
+  const account = accountOverride;
   const email = optionalString(raw.email, 'E-mail', 160);
   const planId = stringField(raw.planId, 'Plano', 32);
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
@@ -145,7 +150,10 @@ export async function createCheckout(value: unknown): Promise<{
   }
 }
 
-export async function createPixCheckout(value: unknown): Promise<{
+export async function createPixCheckout(
+  value: unknown,
+  accountOverride: string
+): Promise<{
   order: Record<string, unknown>;
   qrCode: string;
   qrCodeBase64: string;
@@ -153,7 +161,7 @@ export async function createPixCheckout(value: unknown): Promise<{
 }> {
   if (!value || typeof value !== 'object') throw new HttpError(400, 'Pedido inválido.');
   const raw = value as Record<string, unknown>;
-  const account = stringField(raw.account, 'Conta do jogo', 10);
+  const account = accountOverride;
   const name = optionalString(raw.name, 'Nome completo', 80);
   const cpf = optionalString(raw.cpf, 'CPF', 20);
   const email = optionalString(raw.email, 'E-mail', 160);
@@ -224,7 +232,8 @@ export async function createPixCheckout(value: unknown): Promise<{
       `UPDATE vip_orders SET payment_id = ?, preference_id = ?, raw_json = ?, updated_at = ? WHERE id = ?`,
       payment.id,
       payment.id,
-      JSON.stringify({ pix: payment, cpf }),
+      // CPF is used only to create the Mercado Pago payment; it is not part of the site's order.
+      JSON.stringify({ pix: payment }),
       Date.now(),
       id
     );
@@ -356,7 +365,18 @@ export function processPaymentObject(payment: MpPayment): { approved: boolean; o
     console.warn(`payment ${payment.id}: currency ${payment.currency_id} does not match order ${order.id}`);
     return { approved: false, orderId };
   }
-  approveOrder(order.id, String(payment.id), payment);
+  // Keep only the payment fields the site needs. The full Mercado Pago payload can contain payer
+  // details such as CPF, which must not be copied into the site's order row.
+  approveOrder(order.id, String(payment.id), {
+    id: payment.id,
+    status: payment.status,
+    status_detail: payment.status_detail,
+    external_reference: payment.external_reference,
+    transaction_amount: payment.transaction_amount,
+    currency_id: payment.currency_id,
+    date_approved: payment.date_approved,
+    payment_method_id: payment.payment_method_id,
+  });
   return { approved: true, orderId: order.id };
 }
 

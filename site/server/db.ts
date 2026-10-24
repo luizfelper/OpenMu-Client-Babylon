@@ -1,8 +1,10 @@
-// The site's own storage: news, settings, VIP orders, entitlements and weekly baselines.
+// The site's own storage: news, settings, player profiles, VIP orders, entitlements and weekly
+// baselines.
 //
 // Deliberately not OpenMU's Postgres schema. OpenMU owns and migrates that schema; a service
-// that adds tables to it breaks on the next OpenMU upgrade. The only OpenMU access from here
-// is read-only (rankings and account validation), in `openmu.ts`.
+// that adds tables to it breaks on the next OpenMU upgrade. The only OpenMU access from here is
+// in `openmu.ts`: rankings, account validation and account creation through the same helper the
+// register service uses.
 import { Database } from 'bun:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -38,6 +40,14 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS news_published ON news (published, pinned DESC, created_at DESC);
+
+  CREATE TABLE IF NOT EXISTS site_players (
+    account TEXT COLLATE NOCASE PRIMARY KEY,
+    name TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  );
 
   CREATE TABLE IF NOT EXISTS vip_orders (
     id TEXT PRIMARY KEY,

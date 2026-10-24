@@ -1,6 +1,8 @@
-// Read-only access to OpenMU's Postgres. The site never writes here: account creation belongs to
-// the register service, and game state belongs to OpenMU itself.
+// OpenMU's Postgres: rankings and account validation, plus account creation through the same
+// helper the register service uses. Game state still belongs to OpenMU itself.
+import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
+import { AccountState, createAccount } from '../../register/server/accounts';
 import { DATABASE_URL } from './config';
 
 export type OpenMuCharacter = {
@@ -104,6 +106,52 @@ export async function accountExists(login: string): Promise<boolean> {
     LIMIT 1
   `;
   return rows.length > 0;
+}
+
+export type VerifiedAccount = {
+  account: string;
+  email: string;
+};
+
+/**
+ * Checks a game login against the BCrypt hash OpenMU itself uses. The site never sees the
+ * password after this call; a banned account (State 4) is treated as if it did not exist.
+ */
+export async function verifyAccountPassword(
+  login: string,
+  password: string
+): Promise<VerifiedAccount | null> {
+  const rows = await connection()<{
+    login: string;
+    password_hash: string;
+    email: string;
+    state: number;
+  }[]>`
+    SELECT "LoginName" AS login, "PasswordHash" AS password_hash, "EMail" AS email, "State" AS state
+    FROM data."Account"
+    WHERE lower("LoginName") = lower(${login})
+    LIMIT 1
+  `;
+  const row = rows[0];
+  if (!row || Number(row.state) === AccountState.Banned) return null;
+
+  let valid = false;
+  try {
+    valid = await bcrypt.compare(password, row.password_hash);
+  } catch {
+    // A malformed hash is a failed login, never a crash in the public endpoint.
+    valid = false;
+  }
+  return valid ? { account: row.login, email: row.email || '' } : null;
+}
+
+/** Creates an OpenMU account. Returns the rejection reason, or null on success. */
+export async function createOpenMuAccount(
+  login: string,
+  password: string,
+  email: string
+): Promise<string | null> {
+  return createAccount(connection(), login, password, AccountState.Normal, email);
 }
 
 /** Used by the admin's "test connection" button. */

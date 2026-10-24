@@ -37,6 +37,11 @@
           <a href="#eventos">Eventos</a>
           <a href="#faq">FAQ</a>
           <a class="nav-cta" href="#vip">Virar VIP</a>
+          <button class="auth-button" id="auth-open" type="button">Entrar</button>
+          <div class="auth-account" id="auth-account" hidden>
+            <span id="auth-account-name"></span>
+            <button class="auth-button auth-button-ghost" id="auth-logout" type="button">Sair</button>
+          </div>
         </nav>
       </div>
     </header>
@@ -131,8 +136,20 @@
               </p>
             </div>
           </div>
-          <div class="vip-grid" id="vip-grid" aria-live="polite"></div>
-          <p class="vip-note" id="vip-note"></p>
+          <div class="vip-gate panel" id="vip-gate">
+            <p class="eyebrow">Acesso VIP</p>
+            <h3>Entre com sua conta do jogo</h3>
+            <p>
+              Use o mesmo login e senha do cliente para ver os planos e comprar VIP. O CPF só é
+              pedido no checkout.
+            </p>
+            <div class="vip-gate-actions">
+              <button class="btn btn-primary" id="vip-login" type="button">Entrar</button>
+              <button class="btn btn-ghost" id="vip-register" type="button">Criar conta</button>
+            </div>
+          </div>
+          <div class="vip-grid" id="vip-grid" aria-live="polite" hidden></div>
+          <p class="vip-note" id="vip-note" hidden></p>
         </div>
       </section>
 
@@ -239,6 +256,68 @@
         <a href="/admin">Painel administrativo</a>
       </div>
     </footer>
+
+    <div class="modal" id="auth-modal" hidden>
+      <div class="modal-backdrop" data-close-auth></div>
+      <div class="modal-card auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <button class="modal-close" id="auth-close" type="button" aria-label="Fechar">×</button>
+        <p class="eyebrow">Sua conta</p>
+        <h2 id="auth-title">Entrar</h2>
+        <div class="auth-tabs" role="tablist" aria-label="Entrar ou criar conta">
+          <button class="auth-tab active" id="auth-tab-login" data-auth-tab="login" type="button" role="tab" aria-selected="true">
+            Entrar
+          </button>
+          <button class="auth-tab" id="auth-tab-register" data-auth-tab="register" type="button" role="tab" aria-selected="false">
+            Criar conta
+          </button>
+        </div>
+
+        <form id="auth-login-form" class="auth-form">
+          <label>
+            Conta do jogo
+            <input id="auth-login-account" name="account" maxlength="10" autocomplete="username" required />
+            <small>O mesmo login que você usa no cliente.</small>
+          </label>
+          <label>
+            Senha
+            <input id="auth-login-password" name="password" type="password" maxlength="10" autocomplete="current-password" required />
+          </label>
+          <p class="auth-error" id="auth-login-error" hidden></p>
+          <button class="btn btn-primary btn-wide" type="submit" id="auth-login-submit">Entrar</button>
+          <p class="fineprint">Sua senha do jogo não é armazenada no site.</p>
+        </form>
+
+        <form id="auth-register-form" class="auth-form" hidden>
+          <label>
+            Conta do jogo
+            <input id="auth-register-account" name="account" maxlength="10" autocomplete="username" required />
+            <small>De 4 a 10 letras ou números. Será o seu login no jogo.</small>
+          </label>
+          <label>
+            Nome completo
+            <input id="auth-register-name" name="name" maxlength="80" autocomplete="name" required />
+            <small>Usado para preencher o checkout do VIP.</small>
+          </label>
+          <label>
+            E-mail
+            <input id="auth-register-email" name="email" type="email" maxlength="160" autocomplete="email" required />
+            <small>Obrigatório para o Pix e para a confirmação da compra.</small>
+          </label>
+          <label>
+            Senha
+            <input id="auth-register-password" name="password" type="password" maxlength="10" autocomplete="new-password" required />
+            <small>De 4 a 10 caracteres, sem espaços ou acentos.</small>
+          </label>
+          <label>
+            Confirmar senha
+            <input id="auth-register-confirm" name="confirm" type="password" maxlength="10" autocomplete="new-password" required />
+          </label>
+          <p class="auth-error" id="auth-register-error" hidden></p>
+          <button class="btn btn-primary btn-wide" type="submit" id="auth-register-submit">Criar conta</button>
+          <p class="fineprint">O CPF só será pedido na hora de comprar o VIP.</p>
+        </form>
+      </div>
+    </div>
 
     <div class="modal" id="vip-modal" hidden>
       <div class="modal-backdrop" data-close-modal></div>

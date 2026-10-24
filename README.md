@@ -58,8 +58,10 @@ Open `https://play.<your-domain>` (or `http://YOUR.SERVER.IP`), create an accoun
 
 The public site is at `https://site.<your-domain>` (IP mode: `http://YOUR.SERVER.IP:8082`). It has
 news, rankings, server information, rules, events, FAQ, useful links, online players and the VIP
-store. The panel is at `/admin` on the same site and uses the same login as the OpenMU admin panel.
-News, prices, content and Mercado Pago credentials are edited there; nothing needs a deploy.
+store. Players log in with their game account, can create an account without CPF, and see the VIP
+plans after login; the CPF is requested only in the VIP checkout. The panel is at `/admin` on the
+same site and uses the same login as the OpenMU admin panel. News, prices, content and Mercado Pago
+credentials are edited there; nothing needs a deploy.
 
 ### Afterwards: the `mu` command
 

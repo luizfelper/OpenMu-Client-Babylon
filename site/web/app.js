@@ -10,6 +10,8 @@ const state = {
   plans: [],
   payments: { enabled: false, configured: false },
   urls: { play: '', register: '' },
+  player: null,
+  pendingPlanId: null,
 };
 
 function escapeHtml(value) {
@@ -90,6 +92,218 @@ async function api(path, options = {}) {
 function setText(selector, value) {
   const element = $(selector);
   if (element) element.textContent = value ?? '';
+}
+
+function showAuthError(id, message) {
+  const box = $(`#${id}`);
+  if (!box) {
+    showToast(message, true);
+    return;
+  }
+  box.textContent = message;
+  box.hidden = false;
+}
+
+function setAuthMode(mode) {
+  const register = mode === 'register';
+  const loginForm = $('#auth-login-form');
+  const registerForm = $('#auth-register-form');
+  if (loginForm) loginForm.hidden = register;
+  if (registerForm) registerForm.hidden = !register;
+  $$('[data-auth-tab]').forEach(tab => {
+    const active = tab.dataset.authTab === (register ? 'register' : 'login');
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', String(active));
+  });
+  setText('#auth-title', register ? 'Criar conta' : 'Entrar');
+}
+
+function closeMobileNav() {
+  const nav = $('#main-nav');
+  const toggle = $('#nav-toggle');
+  if (nav) nav.classList.remove('open');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+}
+
+function showAuthModal(mode = 'login') {
+  setAuthMode(mode);
+  const modal = $('#auth-modal');
+  if (!modal) return;
+  modal.hidden = false;
+  document.body.style.overflow = 'hidden';
+  closeMobileNav();
+  const focus = mode === 'register' ? '#auth-register-account' : '#auth-login-account';
+  setTimeout(() => $(focus)?.focus(), 30);
+}
+
+function closeAuthModal() {
+  const modal = $('#auth-modal');
+  if (!modal) return;
+  modal.hidden = true;
+  const loginError = $('#auth-login-error');
+  const registerError = $('#auth-register-error');
+  if (loginError) loginError.hidden = true;
+  if (registerError) registerError.hidden = true;
+  if ($('#vip-modal')?.hidden) document.body.style.overflow = '';
+}
+
+function updateVipAccess() {
+  const logged = Boolean(state.player);
+  const gate = $('#vip-gate');
+  const grid = $('#vip-grid');
+  const note = $('#vip-note');
+  if (gate) gate.hidden = logged;
+  if (grid) grid.hidden = !logged;
+  if (note) note.hidden = !logged;
+}
+
+function renderAuth() {
+  const open = $('#auth-open');
+  const account = $('#auth-account');
+  const name = $('#auth-account-name');
+  if (state.player) {
+    if (open) open.hidden = true;
+    if (account) account.hidden = false;
+    if (name) name.textContent = state.player.account;
+  } else {
+    if (open) open.hidden = false;
+    if (account) account.hidden = true;
+  }
+  updateVipAccess();
+}
+
+async function loadPlayer() {
+  try {
+    const result = await api('/api/auth/me');
+    state.player = result && result.player ? result.player : null;
+  } catch {
+    state.player = null;
+  }
+  renderAuth();
+}
+
+function afterLogin(player) {
+  state.player = player;
+  renderAuth();
+  closeAuthModal();
+  const loginPassword = $('#auth-login-password');
+  if (loginPassword) loginPassword.value = '';
+  const registerPassword = $('#auth-register-password');
+  const registerConfirm = $('#auth-register-confirm');
+  if (registerPassword) registerPassword.value = '';
+  if (registerConfirm) registerConfirm.value = '';
+  showToast(`Bem-vindo, ${player.account}!`);
+  const pending = state.pendingPlanId;
+  state.pendingPlanId = null;
+  if (pending) openPlanModal(pending);
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const submit = $('#auth-login-submit');
+  const account = $('#auth-login-account')?.value.trim() || '';
+  const password = $('#auth-login-password')?.value || '';
+  const error = $('#auth-login-error');
+  if (error) error.hidden = true;
+  if (!account || !password) {
+    showAuthError('auth-login-error', 'Informe a conta e a senha.');
+    return;
+  }
+  if (submit) {
+    submit.disabled = true;
+    submit.textContent = 'Entrando...';
+  }
+  try {
+    const result = await api('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ account, password }),
+    });
+    afterLogin(result.player);
+  } catch (problem) {
+    showAuthError('auth-login-error', problem.message || 'Não foi possível entrar.');
+  } finally {
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = 'Entrar';
+    }
+  }
+}
+
+async function handleRegister(event) {
+  event.preventDefault();
+  const submit = $('#auth-register-submit');
+  const account = $('#auth-register-account')?.value.trim() || '';
+  const name = $('#auth-register-name')?.value.trim() || '';
+  const email = $('#auth-register-email')?.value.trim() || '';
+  const password = $('#auth-register-password')?.value || '';
+  const confirm = $('#auth-register-confirm')?.value || '';
+  const error = $('#auth-register-error');
+  if (error) error.hidden = true;
+  if (!account || !name || !email || !password || !confirm) {
+    showAuthError('auth-register-error', 'Preencha todos os campos.');
+    return;
+  }
+  if (password !== confirm) {
+    showAuthError('auth-register-error', 'As senhas não coincidem.');
+    return;
+  }
+  if (submit) {
+    submit.disabled = true;
+    submit.textContent = 'Criando...';
+  }
+  try {
+    const result = await api('/api/auth/register', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ account, name, email, password, confirm }),
+    });
+    const accountInput = $('#auth-register-account');
+    const nameInput = $('#auth-register-name');
+    const emailInput = $('#auth-register-email');
+    if (accountInput) accountInput.value = '';
+    if (nameInput) nameInput.value = '';
+    if (emailInput) emailInput.value = '';
+    afterLogin(result.player);
+  } catch (problem) {
+    showAuthError('auth-register-error', problem.message || 'Não foi possível criar a conta.');
+  } finally {
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = 'Criar conta';
+    }
+  }
+}
+
+async function logoutPlayer() {
+  try {
+    await api('/api/auth/logout', { method: 'POST' });
+  } catch {
+    // The cookie may already be gone; clear the local state either way.
+  }
+  state.player = null;
+  state.pendingPlanId = null;
+  closePlanModal();
+  renderAuth();
+  closeMobileNav();
+  showToast('Você saiu da conta.');
+}
+
+function bindAuth() {
+  $('#auth-open')?.addEventListener('click', () => showAuthModal('login'));
+  $('#vip-login')?.addEventListener('click', () => showAuthModal('login'));
+  $('#vip-register')?.addEventListener('click', () => showAuthModal('register'));
+  $('#auth-close')?.addEventListener('click', closeAuthModal);
+  $$('[data-close-auth]').forEach(element => element.addEventListener('click', closeAuthModal));
+  $$('[data-auth-tab]').forEach(tab =>
+    tab.addEventListener('click', () => setAuthMode(tab.dataset.authTab))
+  );
+  $('#auth-login-form')?.addEventListener('submit', handleLogin);
+  $('#auth-register-form')?.addEventListener('submit', handleRegister);
+  $('#auth-logout')?.addEventListener('click', logoutPlayer);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !$('#auth-modal')?.hidden) closeAuthModal();
+  });
 }
 
 function renderOnline(online) {
@@ -259,6 +473,7 @@ function renderPlans(plans, payments) {
     note.textContent = 'Pagamento seguro pelo Mercado Pago. O VIP é liberado automaticamente após a aprovação.';
     note.classList.remove('warn');
   }
+  updateVipAccess();
 }
 
 function renderServer(data) {
@@ -389,6 +604,12 @@ function renderSite(data) {
 function openPlanModal(planId) {
   const plan = state.plans.find(item => item.id === planId);
   if (!plan) return;
+  if (!state.player) {
+    state.pendingPlanId = planId;
+    showAuthModal('login');
+    showToast('Entre na sua conta para comprar VIP.', true);
+    return;
+  }
   if (!state.payments.enabled || !state.payments.configured) {
     showToast('O checkout ainda não está configurado. Fale com a administração.', true);
     return;
@@ -405,9 +626,25 @@ function openPlanModal(planId) {
   $('#vip-plan-id').value = plan.id;
   $('#vip-modal-title').textContent = plan.name;
   $('#vip-modal-plan').textContent = `${formatBrl(plan.price_cents)} • ${plan.days} dias de VIP`;
+
+  // The account is fixed by the session; the name and e-mail come from the profile created at
+  // signup. CPF stays empty on purpose: it belongs only to the payment form.
+  const accountInput = $('#vip-account');
+  if (accountInput) {
+    accountInput.value = state.player.account;
+    accountInput.readOnly = true;
+  }
+  const emailInput = $('#vip-email');
+  if (emailInput) emailInput.value = state.player.email || '';
+  const nameInput = $('#vip-name');
+  if (nameInput) nameInput.value = state.player.name || '';
+  const cpfInput = $('#vip-cpf');
+  if (cpfInput) cpfInput.value = '';
+
   modal.hidden = false;
   document.body.style.overflow = 'hidden';
-  $('#vip-account')?.focus();
+  const focus = !state.player.email ? '#vip-email' : !state.player.name ? '#vip-name' : '#vip-cpf';
+  setTimeout(() => $(focus)?.focus(), 30);
 }
 
 function closePlanModal() {
@@ -419,6 +656,8 @@ function closePlanModal() {
   if (!modal) return;
   modal.hidden = true;
   document.body.style.overflow = '';
+  const account = $('#vip-account');
+  if (account) account.readOnly = false;
   const submit = $('#vip-submit');
   if (submit) {
     submit.disabled = false;
@@ -428,14 +667,13 @@ function closePlanModal() {
 
 async function submitPlan(event) {
   event.preventDefault();
-  const submit = $('#vip-submit');
-  const account = $('#vip-account').value.trim();
-  const email = $('#vip-email').value.trim();
-  const planId = $('#vip-plan-id').value;
-  if (!account) {
-    showToast('Informe a conta do jogo.', true);
+  if (!state.player) {
+    showAuthModal('login');
     return;
   }
+  const submit = $('#vip-submit');
+  const email = $('#vip-email').value.trim();
+  const planId = $('#vip-plan-id').value;
   if (submit) {
     submit.disabled = true;
     submit.textContent = 'Abrindo pagamento...';
@@ -444,7 +682,7 @@ async function submitPlan(event) {
     const result = await api('/api/vip/checkout', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ account, email, planId }),
+      body: JSON.stringify({ email, planId }),
     });
     if (!result.initPoint) throw new Error('O link de pagamento não foi gerado.');
     window.location.assign(result.initPoint);
@@ -458,16 +696,16 @@ async function submitPlan(event) {
 }
 
 async function submitPix() {
+  if (!state.player) {
+    showAuthModal('login');
+    return;
+  }
   const submit = $('#vip-pix');
-  const account = $('#vip-account').value.trim();
+  const account = state.player.account;
   const email = $('#vip-email').value.trim();
   const name = $('#vip-name').value.trim();
   const cpf = $('#vip-cpf').value.trim();
   const planId = $('#vip-plan-id').value;
-  if (!account) {
-    showToast('Informe a conta do jogo.', true);
-    return;
-  }
   if (!email) {
     showToast('Informe um e-mail para gerar o Pix.', true);
     return;
@@ -476,8 +714,9 @@ async function submitPix() {
     showToast('Informe o nome completo para o Pix.', true);
     return;
   }
-  if (!cpf) {
-    showToast('Informe o CPF para o Pix.', true);
+  const cpfDigits = cpf.replace(/\D/g, '');
+  if (cpfDigits.length !== 11) {
+    showToast('Informe um CPF válido para o Pix.', true);
     return;
   }
   if (submit) {
@@ -677,11 +916,13 @@ function bindVip() {
 async function init() {
   bindNavigation();
   bindVip();
+  bindAuth();
   renderSocial();
   setText('#year', new Date().getFullYear());
   try {
     const data = await api('/api/site');
     renderSite(data);
+    await loadPlayer();
     const gameSession = new URLSearchParams(window.location.search).get('session');
     if (gameSession) {
       try {
@@ -689,6 +930,11 @@ async function init() {
         if (status.account) {
           const account = $('#vip-account');
           if (account) account.value = status.account;
+          const loginAccount = $('#auth-login-account');
+          if (loginAccount) loginAccount.value = status.account;
+          // Coming from the in-game VIP button: ask for the game password instead of making the
+          // player type the login again.
+          if (!state.player) showAuthModal('login');
         }
       } catch {
         // The game session may have expired; the user can type the account manually.

@@ -11,7 +11,7 @@ export const HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
 export const DB_PATH =
   process.env.SITE_DB || path.join(os.homedir(), '.mu-site', 'site.sqlite');
 
-/** OpenMU's Postgres, read-only from here: accounts, characters and rankings. */
+/** OpenMU's Postgres: accounts, characters and rankings. Account creation goes through openmu.ts. */
 export const DATABASE_URL =
   process.env.DATABASE_URL || 'postgres://postgres:admin@127.0.0.1:5432/openmu';
 
