@@ -10,11 +10,17 @@ export type VipBenefits = {
   xp_multiplier: number;
   /** Multiplier on master (Master Level) experience. */
   master_xp_multiplier: number;
-  /** Multiplier on the chance a monster's item drop group rolls. */
+  /**
+   * Multiplier on the chance a monster's item drop group rolls. Stored and shown, but OpenMU has
+   * no per-player hook for it yet (see openmu/readme.md), so the game does not apply it.
+   */
   drop_multiplier: number;
   /** Multiplier on the zen a killed monster pays out. */
   zen_multiplier: number;
-  /** Multiplier on the experience a party member's kill passes on. */
+  /**
+   * Multiplier on the experience a party member's kill passes on. Stored and shown; OpenMU has no
+   * per-player hook for it yet.
+   */
   party_xp_multiplier: number;
 };
 
@@ -38,6 +44,14 @@ export const DEFAULT_BENEFITS: VipBenefits = {
   party_xp_multiplier: 2,
 };
 
+const tier = (multiplier: number) => ({
+  xp_multiplier: multiplier,
+  master_xp_multiplier: multiplier,
+  drop_multiplier: multiplier,
+  zen_multiplier: multiplier,
+  party_xp_multiplier: multiplier,
+});
+
 export const DEFAULT_PLANS: VipPlan[] = [
   {
     id: 'bronze',
@@ -45,9 +59,9 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 1990,
     description: 'O primeiro passo para uma jornada com mais vantagens.',
-    benefits: ['2x de XP e 2x de drop', '2x de zen por monstro', 'Tag VIP no site', 'Canal exclusivo no Discord'],
+    benefits: ['2x de XP de up', '2x de XP Master', '2x de zen por monstro', 'Tag VIP no site'],
     highlight: false,
-    game: { xp_multiplier: 2, master_xp_multiplier: 2, drop_multiplier: 2, zen_multiplier: 2, party_xp_multiplier: 2 },
+    game: tier(2),
   },
   {
     id: 'prata',
@@ -55,9 +69,9 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 2990,
     description: 'Para quem joga todo dia e quer sentir a diferença.',
-    benefits: ['4x de XP e 4x de drop', '4x de zen por monstro', 'Tudo do Bronze', 'Sorteios mensais'],
+    benefits: ['4x de XP de up', '4x de XP Master', '4x de zen por monstro', 'Tudo do Bronze'],
     highlight: false,
-    game: { xp_multiplier: 4, master_xp_multiplier: 4, drop_multiplier: 4, zen_multiplier: 4, party_xp_multiplier: 4 },
+    game: tier(4),
   },
   {
     id: 'ouro',
@@ -65,9 +79,9 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 4990,
     description: 'A experiência completa MUCURA, sem limites.',
-    benefits: ['8x de XP e 8x de drop', '8x de zen por monstro', 'Tudo do Prata', 'Badge dourada no site'],
+    benefits: ['8x de XP de up', '8x de XP Master', '8x de zen por monstro', 'Tudo do Prata'],
     highlight: true,
-    game: { xp_multiplier: 8, master_xp_multiplier: 8, drop_multiplier: 8, zen_multiplier: 8, party_xp_multiplier: 8 },
+    game: tier(8),
   },
 ];
 

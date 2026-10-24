@@ -69,6 +69,12 @@ describe('VIP plans', () => {
     expect(renameTierPlans(custom)).toBe(custom);
   });
 
+  it('ships the three tiers with the multipliers the game applies', () => {
+    expect(DEFAULT_PLANS.map(plan => plan.name)).toEqual(['VIP Bronze', 'VIP Prata', 'VIP Ouro']);
+    expect(DEFAULT_PLANS.map(plan => plan.game.xp_multiplier)).toEqual([2, 4, 8]);
+    expect(DEFAULT_PLANS.map(plan => plan.game.zen_multiplier)).toEqual([2, 4, 8]);
+  });
+
   it('keeps the plan\'s game multipliers inside safe limits', () => {
     const parsed = parsePlans([
       { id: 'vip1', name: 'VIP 1', days: 30, price_cents: 1990, game: { xp_multiplier: 2, drop_multiplier: '4' } },

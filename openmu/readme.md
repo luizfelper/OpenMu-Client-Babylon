@@ -13,8 +13,8 @@ plugins/            MuPlugins.csproj: one DLL with every plugin, compiled agains
                     Modules/IModulePacketPlugIn and Views/Modules/IModulePacketViewPlugIn (module packets);
                     LoginTokens/: the token table, issue and token login, the upkeep task; Views/LoginTokens
   GameLogic/Vip/    the VIP plans: VipTierStore reads mu_plugins.vip_plan and mu_plugins.vip_plan_account,
-                    VipExperienceCalculationPlugIn scales a kill's XP and Master XP, VipDropGenerator
-                    (a DefaultDropGenerator) scales drop chance and zen
+                    VipPlayerAttributesPlugIn applies the plan's XP, Master XP and zen multipliers
+                    to a player in the world
   Web/Vip/          AccountDeletionController: DELETE api/mu-plugins/accounts/{login}, operator only,
                     deletes an account with every character (see "Deleting an account")
   GameServer/       packet group 0xE7: the group handler, the escrow request handler, the result view,
@@ -95,13 +95,22 @@ reads them, from two tables of our own in OpenMU's database:
   payment is approved and again whenever the player opens the panel, so a failed write is retried;
   an expired row is ignored by the game without a task.
 
-The hooks: `VipExperienceCalculationPlugIn` multiplies the final experience of a kill (the
-configured rates and the map/monster bonuses apply first), and `VipDropGenerator` replaces the
-drop generator, which is chosen by strategy key in the game server configuration (empty key; the
-default one stays selectable in the admin). It scales the chance groups of the killed monster for
-the length of the call (restored right after, so the shared configuration never stays changed) and
-the zen the monster pays. A free account gets exactly the default answer; a database that is down
-never costs a kill, the game keeps its own rates until the next read works.
+The hook: `VipPlayerAttributesPlugIn` (`IPlayerStateChangedPlugIn`) runs when a character enters the
+world and adds the plan's rates to the attributes OpenMU already multiplies into the reward:
+`Stats.ExperienceRate`, `Stats.MasterExperienceRate` and `Stats.MoneyAmountRate`. It follows
+OpenMU's own `HappyHourPlugIn`, which is the supported way to change a rate for one player without
+touching the shared configuration; the elements are removed when the player leaves, so no bonus
+outlives the session. A free account gets nothing added. A database that is down costs nothing:
+the player runs with the game's own rates until the next read works.
+
+The plan's `drop_multiplier` is stored, shown to players and editable, but **not applied by the
+game**. OpenMU rolls a monster's drop groups inside `DefaultDropGenerator`, and its only per-kill
+hooks (`IMonsterItemDropPlugIn`, `IMonsterItemDroppedPlugIn`) receive the result and can cancel a
+drop, not multiply its chance; `GenerateItemDropsAsync` is not virtual either, so a subclass cannot
+take part. Applying it needs one of two things in OpenMU itself: a chance attribute on the player
+(e.g. `Stats.DropChanceRate`) read by the generator, or a `virtual` roll hook. Until then the site
+should describe drop as a non-applied benefit, or a server owner sets the drop in the monster
+definitions for everyone.
 
 ## Deleting an account
 

@@ -25,7 +25,9 @@ using MUnique.OpenMU.Persistence;
 /// </remarks>
 // Operator only, like creating or editing an account in the admin panel. AdminPolicies and
 // ApiKeyAuthenticationDefaults are internal to OpenMU's web assembly, so their two values are
-// spelled out: the cookie scheme plus the API key scheme, and the operator policy.
+// The admin panel's account controller authorizes with its auth helpers, which are internal to
+// OpenMU's web assembly. The same scheme names and policy are spelled out here: the cookie scheme,
+// the API key scheme ("OpenMU.ApiKey") and the operator policy ("OpenMU.Operator").
 [ApiController]
 [Route("api/mu-plugins/accounts")]
 [Authorize(AuthenticationSchemes = "Cookies,OpenMU.ApiKey", Policy = "OpenMU.Operator")]

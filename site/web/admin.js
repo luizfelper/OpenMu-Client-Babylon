@@ -264,13 +264,15 @@ function planTemplate(plan, index) {
       <label>Benefícios (um por linha)<textarea class="plan-benefits" rows="4">${escapeHtml((plan.benefits || []).join('\n'))}</textarea></label>
       <fieldset class="plan-game">
         <legend>Benefícios no jogo</legend>
-        <p class="admin-hint">Multiplicador aplicado pelo servidor do jogo. 1 = sem bônus, 2 = dobrado.</p>
+        <p class="admin-hint">Multiplicador aplicado pelo servidor do jogo. 1 = sem bônus, 2 = dobrado.
+          XP de up, XP Master e zen valem no jogo. Drop e XP em party ficam guardados e exibidos, mas o
+          OpenMU ainda não tem um gancho por jogador para aplicá-los.</p>
         <div class="plan-grid">
           <label>XP de UP (x)<input class="plan-xp" type="number" min="0.1" max="100" step="0.1" value="${number('xp_multiplier', 1)}" /></label>
           <label>XP Master (x)<input class="plan-master-xp" type="number" min="0.1" max="100" step="0.1" value="${number('master_xp_multiplier', 1)}" /></label>
-          <label>Drop (x)<input class="plan-drop" type="number" min="0.1" max="100" step="0.1" value="${number('drop_multiplier', 1)}" /></label>
           <label>Zen (x)<input class="plan-zen" type="number" min="0.1" max="100" step="0.1" value="${number('zen_multiplier', 1)}" /></label>
-          <label>XP em party (x)<input class="plan-party-xp" type="number" min="0.1" max="100" step="0.1" value="${number('party_xp_multiplier', 1)}" /></label>
+          <label>Drop (x, guardado)<input class="plan-drop" type="number" min="0.1" max="100" step="0.1" value="${number('drop_multiplier', 1)}" /></label>
+          <label>XP em party (x, guardado)<input class="plan-party-xp" type="number" min="0.1" max="100" step="0.1" value="${number('party_xp_multiplier', 1)}" /></label>
         </div>
       </fieldset>
       <label class="check"><input type="checkbox" class="plan-highlight" ${plan.highlight ? 'checked' : ''} /> Destacar este plano</label>
