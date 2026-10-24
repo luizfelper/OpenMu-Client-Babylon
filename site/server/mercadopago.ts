@@ -205,6 +205,10 @@ export async function createPixPayment(order: PreferenceOrder, payer: PixPayer):
     };
   }>('/v1/payments', settings, {
     method: 'POST',
+    headers: {
+      // Mercado Pago requires an idempotency key for Pix payments.
+      'x-idempotency-key': order.id,
+    },
     body: JSON.stringify(body),
   });
 
