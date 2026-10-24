@@ -52,6 +52,8 @@ import {
 } from './vip';
 
 const WEB_ROOT = fileURLToPath(new URL('../web', import.meta.url));
+// Bumped on every process start so browsers and Cloudflare fetch fresh JS/CSS after a deploy.
+const ASSET_VERSION = Date.now().toString(36);
 
 const HTML_HEADERS: HeadersInit = {
   'content-type': 'text/html; charset=utf-8',
@@ -160,14 +162,16 @@ async function staticFile(pathname: string): Promise<Response | null> {
         : filePath.endsWith('.txt')
           ? 'text/plain; charset=utf-8'
           : undefined;
+  if (isHtml) {
+    const html = (await file.text()).replaceAll('__ASSET_VERSION__', ASSET_VERSION);
+    return new Response(html, { headers: HTML_HEADERS });
+  }
   return new Response(file, {
-    headers: isHtml
-      ? HTML_HEADERS
-      : {
-          ...(type ? { 'content-type': type } : {}),
-          'cache-control': 'public, max-age=3600',
-          'x-content-type-options': 'nosniff',
-        },
+    headers: {
+      ...(type ? { 'content-type': type } : {}),
+      'cache-control': 'public, max-age=3600',
+      'x-content-type-options': 'nosniff',
+    },
   });
 }
 
