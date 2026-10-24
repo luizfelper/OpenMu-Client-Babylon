@@ -306,6 +306,16 @@ function renderUserPanel() {
     play.hidden = !url;
     if (url) play.href = url;
   }
+  // The hero's "Jogar!" opens the client; without a configured URL it falls back to the VIP anchor.
+  const heroPlay = $('#hero-play');
+  if (heroPlay) {
+    const url = safeUrl(state.urls.play);
+    if (url) {
+      heroPlay.href = url;
+      heroPlay.target = '_blank';
+      heroPlay.rel = 'noopener';
+    }
+  }
   syncMapButton();
 }
 
