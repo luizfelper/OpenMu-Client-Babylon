@@ -43,7 +43,7 @@ import { testConnection } from './mercadopago';
 import {
   createCheckout,
   createPixCheckout,
-  getOrder,
+  getOrderStatus,
   listOrders,
   manualApprove,
   orderStats,
@@ -291,7 +291,7 @@ async function handle(request: Request, ip: string): Promise<Response> {
 
   const orderPath = path.match(/^\/api\/vip\/order\/([0-9a-f-]{36})$/);
   if (orderPath && request.method === 'GET') {
-    const order = getOrder(orderPath[1]);
+    const order = await getOrderStatus(orderPath[1]);
     if (!order) return json({ error: 'Pedido não encontrado.' }, 404, cors);
     return json(order, 200, cors);
   }

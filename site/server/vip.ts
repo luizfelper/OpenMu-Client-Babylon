@@ -247,9 +247,29 @@ export async function createPixCheckout(value: unknown): Promise<{
   }
 }
 
-export function getOrder(id: string): Record<string, unknown> | null {
-  const order = orderById(id);
-  return order ? publicOrder(order) : null;
+const orderRefreshAt = new Map<string, number>();
+const ORDER_REFRESH_MS = 3000;
+
+export async function getOrderStatus(id: string): Promise<Record<string, unknown> | null> {
+  let order = orderById(id);
+  if (!order) return null;
+
+  // The webhook is the primary confirmation path, but it can be delayed or misconfigured.
+  // While the browser polls a pending Pix order, ask Mercado Pago directly as a fallback.
+  if (order.status === 'pending' && order.payment_id) {
+    const last = orderRefreshAt.get(id) ?? 0;
+    if (Date.now() - last >= ORDER_REFRESH_MS) {
+      orderRefreshAt.set(id, Date.now());
+      try {
+        await processPayment(order.payment_id);
+      } catch (error) {
+        console.warn(`order ${id} payment refresh failed: ${(error as Error).message}`);
+      }
+      order = orderById(id) ?? order;
+    }
+  }
+  if (order.status !== 'pending') orderRefreshAt.delete(id);
+  return publicOrder(order);
 }
 
 function extendEntitlement(order: VipOrder, paymentId: string, raw: unknown): void {
