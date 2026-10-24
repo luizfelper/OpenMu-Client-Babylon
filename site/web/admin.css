@@ -11,6 +11,10 @@
     radial-gradient(500px 400px at 20% 90%, rgba(215, 168, 75, 0.09), transparent 55%);
 }
 
+.login-shell[hidden] {
+  display: none;
+}
+
 .login-card {
   width: min(440px, 100%);
   padding: 34px;
