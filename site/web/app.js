@@ -468,6 +468,10 @@ async function submitPix() {
     showToast('Informe a conta do jogo.', true);
     return;
   }
+  if (!email) {
+    showToast('Informe um e-mail para gerar o Pix.', true);
+    return;
+  }
   if (!name) {
     showToast('Informe o nome completo para o Pix.', true);
     return;

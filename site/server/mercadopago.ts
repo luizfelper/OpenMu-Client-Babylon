@@ -47,23 +47,30 @@ function apiError(status: number, body: unknown): HttpError {
     if (typeof record.status_detail === 'string') details.push(record.status_detail);
   }
   const suffix = details.filter(Boolean).join(' — ');
-  return new HttpError(502, `Mercado Pago: ${message}${suffix ? ` (${suffix})` : ''}`);
+  // 422 instead of 502: Cloudflare replaces origin 502 responses with its own HTML page,
+  // which hides the Mercado Pago error from the site's modal.
+  return new HttpError(422, `Mercado Pago: ${message}${suffix ? ` (${suffix})` : ''}`);
 }
 
 async function request<T>(path: string, settings: MpSettings, init: RequestInit): Promise<T> {
   if (!settings.accessToken) {
     throw new HttpError(503, 'O Mercado Pago ainda não foi configurado no painel.');
   }
-  const response = await fetch(`https://api.mercadopago.com${path}`, {
-    ...init,
-    signal: AbortSignal.timeout(15_000),
-    headers: {
-      authorization: `Bearer ${settings.accessToken}`,
-      'content-type': 'application/json',
-      accept: 'application/json',
-      ...(init.headers || {}),
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`https://api.mercadopago.com${path}`, {
+      ...init,
+      signal: AbortSignal.timeout(15_000),
+      headers: {
+        authorization: `Bearer ${settings.accessToken}`,
+        'content-type': 'application/json',
+        accept: 'application/json',
+        ...(init.headers || {}),
+      },
+    });
+  } catch (error) {
+    throw new HttpError(422, `Mercado Pago: ${(error as Error).message}`);
+  }
   const text = await response.text();
   let body: unknown = null;
   try {
@@ -123,7 +130,7 @@ export async function createPreference(order: PreferenceOrder): Promise<Preferen
     ? response.sandbox_init_point || response.init_point
     : response.init_point || response.sandbox_init_point;
   if (!response.id || !initPoint) {
-    throw new HttpError(502, 'O Mercado Pago não devolveu o link de pagamento.');
+    throw new HttpError(422, 'O Mercado Pago não devolveu o link de pagamento.');
   }
   return { id: response.id, initPoint };
 }
@@ -204,7 +211,7 @@ export async function createPixPayment(order: PreferenceOrder, payer: PixPayer):
   const qrCode = response.point_of_interaction?.transaction_data?.qr_code;
   const qrCodeBase64 = response.point_of_interaction?.transaction_data?.qr_code_base64;
   if (!response.id || !qrCode) {
-    throw new HttpError(502, 'O Mercado Pago não gerou o QR Code Pix.');
+    throw new HttpError(422, 'O Mercado Pago não gerou o QR Code Pix.');
   }
   return {
     id: String(response.id),
