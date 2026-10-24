@@ -131,6 +131,26 @@ export interface PresenceAnswer {
   unidentifiedConnections: number;
 }
 
+/** The site sends this on the internal control routes; Caddy never exposes them. */
+const CONTROL_HEADER = "x-mucura-control";
+
+/** What the site's player panel needs to know about a live character. */
+export type PlayerSnapshot = {
+  online: boolean;
+  inWorld: boolean;
+  character: string | null;
+  map: number | null;
+  x: number;
+  y: number;
+  level: number;
+  money: number;
+};
+
+export type PlayerControl = {
+  status(account: string): PlayerSnapshot;
+  warp(account: string, index: number): { ok: boolean; error?: string };
+};
+
 const EMPTY: Uint8Array = new Uint8Array(0);
 
 function append(queue: Uint8Array, chunk: Uint8Array): Uint8Array {
@@ -508,9 +528,50 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+function decodeAccount(raw: string): string | null {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+}
+
 /** One request against the presence server. Separate from the port so the routes can be tested without one. */
-export function handlePresenceRequest(req: Request): Response {
+export function handlePresenceRequest(
+  req: Request,
+  control: PlayerControl | null = null,
+  secret = ""
+): Response {
   const url = new URL(req.url);
+
+  const player = url.pathname.match(/^\/player\/([^/]+)$/);
+  const isWarp = url.pathname === "/warp";
+
+  if (player || isWarp) {
+    if (!control) return json({ error: "Player control is off" }, 503);
+    if (secret && req.headers.get(CONTROL_HEADER) !== secret) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+
+    if (player) {
+      if (req.method !== "GET") return json({ error: "Method not allowed" }, 405);
+      const account = decodeAccount(player[1]);
+      if (account === null || !ACCOUNT_RE.test(account)) {
+        return json({ error: "Malformed account name" }, 400);
+      }
+      return json(control.status(account));
+    }
+
+    if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+    const account = url.searchParams.get("account") ?? "";
+    const index = Number(url.searchParams.get("index"));
+    if (!ACCOUNT_RE.test(account)) return json({ error: "Malformed account name" }, 400);
+    if (!Number.isInteger(index) || index < 0 || index > 0xffff) {
+      return json({ error: "Malformed warp index" }, 400);
+    }
+    const result = control.warp(account, index);
+    return json(result, result.ok ? 200 : 409);
+  }
 
   if (req.method !== "GET") return json({ error: "Method not allowed" }, 405);
 
@@ -538,9 +599,9 @@ export function handlePresenceRequest(req: Request): Response {
 
   if (!match) return json({ error: "Not found" }, 404);
 
-  const account = decodeURIComponent(match[1]);
+  const account = decodeAccount(match[1]);
 
-  if (!ACCOUNT_RE.test(account)) {
+  if (account === null || !ACCOUNT_RE.test(account)) {
     return json({ error: "Malformed account name" }, 400);
   }
 
@@ -548,22 +609,32 @@ export function handlePresenceRequest(req: Request): Response {
 }
 
 /**
- * Loopback only, no auth. It answers "is this account playing", which is not
- * a secret to anyone who can already reach the box, but it must never be
+ * Loopback only. Presence answers "is this account playing", which is not a
+ * secret to anyone who can already reach the box, but it must never be
  * published by Caddy: it would otherwise let anyone enumerate who is online -
  * and, through `/ticket/<nonce>`, mint a cash-shop ticket for anyone whose
  * nonce they hold.
+ *
+ * The player-control routes are stricter: they can inject a packet into a
+ * live game socket, so they require a shared secret whenever one is set.
  */
-export function startPresenceServer(): void {
+export function startPresenceServer(
+  control: PlayerControl | null = null,
+  secret = process.env.PLAYER_CONTROL_SECRET ?? ""
+): void {
   if (!PRESENCE_ENABLED) {
     console.log("presence: off");
     return;
   }
 
+  if (control && !secret) {
+    console.warn("presence: player control has no shared secret configured");
+  }
+
   Bun.serve({
     port: PRESENCE_PORT,
     hostname: PRESENCE_HOST,
-    fetch: handlePresenceRequest,
+    fetch: req => handlePresenceRequest(req, control, secret),
   });
 
   console.log(`presence: listening on ${PRESENCE_HOST}:${PRESENCE_PORT}`);

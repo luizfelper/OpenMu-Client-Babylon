@@ -37,6 +37,7 @@ import {
 } from './news';
 import { getRankings, rankingSnapshotCount } from './rankings';
 import { onlinePlayers } from './presence';
+import { changePlayerMap, playerPanel } from './playerPanel';
 import {
   adminSettings,
   ensureDefaults,
@@ -301,6 +302,20 @@ async function handle(request: Request, ip: string): Promise<Response> {
   if (path === '/api/auth/logout' && request.method === 'POST') {
     assertSameOrigin(request);
     return json({ ok: true }, 200, { ...cors, 'set-cookie': clearPlayerCookie() });
+  }
+
+  if (path === '/api/player/panel' && request.method === 'GET') {
+    const player = playerFromRequest(request);
+    if (!player) throw new HttpError(401, 'Entre na sua conta para abrir o painel.');
+    return json(await playerPanel(player.account), 200, cors);
+  }
+
+  if (path === '/api/player/warp' && request.method === 'POST') {
+    assertSameOrigin(request);
+    const player = playerFromRequest(request);
+    if (!player) throw new HttpError(401, 'Entre na sua conta para trocar de mapa.');
+    const body = await readJson<unknown>(request);
+    return json(await changePlayerMap(player.account, body), 200, cors);
   }
 
   if (path === '/api/vip/plans' && request.method === 'GET') {

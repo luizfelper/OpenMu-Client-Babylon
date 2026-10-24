@@ -20,6 +20,9 @@ export const PRESENCE_URL = trimSlash(
   process.env.PRESENCE_URL || 'http://127.0.0.1:3001'
 );
 
+/** Shared with the proxy; guards the internal player-status and warp routes. */
+export const PLAYER_CONTROL_SECRET = process.env.PLAYER_CONTROL_SECRET || '';
+
 /** The public origin players use, e.g. https://site.example.com. */
 export const SITE_BASE_URL = trimSlash(
   process.env.SITE_BASE_URL || `http://localhost:${PORT}`

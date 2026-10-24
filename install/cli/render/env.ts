@@ -38,6 +38,9 @@ export function serviceEnv(c: Config): Partial<Record<Service, Env>> {
   const origin = clientOrigin(c);
   const presence = `http://${HOSTS.openmu}:${PORTS.presence}`;
   const db = databaseUrl(c);
+  // The site asks the proxy to inject a warp packet into a live game socket.
+  // Both containers need the same value; it never leaves the Compose network.
+  const playerControlSecret = c.siteSecret || c.shopTicketSecret;
   return {
     openmu: {
       DB_ADMIN_PW: c.postgresPassword,
@@ -61,6 +64,7 @@ export function serviceEnv(c: Config): Partial<Record<Service, Env>> {
       ADMIN_ORIGINS: origin,
       PRESENCE_HOST: '0.0.0.0',
       PRESENCE_PORT: String(PORTS.presence),
+      PLAYER_CONTROL_SECRET: playerControlSecret,
     },
     register: {
       PORT: String(PORTS.register),
@@ -103,6 +107,7 @@ export function serviceEnv(c: Config): Partial<Record<Service, Env>> {
       SITE_DB: DATA.site,
       DATABASE_URL: db,
       PRESENCE_URL: presence,
+      PLAYER_CONTROL_SECRET: playerControlSecret,
       SITE_BASE_URL: siteOrigin(c),
       SITE_ADMIN_USER: c.adminUser,
       SITE_ADMIN_HASH: c.adminHash,

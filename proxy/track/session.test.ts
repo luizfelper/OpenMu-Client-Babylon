@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TrackEvent } from '../../src/controllers/net/protocols/adminProtocol';
+import { Xor32Decryptor } from '../../src/controllers/net/encryption/xor32';
 import { TrackedSession, type SessionOptions } from './session';
 import { WireEncoder } from './wire';
 import {
@@ -107,6 +108,43 @@ describe('TrackedSession', () => {
 
     expect(h.kinds()).toEqual(['login', 'select']);
     expect(h.last().text).toBe('entered the world as Aeris (Blade Master, level 400) in Devias at 130, 120');
+  });
+
+  it('injects a client-shaped, encrypted warp request through the live socket', () => {
+    const h = harness();
+    h.enter();
+    const sent: Uint8Array[] = [];
+    h.session.setServerWriter(bytes => sent.push(bytes));
+
+    expect(h.session.requestWarp(37)).toBe(true);
+    expect(sent).toHaveLength(1);
+
+    const wire = sent[0];
+    expect([...wire.slice(0, 3)]).toEqual([0xc1, 10, 0x8e]);
+
+    // The proxy sends the same Xor32 form as the browser client, so the
+    // plaintext only appears after decrypting from byte 3 onward.
+    const plain = new Uint8Array(wire);
+    new Xor32Decryptor().Decrypt(plain);
+    const view = new DataView(plain.buffer, plain.byteOffset, plain.byteLength);
+    expect(plain[3]).toBe(0x02);
+    expect(view.getUint32(4, true)).toBe(0);
+    expect(view.getUint16(8, true)).toBe(37);
+    expect(h.last().kind).toBe('warp');
+    expect(h.last().data).toMatchObject({ index: 37, source: 'site' });
+  });
+
+  it('refuses a warp before the character is in the world or without a socket', () => {
+    const h = harness();
+    h.session.setServerWriter(() => {
+      throw new Error('must not write');
+    });
+
+    expect(h.session.requestWarp(2)).toBe(false);
+
+    h.enter();
+    h.session.setServerWriter(null);
+    expect(h.session.requestWarp(2)).toBe(false);
   });
 
   it('is not a game master on the server status alone being absent', () => {

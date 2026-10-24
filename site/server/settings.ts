@@ -135,6 +135,7 @@ const DEFAULTS: Record<string, string> = {
   mp_webhook_secret: '',
   mp_sandbox: 'on',
   mp_statement_descriptor: 'MUCURA VIP',
+  user_panel_vip_only: 'on',
 };
 
 export function ensureDefaults(): void {
@@ -174,6 +175,11 @@ export function getMpSettings(): MpSettings {
     sandbox: get('mp_sandbox') !== 'off',
     statementDescriptor: get('mp_statement_descriptor') || 'MUCURA VIP',
   };
+}
+
+/** Whether the logged-in panel's map changer is limited to active VIP accounts. */
+export function userPanelVipOnly(): boolean {
+  return get('user_panel_vip_only') !== 'off';
 }
 
 export function publicSite(): Record<string, unknown> {
@@ -221,6 +227,9 @@ export function publicSite(): Record<string, unknown> {
       enabled: mp.enabled,
       configured: Boolean(mp.accessToken),
       sandbox: mp.sandbox,
+    },
+    player_panel: {
+      vip_only: userPanelVipOnly(),
     },
   };
 }
@@ -275,6 +284,9 @@ export type AdminSettings = {
   links: LinkItem[];
   social: SocialLinks;
   vip_plans: VipPlan[];
+  player_panel: {
+    vip_only: boolean;
+  };
   mercadopago: {
     enabled: boolean;
     access_token_set: boolean;
@@ -326,6 +338,9 @@ export function adminSettings(): AdminSettings {
       whatsapp: '',
     }),
     vip_plans: getPlans(),
+    player_panel: {
+      vip_only: userPanelVipOnly(),
+    },
     mercadopago: {
       enabled: mp.enabled,
       access_token_set: Boolean(mp.accessToken),
@@ -343,6 +358,7 @@ export function saveAdminSettings(body: unknown): AdminSettings {
   const site = asRecord(root.site, 'Site');
   const server = asRecord(root.server, 'Servidor');
   const mp = asRecord(root.mercadopago, 'Mercado Pago');
+  const playerPanel = root.player_panel === undefined ? {} : asRecord(root.player_panel, 'Painel do jogador');
 
   setSetting('site_name', stringField(site.name, 'Nome do site', 60));
   setSetting('site_tagline', textOr(site.tagline, 'Slogan', 120));
@@ -415,6 +431,8 @@ export function saveAdminSettings(body: unknown): AdminSettings {
 
   const plans = parsePlans(root.vip_plans);
   setSetting('vip_plans', JSON.stringify(plans));
+
+  setSetting('user_panel_vip_only', booleanField(playerPanel.vip_only, true) ? 'on' : 'off');
 
   setSetting('mp_enabled', booleanField(mp.enabled) ? 'on' : 'off');
   const accessToken = optionalString(mp.access_token, 'Access token', 500);

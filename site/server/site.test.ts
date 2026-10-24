@@ -1,7 +1,9 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { renderMarkdown } from './markdown';
+import { WARP_MAPS, findWarpMap, publicWarpMaps } from './maps';
 import { verifyWebhookSignature } from './mpSignature';
+import { panelAllowed } from './panelRules';
 import { DEFAULT_PLANS, findPlan, formatBrl, parsePlans } from './plans';
 import { slugify } from './slug';
 
@@ -62,6 +64,36 @@ describe('VIP plans', () => {
     expect(() => parsePlans(Array.from({ length: 13 }, (_, index) => ({ ...base, id: `p${index}` })))).toThrow(
       /12 planos/i
     );
+  });
+});
+
+describe('player panel access', () => {
+  it('gates the extra actions only when the admin chooses VIP-only', () => {
+    expect(panelAllowed(false, true)).toBe(false);
+    expect(panelAllowed(true, true)).toBe(true);
+    expect(panelAllowed(false, false)).toBe(true);
+    expect(panelAllowed(true, false)).toBe(true);
+  });
+});
+
+describe('warp destinations', () => {
+  it('ships the 37 client entries with unique identifiers', () => {
+    expect(WARP_MAPS).toHaveLength(37);
+    expect(new Set(WARP_MAPS.map(map => map.id)).size).toBe(WARP_MAPS.length);
+    expect(WARP_MAPS.every(map => map.level > 0 && map.zen > 0 && map.map >= 0)).toBe(true);
+  });
+
+  it('sends Vulcanus as the server index instead of the client list index', () => {
+    const vulcanus = findWarpMap('VULCANUS');
+    expect(vulcanus?.name).toBe('Vulcanus');
+    // The client file lists Vulcanus at 42; OpenMU's warp list expects 37.
+    expect(vulcanus?.serverIndex).toBe(37);
+  });
+
+  it('finds by id and keeps the server index out of the public payload', () => {
+    expect(findWarpMap('  Lorencia ')).toMatchObject({ name: 'Lorencia', map: 0 });
+    expect(findWarpMap('nope')).toBeNull();
+    expect('serverIndex' in publicWarpMaps()[0]).toBe(false);
   });
 });
 

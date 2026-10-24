@@ -90,6 +90,22 @@ open(
     return false;
   }
 
+  /**
+   * The live socket for an account. An account can have more than one socket
+   * (a reconnect that has not timed out yet), so a session already in the
+   * world wins over one still at character select.
+   */
+  findByAccount(account: string): TrackedSession | null {
+    const key = account.toLowerCase();
+    let fallback: TrackedSession | null = null;
+    for (const session of this.sessions) {
+      if (session.account?.toLowerCase() !== key) continue;
+      if (session.inWorld) return session;
+      fallback ??= session;
+    }
+    return fallback;
+  }
+
   subscribe(listener: TrackerListener): () => void {
     this.listeners.add(listener);
     return () => {

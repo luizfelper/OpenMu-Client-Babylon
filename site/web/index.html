@@ -39,8 +39,48 @@
           <a class="nav-cta" href="#vip">Virar VIP</a>
           <button class="auth-button" id="auth-open" type="button">Entrar</button>
           <div class="auth-account" id="auth-account" hidden>
-            <span id="auth-account-name"></span>
-            <button class="auth-button auth-button-ghost" id="auth-logout" type="button">Sair</button>
+            <button
+              class="user-menu-toggle"
+              id="user-menu-toggle"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-controls="user-panel"
+            >
+              <span class="user-avatar" id="auth-account-initial" aria-hidden="true">?</span>
+              <span class="user-menu-name" id="auth-account-name"></span>
+              <span class="user-menu-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="user-panel" id="user-panel" hidden>
+              <div class="user-panel-head">
+                <div>
+                  <span class="eyebrow">Sua conta</span>
+                  <strong id="user-panel-account"></strong>
+                </div>
+                <span class="user-vip-badge" id="user-vip-badge">Jogador</span>
+              </div>
+              <p class="user-panel-vip" id="user-vip-status"></p>
+              <div class="user-panel-game">
+                <span class="user-game-label">No jogo</span>
+                <strong id="user-game-status">Consultando...</strong>
+                <small id="user-game-detail"></small>
+              </div>
+              <label class="user-map-label" for="user-map-select">Mudar de mapa</label>
+              <div class="user-map-row">
+                <select id="user-map-select" disabled>
+                  <option value="">Escolha o destino</option>
+                </select>
+                <button class="btn btn-ghost btn-small" id="user-map-button" type="button" disabled>
+                  Ir
+                </button>
+              </div>
+              <p class="user-panel-note" id="user-panel-note"></p>
+              <div class="user-panel-links">
+                <a class="text-link" id="user-play-link" href="#">Abrir o jogo</a>
+                <a class="text-link" href="#vip" id="user-vip-link">Ver planos VIP</a>
+              </div>
+              <button class="btn btn-ghost btn-wide" id="auth-logout" type="button">Sair da conta</button>
+            </div>
           </div>
         </nav>
       </div>
@@ -357,10 +397,18 @@
             </button>
           </div>
           <div id="pix-box" hidden>
-            <p class="fineprint" id="pix-status">Gerando QR Code...</p>
+            <p class="fineprint pix-status" id="pix-status" aria-live="polite">Gerando QR Code...</p>
+            <div class="pix-success" id="pix-success" hidden>
+              <strong>Pagamento aprovado!</strong>
+              <span>O VIP já foi liberado para a sua conta.</span>
+            </div>
             <img id="pix-qr" alt="QR Code Pix" width="220" height="220" />
             <textarea id="pix-code" readonly rows="3"></textarea>
             <button class="btn btn-ghost btn-wide" type="button" id="pix-copy">Copiar código Pix</button>
+            <p class="pix-wait" id="pix-wait" hidden>
+              <span class="pix-dot" aria-hidden="true"></span>
+              Aguardando o pagamento. Esta tela é atualizada automaticamente.
+            </p>
           </div>
         </form>
         <p class="fineprint">

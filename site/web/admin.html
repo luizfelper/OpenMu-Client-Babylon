@@ -54,6 +54,7 @@
           <button type="button" data-tab="dashboard" class="active">Visão geral</button>
           <button type="button" data-tab="news">Notícias</button>
           <button type="button" data-tab="vip">VIP e pedidos</button>
+          <button type="button" data-tab="players">Jogadores</button>
           <button type="button" data-tab="payments">Mercado Pago</button>
           <button type="button" data-tab="content">Conteúdo</button>
           <button type="button" data-tab="extras">FAQ, links e redes</button>
@@ -181,6 +182,31 @@
               </div>
               <div id="orders-list" class="admin-list"></div>
             </div>
+          </section>
+
+          <section class="admin-panel" data-panel="players" hidden>
+            <div class="admin-head">
+              <div>
+                <p class="eyebrow">Painel do jogador</p>
+                <h1>Jogadores</h1>
+              </div>
+              <button class="btn btn-primary btn-small" type="button" id="save-players-button">Salvar</button>
+            </div>
+            <form class="panel admin-card admin-form" id="players-form">
+              <h2>Opções no site</h2>
+              <label class="check check-strong">
+                <input type="checkbox" id="player-panel-vip-only" />
+                Troca de mapa apenas para VIP
+              </label>
+              <p class="admin-hint">
+                Quando marcado, só jogadores com VIP ativo podem usar “Mudar de mapa” no painel do
+                site. Entrar, sair e consultar a conta continuam disponíveis para todos.
+              </p>
+              <p class="admin-hint">
+                A troca é real: o site envia o pedido ao proxy, que injeta a mesma solicitação da
+                lista de warp do cliente. O servidor do jogo continua validando nível, zen e mapa.
+              </p>
+            </form>
           </section>
 
           <section class="admin-panel" data-panel="payments" hidden>

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ConnectionPresence,
   handlePresenceRequest,
@@ -554,5 +554,98 @@ describe('the session ticket', () => {
     expect(handlePresenceRequest(new Request('http://presence.local/presence/not%20a%20name')).status).toBe(400);
     expect(handlePresenceRequest(new Request('http://presence.local/elsewhere')).status).toBe(404);
     expect(handlePresenceRequest(new Request('http://presence.local/presence', { method: 'POST' })).status).toBe(405);
+  });
+});
+
+describe('the player-control routes', () => {
+  const snapshot = {
+    online: true,
+    inWorld: true,
+    character: 'Aeris',
+    map: 2,
+    x: 130,
+    y: 120,
+    level: 400,
+    money: 500,
+  };
+
+  function control() {
+    return {
+      status: vi.fn(() => snapshot),
+      warp: vi.fn(() => ({ ok: true })),
+    };
+  }
+
+  const headers = (secret = 'control-secret') => ({ 'x-mucura-control': secret });
+
+  it('is off unless the proxy wires it up', () => {
+    expect(handlePresenceRequest(new Request('http://presence.local/player/testuser')).status).toBe(503);
+    expect(
+      handlePresenceRequest(
+        new Request('http://presence.local/warp?account=testuser&index=2', { method: 'POST' })
+      ).status
+    ).toBe(503);
+  });
+
+  it('requires the shared secret when one is configured', () => {
+    const api = control();
+    expect(
+      handlePresenceRequest(new Request('http://presence.local/player/testuser'), api, 'control-secret').status
+    ).toBe(401);
+    expect(
+      handlePresenceRequest(
+        new Request('http://presence.local/player/testuser', { headers: headers('wrong') }),
+        api,
+        'control-secret'
+      ).status
+    ).toBe(401);
+    expect(
+      handlePresenceRequest(
+        new Request('http://presence.local/player/testuser', { headers: headers() }),
+        api,
+        'control-secret'
+      ).status
+    ).toBe(200);
+  });
+
+  it('answers with the live snapshot and passes warps to the tracker', async () => {
+    const api = control();
+    const player = handlePresenceRequest(
+      new Request('http://presence.local/player/testuser', { headers: headers() }),
+      api,
+      'control-secret'
+    );
+    expect(player.status).toBe(200);
+    expect(await player.json()).toEqual(snapshot);
+    expect(api.status).toHaveBeenCalledWith('testuser');
+
+    const warp = handlePresenceRequest(
+      new Request('http://presence.local/warp?account=testuser&index=37', {
+        method: 'POST',
+        headers: headers(),
+      }),
+      api,
+      'control-secret'
+    );
+    expect(warp.status).toBe(200);
+    expect(await warp.json()).toEqual({ ok: true });
+    expect(api.warp).toHaveBeenCalledWith('testuser', 37);
+  });
+
+  it('rejects malformed accounts, indexes and methods', () => {
+    const api = control();
+    const call = (path: string, method = 'GET') =>
+      handlePresenceRequest(
+        new Request(`http://presence.local${path}`, { method, headers: headers() }),
+        api,
+        'control-secret'
+      );
+
+    expect(call('/player/not%20a%20name').status).toBe(400);
+    expect(call('/warp?account=testuser&index=nope', 'POST').status).toBe(400);
+    expect(call('/warp?account=testuser&index=70000', 'POST').status).toBe(400);
+    expect(call('/warp?account=testuser&index=2').status).toBe(405);
+    expect(call('/player/testuser', 'POST').status).toBe(405);
+    expect(api.warp).not.toHaveBeenCalled();
   });
 });

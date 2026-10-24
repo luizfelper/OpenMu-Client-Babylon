@@ -38,7 +38,9 @@ describe('service env', () => {
     expect(env.marketplace?.MARKETPLACE_ESCROW_SECRET).toBe('escrow-secret');
     expect(env.openmu?.MARKETPLACE_ESCROW_SECRET).toBe('escrow-secret');
     expect(env.cashshop?.CASHSHOP_TICKET_SECRET).toBe('shop-secret');
-    expect(JSON.stringify(env.proxy)).not.toMatch(/secret|Db\//);
+    expect(env.proxy?.PLAYER_CONTROL_SECRET).toBe('shop-secret');
+    expect(env.site?.PLAYER_CONTROL_SECRET).toBe('shop-secret');
+    expect(JSON.stringify({ ...env.proxy, PLAYER_CONTROL_SECRET: '' })).not.toMatch(/secret|Db\//);
     expect(JSON.stringify(env.ops)).not.toMatch(/secret|Db\//);
   });
 

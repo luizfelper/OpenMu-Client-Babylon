@@ -375,6 +375,8 @@ function fillSettings(settings) {
   val('social-tiktok', social.tiktok);
   val('social-whatsapp', social.whatsapp);
 
+  checked('player-panel-vip-only', settings.player_panel?.vip_only !== false);
+
   const mp = settings.mercadopago;
   checked('mp-enabled', mp.enabled);
   checked('mp-sandbox', mp.sandbox);
@@ -470,6 +472,9 @@ function settingsPayload() {
       whatsapp: text('social-whatsapp'),
     },
     vip_plans: gatherPlans(),
+    player_panel: {
+      vip_only: $('#player-panel-vip-only').checked,
+    },
     mercadopago: {
       enabled: $('#mp-enabled').checked,
       access_token: text('mp-access-token'),
@@ -482,7 +487,9 @@ function settingsPayload() {
 }
 
 async function saveSettings() {
-  const buttons = $$('#save-vip-button, #save-payments-button, #save-content-button, #save-extras-button');
+  const buttons = $$(
+    '#save-vip-button, #save-players-button, #save-payments-button, #save-content-button, #save-extras-button'
+  );
   buttons.forEach(button => (button.disabled = true));
   try {
     const data = await api('/api/admin/settings', {
@@ -626,6 +633,7 @@ function bindEvents() {
     if (!$$('.plan-editor').length) renderPlans([]);
   });
   $('#save-vip-button').addEventListener('click', saveSettings);
+  $('#save-players-button').addEventListener('click', saveSettings);
   $('#save-payments-button').addEventListener('click', saveSettings);
   $('#save-content-button').addEventListener('click', saveSettings);
   $('#save-extras-button').addEventListener('click', saveSettings);

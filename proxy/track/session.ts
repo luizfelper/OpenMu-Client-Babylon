@@ -62,6 +62,7 @@ import {
   type TrackedPlayer,
 } from '../../src/controllers/net/protocols/adminProtocol';
 import { Xor3Byte } from '../../src/controllers/net/encryption/xor3';
+import { Xor32Encryptor } from '../../src/controllers/net/encryption/xor32';
 import { FrameReader, type Frame } from './frames';
 import { itemName, mapName, monsterName, storageName } from './names';
 
@@ -170,6 +171,8 @@ export class TrackedSession {
   objectId: number | null = null;
   closed = false;
 
+  /** Set while the relay's TCP socket is open; used only for site-requested warps. */
+  private serverWriter: ((bytes: Uint8Array) => void) | null = null;
   private readonly now: () => number;
   private readonly whispers: boolean;
   private readonly client = new FrameReader('client');
@@ -253,6 +256,43 @@ export class TrackedSession {
     this.sink.change(this);
   }
 
+  /**
+   * Wires the relay's TCP socket to this session. The callback is intentionally
+   * passed in rather than importing Bun here: the tracker stays usable from
+   * tests and from processes that do not own a socket.
+   */
+  setServerWriter(writer: ((bytes: Uint8Array) => void) | null): void {
+    this.serverWriter = writer;
+  }
+
+  /**
+   * Injects a `WarpCommandRequest` as if the player had picked the entry in
+   * the client's warp list. The game server validates level, zen and map rules.
+   * C1 packets are Xor32-encrypted from byte 3 onward, exactly like the client.
+   */
+  requestWarp(index: number): boolean {
+    if (this.closed || !this.inWorld || !this.serverWriter) return false;
+    if (!Number.isInteger(index) || index < 0 || index > 0xffff) return false;
+
+    const packet = WarpCommandRequestPacket.createPacket();
+    packet.CommandKey = 0;
+    packet.WarpInfoIndex = index;
+
+    const bytes = new Uint8Array(packet.buffer.buffer, packet.buffer.byteOffset, packet.buffer.byteLength);
+    const wire = new Uint8Array(bytes);
+    new Xor32Encryptor().Encrypt(wire);
+    try {
+      this.serverWriter(wire);
+    } catch {
+      // The socket may have closed between the check above and the write.
+      this.serverWriter = null;
+      return false;
+    }
+
+    this.emit('warp', `requested a site warp (entry ${index})`, { index, source: 'site' });
+    return true;
+  }
+
   feedClient(chunk: Uint8Array): void {
     if (this.closed) return;
     this.lastSeen = this.now();
@@ -269,6 +309,7 @@ export class TrackedSession {
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    this.serverWriter = null;
     if (this.identified) this.emit('logout', 'disconnected');
   }
 

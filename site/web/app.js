@@ -11,6 +11,7 @@ const state = {
   payments: { enabled: false, configured: false },
   urls: { play: '', register: '' },
   player: null,
+  playerPanel: null,
   pendingPlanId: null,
 };
 
@@ -157,17 +158,163 @@ function updateVipAccess() {
   if (note) note.hidden = !logged;
 }
 
+function closeUserPanel() {
+  const panel = $('#user-panel');
+  const toggle = $('#user-menu-toggle');
+  if (panel) panel.hidden = true;
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+}
+
+function syncMapButton() {
+  const select = $('#user-map-select');
+  const button = $('#user-map-button');
+  const panelState = state.playerPanel;
+  if (!select || !button) return;
+  button.disabled = !select.value || !panelState?.panel?.allowed || !panelState?.game?.online || !panelState?.game?.inWorld;
+}
+
+function renderUserPanel() {
+  if (!state.player) return;
+  setText('#user-panel-account', state.player.account);
+  setText('#auth-account-name', state.player.account);
+  const initial = $('#auth-account-initial');
+  if (initial) initial.textContent = (state.player.account || '?').slice(0, 1).toUpperCase();
+
+  const panelState = state.playerPanel;
+  const vip = panelState?.vip;
+  const badge = $('#user-vip-badge');
+  if (badge) {
+    badge.textContent = vip?.active ? 'VIP' : 'Jogador';
+    badge.classList.toggle('active', Boolean(vip?.active));
+  }
+  const vipStatus = $('#user-vip-status');
+  if (vipStatus) {
+    if (!panelState) {
+      vipStatus.textContent = 'Consultando status VIP...';
+    } else if (vip?.active) {
+      const until = vip.expiresAt ? formatDate(vip.expiresAt) : '';
+      vipStatus.textContent = `${vip.planName || 'VIP'} ativo${until ? ` até ${until}` : ''} • ${formatNumber(vip.daysLeft)} dia(s) restante(s).`;
+    } else {
+      vipStatus.textContent = 'Sua conta ainda não tem VIP ativo.';
+    }
+  }
+
+  const game = panelState?.game;
+  const gameStatus = $('#user-game-status');
+  const gameDetail = $('#user-game-detail');
+  if (gameStatus) {
+    if (!game || !game.available) gameStatus.textContent = 'Status indisponível';
+    else if (!game.online) gameStatus.textContent = 'Offline';
+    else if (!game.inWorld) gameStatus.textContent = 'Na seleção de personagem';
+    else gameStatus.textContent = game.character || 'Personagem online';
+  }
+  if (gameDetail) {
+    if (game?.available && game.online && game.inWorld) {
+      gameDetail.textContent = `${game.map_name || 'Mapa'} • Nível ${formatNumber(game.level)} • ${formatNumber(game.money)} zen`;
+    } else if (game?.available && game.online) {
+      gameDetail.textContent = 'Entre no mundo com um personagem para trocar de mapa.';
+    } else {
+      gameDetail.textContent = '';
+    }
+  }
+
+  const panel = panelState?.panel;
+  const allowed = Boolean(panel?.allowed);
+  const select = $('#user-map-select');
+  if (select) {
+    const maps = Array.isArray(panelState?.maps) ? panelState.maps : [];
+    const selected = select.value;
+    select.innerHTML =
+      '<option value="">Escolha o destino</option>' +
+      maps
+        .map(
+          map =>
+            `<option value="${escapeHtml(map.id)}">${escapeHtml(map.name)} — Nv ${escapeHtml(map.level)} • ${escapeHtml(formatNumber(map.zen))} zen</option>`
+        )
+        .join('');
+    if (selected) select.value = selected;
+    select.disabled = !allowed || !game?.online || !game?.inWorld;
+  }
+
+  const note = $('#user-panel-note');
+  if (note) {
+    note.classList.toggle('locked', Boolean(panel?.vip_only && !vip?.active));
+    if (!panelState) note.textContent = 'Não foi possível consultar o painel agora. Tente novamente.';
+    else if (!allowed) note.textContent = panel.message || 'A troca de mapa pelo site é exclusiva para VIP.';
+    else if (!game?.available) note.textContent = 'Não foi possível consultar o jogo agora. Tente novamente em instantes.';
+    else if (!game.online) note.textContent = 'Entre no jogo para consultar o personagem e trocar de mapa.';
+    else if (!game.inWorld) note.textContent = 'Selecione um personagem no jogo para trocar de mapa.';
+    else note.textContent = panel.message || '';
+  }
+
+  const play = $('#user-play-link');
+  if (play) {
+    const url = safeUrl(state.urls.play);
+    play.hidden = !url;
+    if (url) play.href = url;
+  }
+  syncMapButton();
+}
+
+async function loadPlayerPanel() {
+  if (!state.player) {
+    state.playerPanel = null;
+    return;
+  }
+  try {
+    state.playerPanel = await api('/api/player/panel');
+  } catch (error) {
+    state.playerPanel = null;
+    if (/Entre na sua conta/i.test(error.message || '')) {
+      state.player = null;
+      renderAuth();
+      return;
+    }
+  }
+  renderUserPanel();
+}
+
+async function changeMap() {
+  const select = $('#user-map-select');
+  const button = $('#user-map-button');
+  const mapId = select?.value || '';
+  if (!mapId) return;
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Enviando...';
+  }
+  try {
+    const result = await api('/api/player/warp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ map: mapId }),
+    });
+    showToast(result.message || 'Pedido de troca de mapa enviado ao jogo.');
+    if (select) select.value = '';
+    await loadPlayerPanel();
+    setTimeout(() => {
+      if (state.player) loadPlayerPanel();
+    }, 2000);
+  } catch (error) {
+    showToast(error.message || 'Não foi possível trocar de mapa.', true);
+  } finally {
+    if (button) button.textContent = 'Ir';
+    syncMapButton();
+  }
+}
+
 function renderAuth() {
   const open = $('#auth-open');
   const account = $('#auth-account');
-  const name = $('#auth-account-name');
   if (state.player) {
     if (open) open.hidden = true;
     if (account) account.hidden = false;
-    if (name) name.textContent = state.player.account;
+    renderUserPanel();
   } else {
     if (open) open.hidden = false;
     if (account) account.hidden = true;
+    state.playerPanel = null;
+    closeUserPanel();
   }
   updateVipAccess();
 }
@@ -180,11 +327,13 @@ async function loadPlayer() {
     state.player = null;
   }
   renderAuth();
+  if (state.player) await loadPlayerPanel();
 }
 
 function afterLogin(player) {
   state.player = player;
   renderAuth();
+  loadPlayerPanel();
   closeAuthModal();
   const loginPassword = $('#auth-login-password');
   if (loginPassword) loginPassword.value = '';
@@ -282,8 +431,10 @@ async function logoutPlayer() {
     // The cookie may already be gone; clear the local state either way.
   }
   state.player = null;
+  state.playerPanel = null;
   state.pendingPlanId = null;
   closePlanModal();
+  closeUserPanel();
   renderAuth();
   closeMobileNav();
   showToast('Você saiu da conta.');
@@ -304,6 +455,29 @@ function bindAuth() {
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && !$('#auth-modal')?.hidden) closeAuthModal();
   });
+}
+
+function bindUserPanel() {
+  const toggle = $('#user-menu-toggle');
+  const panel = $('#user-panel');
+  toggle?.addEventListener('click', event => {
+    event.stopPropagation();
+    if (!panel) return;
+    const willOpen = panel.hidden;
+    panel.hidden = !willOpen;
+    toggle.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen) loadPlayerPanel();
+  });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#auth-account')) closeUserPanel();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeUserPanel();
+  });
+  $('#user-map-select')?.addEventListener('change', syncMapButton);
+  $('#user-map-button')?.addEventListener('click', changeMap);
+  $('#user-vip-link')?.addEventListener('click', closeUserPanel);
+  $('#user-play-link')?.addEventListener('click', closeUserPanel);
 }
 
 function renderOnline(online) {
@@ -601,6 +775,76 @@ function renderSite(data) {
   setText('#year', new Date().getFullYear());
 }
 
+const PIX_POLL_MS = 3000;
+let pixPollStop = null;
+let returnPollStop = null;
+
+function setPixState(kind, text) {
+  const status = $('#pix-status');
+  if (status) {
+    status.textContent = text;
+    status.classList.remove('waiting', 'approved', 'error');
+    status.classList.add(kind);
+  }
+  const success = $('#pix-success');
+  if (success) success.hidden = kind !== 'approved';
+  const wait = $('#pix-wait');
+  if (wait) wait.hidden = kind !== 'waiting';
+}
+
+/**
+ * Polls an order immediately and then every few seconds until it is approved or
+ * fails, for as long as the tab is open. The backend refreshes pending Pix
+ * orders from Mercado Pago on each request, so this is the real confirmation
+ * path. Network failures never end the wait: the poll slows down and keeps
+ * trying, because the payment may land at any moment.
+ */
+function watchOrder(orderId, handlers) {
+  let stopped = false;
+  let failures = 0;
+  let timer = null;
+
+  const stop = () => {
+    stopped = true;
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  };
+
+  const tick = async () => {
+    if (stopped) return;
+    try {
+      const order = await api(`/api/vip/order/${encodeURIComponent(orderId)}`);
+      if (stopped) return;
+      if (failures) {
+        failures = 0;
+        handlers.recovered?.();
+      }
+      if (order.status === 'approved') {
+        stop();
+        handlers.approved?.(order);
+        return;
+      }
+      if (order.status === 'error') {
+        stop();
+        handlers.error?.(order);
+        return;
+      }
+      handlers.pending?.(order);
+      timer = setTimeout(tick, PIX_POLL_MS);
+    } catch {
+      if (stopped) return;
+      failures += 1;
+      handlers.retry?.(failures);
+      timer = setTimeout(tick, Math.min(15000, PIX_POLL_MS * failures));
+    }
+  };
+
+  tick();
+  return stop;
+}
+
 function openPlanModal(planId) {
   const plan = state.plans.find(item => item.id === planId);
   if (!plan) return;
@@ -616,12 +860,20 @@ function openPlanModal(planId) {
   }
   const modal = $('#vip-modal');
   if (!modal) return;
+  if (pixPollStop) {
+    pixPollStop();
+    pixPollStop = null;
+  }
   const pixBox = $('#pix-box');
   if (pixBox) pixBox.hidden = true;
+  const pixSuccess = $('#pix-success');
+  if (pixSuccess) pixSuccess.hidden = true;
+  const pixWait = $('#pix-wait');
+  if (pixWait) pixWait.hidden = true;
   const pixStatus = $('#pix-status');
   if (pixStatus) {
     pixStatus.textContent = 'Gerando QR Code...';
-    pixStatus.classList.remove('error');
+    pixStatus.classList.remove('waiting', 'approved', 'error');
   }
   $('#vip-plan-id').value = plan.id;
   $('#vip-modal-title').textContent = plan.name;
@@ -648,10 +900,8 @@ function openPlanModal(planId) {
 }
 
 function closePlanModal() {
-  if (pixPollTimer) {
-    clearInterval(pixPollTimer);
-    pixPollTimer = null;
-  }
+  // A pending Pix keeps polling after the modal closes: the payment may land
+  // while the player browses the rest of the site, and the page tells them.
   const modal = $('#vip-modal');
   if (!modal) return;
   modal.hidden = true;
@@ -724,32 +974,58 @@ async function submitPix() {
     submit.textContent = 'Gerando QR Code...';
   }
   const pixBox = $('#pix-box');
-  const pixStatus = $('#pix-status');
   const pixQr = $('#pix-qr');
   const pixCode = $('#pix-code');
+  if (pixPollStop) {
+    pixPollStop();
+    pixPollStop = null;
+  }
+  if (pixBox) pixBox.hidden = false;
+  if (pixQr) pixQr.removeAttribute('src');
+  if (pixCode) pixCode.value = '';
+  setPixState('waiting', 'Gerando QR Code...');
   try {
     const result = await api('/api/vip/checkout/pix', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ account, email, name, cpf, planId }),
     });
-    if (pixBox) pixBox.hidden = false;
     if (pixQr && result.qrCodeBase64) {
       pixQr.src = `data:image/png;base64,${result.qrCodeBase64}`;
     }
     if (pixCode) pixCode.value = result.qrCode || '';
-    if (pixStatus) {
-      pixStatus.textContent = 'Escaneie o QR Code ou copie o código. Aguardando pagamento...';
-      pixStatus.classList.remove('error');
-    }
-    showToast('QR Code Pix gerado.');
-    pollOrder(result.order.id);
+    setPixState('waiting', 'Escaneie o QR Code ou copie o código. Aguardando o pagamento...');
+    showToast('QR Code Pix gerado. Aguardando o pagamento.');
+    pixPollStop = watchOrder(result.order.id, {
+      pending: () => {
+        setPixState('waiting', 'Aguardando o pagamento. O site confirma automaticamente.');
+      },
+      approved: async order => {
+        pixPollStop = null;
+        setPixState('approved', 'Pagamento aprovado! VIP liberado para a sua conta.');
+        showToast('Pagamento aprovado! VIP liberado.');
+        await refreshPlayerAfterPayment(order);
+      },
+      error: () => {
+        pixPollStop = null;
+        setPixState('error', 'O pagamento não foi concluído. Gere um novo QR Code ou tente outro método.');
+        showToast('O pagamento não foi concluído.', true);
+      },
+      retry: failures => {
+        setPixState(
+          'waiting',
+          failures === 1
+            ? 'Conexão instável. Continuamos tentando confirmar o pagamento...'
+            : 'Ainda sem resposta do servidor. Continuamos tentando confirmar o pagamento...'
+        );
+      },
+      recovered: () => {
+        setPixState('waiting', 'Conexão voltou. Continuando a confirmação do pagamento.');
+      },
+    });
   } catch (error) {
     if (pixBox) pixBox.hidden = false;
-    if (pixStatus) {
-      pixStatus.textContent = error.message || 'Não foi possível gerar o QR Code Pix.';
-      pixStatus.classList.add('error');
-    }
+    setPixState('error', error.message || 'Não foi possível gerar o QR Code Pix.');
     showToast(error.message || 'Não foi possível gerar o QR Code Pix.', true);
   } finally {
     if (submit) {
@@ -759,41 +1035,35 @@ async function submitPix() {
   }
 }
 
-let pixPollTimer = null;
-function pollOrder(orderId) {
-  if (pixPollTimer) clearInterval(pixPollTimer);
-  pixPollTimer = setInterval(async () => {
+/** A payment just landed: reload the session, the VIP state and the panel. */
+async function refreshPlayerAfterPayment(order) {
+  if (order?.account && state.player?.account !== order.account) return;
+  try {
+    const result = await api('/api/auth/me');
+    if (result?.player) state.player = result.player;
+  } catch {
+    // The session cookie is unchanged; the panel refresh below still runs.
+  }
+  await loadPlayerPanel();
+  updateVipAccess();
+  if (state.data) {
     try {
-      const order = await api(`/api/vip/order/${encodeURIComponent(orderId)}`);
-      if (order.status === 'approved') {
-        clearInterval(pixPollTimer);
-        pixPollTimer = null;
-        const pixStatus = $('#pix-status');
-        if (pixStatus) {
-          pixStatus.textContent = 'Pagamento aprovado! VIP liberado.';
-          pixStatus.classList.remove('error');
-        }
-        showToast('Pagamento aprovado! VIP liberado.');
-      } else if (order.status === 'error') {
-        clearInterval(pixPollTimer);
-        pixPollTimer = null;
-        const pixStatus = $('#pix-status');
-        if (pixStatus) {
-          pixStatus.textContent = 'Não foi possível concluir o pagamento.';
-          pixStatus.classList.add('error');
-        }
-        showToast('Não foi possível concluir o pagamento.', true);
-      }
+      const fresh = await api('/api/vip/plans');
+      renderPlans(fresh.plans, fresh.payments);
     } catch {
-      // Keep polling; transient errors should not stop the wait.
+      // The page keeps its current plan cards when the refresh fails.
     }
-  }, 5000);
+  }
 }
 
 async function showArticle(slug) {
   const article = $('#article');
   const content = $('#article-content');
   if (!article || !content) return;
+  if (returnPollStop) {
+    returnPollStop();
+    returnPollStop = null;
+  }
   content.innerHTML = '<div class="ranking-empty">Carregando notícia...</div>';
   try {
     const item = await api(`/api/news/${encodeURIComponent(slug)}`);
@@ -813,10 +1083,48 @@ async function showArticle(slug) {
   }
 }
 
+function returnMarkup(order, note = '') {
+  const approved = order.status === 'approved';
+  const pending = order.status === 'pending';
+  const title = approved ? 'VIP ativado!' : pending ? 'Aguardando pagamento' : 'Não foi possível concluir';
+  const statusText = approved
+    ? 'Aprovado'
+    : pending
+      ? 'Pendente'
+      : order.status === 'error'
+        ? 'Falhou'
+        : escapeHtml(order.status);
+  const wait = pending
+    ? `<p class="pix-wait" id="return-wait"><span class="pix-dot" aria-hidden="true"></span>${escapeHtml(
+        note || 'Aguardando a confirmação do Mercado Pago. Esta página atualiza sozinha.'
+      )}</p>`
+    : '';
+  return `
+    <p class="eyebrow">Retorno do pagamento</p>
+    <h2>${title}</h2>
+    <span class="return-status ${approved ? '' : pending ? 'pending' : 'failed'}">${statusText}</span>
+    <p>Plano: <strong>${escapeHtml(order.plan_name)}</strong> • ${escapeHtml(order.days)} dias</p>
+    <p>Conta: <strong>${escapeHtml(order.account)}</strong></p>
+    <p>Valor: <strong>${escapeHtml(formatBrl(order.amount_cents))}</strong></p>
+    <p class="fineprint">${
+      approved
+        ? 'O VIP já está liberado para a conta informada.'
+        : pending
+          ? 'Não feche esta página: assim que o pagamento for aprovado, o VIP será liberado aqui.'
+          : 'O pagamento não foi aprovado. Gere um novo Pix na página de VIP.'
+    }</p>
+    ${wait}
+    <a class="btn btn-primary" href="/vip">Voltar para VIP</a>`;
+}
+
 async function showReturn() {
   const section = $('#return');
   const content = $('#return-content');
   if (!section || !content) return;
+  if (returnPollStop) {
+    returnPollStop();
+    returnPollStop = null;
+  }
   const orderId = new URLSearchParams(window.location.search).get('order');
   if (!orderId) {
     content.innerHTML = '<h2>Pedido não informado</h2><p>Volte para a página de VIP e escolha um plano.</p><a class="btn btn-primary" href="/vip">Ver planos</a>';
@@ -826,20 +1134,42 @@ async function showReturn() {
   }
   try {
     const order = await api(`/api/vip/order/${encodeURIComponent(orderId)}`);
-    const approved = order.status === 'approved';
-    const pending = order.status === 'pending';
-    content.innerHTML = `
-      <p class="eyebrow">Retorno do pagamento</p>
-      <h2>${approved ? 'VIP ativado!' : pending ? 'Pagamento em análise' : 'Não foi possível concluir'}</h2>
-      <span class="return-status ${approved ? '' : pending ? 'pending' : 'failed'}">${escapeHtml(order.status)}</span>
-      <p>Plano: <strong>${escapeHtml(order.plan_name)}</strong> • ${escapeHtml(order.days)} dias</p>
-      <p>Conta: <strong>${escapeHtml(order.account)}</strong></p>
-      <p>Valor: <strong>${escapeHtml(formatBrl(order.amount_cents))}</strong></p>
-      <p class="fineprint">${approved ? 'O VIP já está liberado para a conta informada.' : 'Se o pagamento foi aprovado, aguarde alguns instantes e atualize esta página.'}</p>
-      <a class="btn btn-primary" href="/vip">Voltar para VIP</a>`;
+    const paint = (current, note = '') => {
+      content.innerHTML = returnMarkup(current, note);
+    };
+    paint(order);
     hideMainSections(section);
     section.hidden = false;
     window.scrollTo({ top: 0, behavior: 'auto' });
+
+    if (order.status === 'pending') {
+      returnPollStop = watchOrder(order.id, {
+        pending: current => paint(current),
+        approved: current => {
+          returnPollStop = null;
+          paint(current);
+          showToast('Pagamento aprovado! VIP liberado.');
+          refreshPlayerAfterPayment(current);
+        },
+        error: current => {
+          returnPollStop = null;
+          paint(current);
+        },
+        retry: failures => {
+          const wait = $('#return-wait');
+          if (wait) {
+            wait.textContent =
+              failures === 1
+                ? 'Conexão instável. Continuamos tentando confirmar o pagamento...'
+                : 'Ainda sem resposta do servidor. Continuamos tentando confirmar o pagamento...';
+          }
+        },
+        recovered: () => {
+          const wait = $('#return-wait');
+          if (wait) wait.textContent = 'Conexão voltou. Confirmando o pagamento...';
+        },
+      });
+    }
   } catch (error) {
     content.innerHTML = `<h2>Pedido não encontrado</h2><p>${escapeHtml(error.message)}</p><a class="btn btn-primary" href="/vip">Ver planos</a>`;
     hideMainSections(section);
@@ -854,6 +1184,10 @@ function hideMainSections(keep) {
 }
 
 function showHome() {
+  if (returnPollStop) {
+    returnPollStop();
+    returnPollStop = null;
+  }
   $$('main > section').forEach(section => {
     if (section.id !== 'article' && section.id !== 'return') section.hidden = false;
   });
@@ -917,6 +1251,7 @@ async function init() {
   bindNavigation();
   bindVip();
   bindAuth();
+  bindUserPanel();
   renderSocial();
   setText('#year', new Date().getFullYear());
   try {

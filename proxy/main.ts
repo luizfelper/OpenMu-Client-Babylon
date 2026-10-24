@@ -1,6 +1,12 @@
 import type { Server, ServerWebSocket, Socket } from "bun";
 import { CLEAR, currentWeather, weatherForced, weatherPacket, weatherSlotSeconds, type WeatherState } from "./weather";
-import { ConnectionPresence, PRESENCE_HOST, PRESENCE_PORT, startPresenceServer } from "./presence";
+import {
+  ConnectionPresence,
+  PRESENCE_HOST,
+  PRESENCE_PORT,
+  startPresenceServer,
+  type PlayerControl,
+} from "./presence";
 import { parseAllowTargets, targetAllowed, type ReservedTarget } from "./allowTargets";
 import { SESSION_NONCE_RE } from "../src/controllers/net/sessionNonce";
 import { ADMIN_STREAM_PATH, type RefusalReason } from "../src/controllers/net/protocols/adminProtocol";
@@ -310,7 +316,42 @@ if (PING_ENABLED && tracker) {
   console.log("ping: off");
 }
 
-startPresenceServer();
+const playerControl: PlayerControl = {
+  status(account) {
+    const session = tracker?.findByAccount(account) ?? null;
+    if (!session) {
+      return {
+        online: false,
+        inWorld: false,
+        character: null,
+        map: null,
+        x: 0,
+        y: 0,
+        level: 0,
+        money: 0,
+      };
+    }
+    return {
+      online: true,
+      inWorld: session.inWorld,
+      character: session.character,
+      map: session.map,
+      x: session.x,
+      y: session.y,
+      level: session.level,
+      money: session.money,
+    };
+  },
+  warp(account, index) {
+    const session = tracker?.findByAccount(account) ?? null;
+    if (!session) return { ok: false, error: "offline" };
+    if (!session.inWorld) return { ok: false, error: "not in world" };
+    if (!session.requestWarp(index)) return { ok: false, error: "unavailable" };
+    return { ok: true };
+  },
+};
+
+startPresenceServer(playerControl, process.env.PLAYER_CONTROL_SECRET ?? "");
 
 Bun.serve<WebSocketData>({
   port: PORT,
@@ -460,6 +501,12 @@ Bun.serve<WebSocketData>({
           },
           open(socket) {
             relay.data.tcpSocket = socket;
+            // The site's player panel uses this to inject a warp request as if
+            // the player had picked it in the client's warp list.
+            relay.data.track?.setServerWriter(bytes => {
+              socket.write(bytes);
+              socket.flush();
+            });
           },
           close() { },
           drain() { },
