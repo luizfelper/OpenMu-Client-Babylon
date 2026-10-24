@@ -26,7 +26,7 @@ export async function ask(c: Config, group: Group): Promise<Config> {
   switch (group) {
     case 'address': {
       next.mode = await ui.select('How will players reach the server?', [
-        { value: 'domain', label: 'A domain I own', hint: 'HTTPS on play., ws., register., api., admin.<domain>' },
+        { value: 'domain', label: 'A domain I own', hint: 'HTTPS on the bare domain and play., ws., register., api., admin.<domain>' },
         { value: 'ip', label: 'Just the IP address', hint: 'plain HTTP, for testing' },
       ], c.mode);
       if (next.mode === 'domain') {

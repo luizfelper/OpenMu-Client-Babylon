@@ -75,7 +75,15 @@ export type DnsRecord = { type: 'A' | 'MX' | 'TXT' | 'PTR'; name: string; value:
 /** What the owner adds at the DNS provider: the web hosts, and with mail what delivery needs. */
 export function dnsRecords(c: Config, dkim?: string): DnsRecord[] {
   const d = c.domain;
-  const web: DnsRecord[] = ['play', 'ws', 'register', 'api', 'admin'].map(s => ({ type: 'A', name: `${s}.${d}`, value: 'this server' }));
+  const web: DnsRecord[] = [
+    // The bare domain serves the public site; www. and site. redirect to it.
+    { type: 'A', name: d, value: 'this server' },
+    { type: 'A', name: `www.${d}`, value: 'this server' },
+    { type: 'A', name: `site.${d}`, value: 'this server' },
+    ...['play', 'ws', 'register', 'api', 'admin'].map(
+      (s): DnsRecord => ({ type: 'A', name: `${s}.${d}`, value: 'this server' })
+    ),
+  ];
   if (!mailOn(c)) return web;
   const host = mailHost(c);
   return [

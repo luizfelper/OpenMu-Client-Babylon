@@ -1,8 +1,8 @@
 // The public site's VIP page, opened from the in-game system menus.
 //
 // The URL is baked at build time by the installer (`VITE_SITE_URL`). The derivation below is only
-// a fallback for a client built without that argument: play.<domain> -> site.<domain>, and a
-// plain client origin -> the site's IP-mode port.
+// a fallback for a client built without that argument: play.<domain> -> <domain> (the public site
+// owns the bare domain), and a plain client origin -> the site's IP-mode port.
 
 import { sessionNonce } from '@/controllers/net/sessionNonce';
 
@@ -13,7 +13,7 @@ export function siteUrl(path = '/'): string {
   if (CONFIGURED) return `${CONFIGURED}${suffix}`;
   if (typeof window === 'undefined') return `http://localhost:3400${suffix}`;
   const { protocol, hostname } = window.location;
-  if (hostname.startsWith('play.')) return `${protocol}//site.${hostname.slice('play.'.length)}${suffix}`;
+  if (hostname.startsWith('play.')) return `${protocol}//${hostname.slice('play.'.length)}${suffix}`;
   return `${protocol}//${hostname}:8082${suffix}`;
 }
 

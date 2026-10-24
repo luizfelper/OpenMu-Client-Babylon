@@ -123,6 +123,8 @@ describe('answers', () => {
     expect(check.domain('mu.example.co.uk')).toBeUndefined();
     expect(check.domain('https://example.com')).toBeDefined();
     expect(check.domain('play.example.com')).toMatch(/bare/);
+    expect(check.domain('www.example.com')).toMatch(/bare/);
+    expect(check.domain('site.example.com')).toMatch(/bare/);
     expect(check.domain('mail.example.com')).toMatch(/bare/);
   });
 

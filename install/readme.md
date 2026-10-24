@@ -43,17 +43,21 @@ relies on that.
 ## Public site, VIP and Mercado Pago
 
 The `site` service (`site/server/main.ts`) serves the public site, the news API, rankings, online
-count and the VIP checkout. It keeps its own SQLite database at `/data/site/site.sqlite`; it only
-reads OpenMU's Postgres (`data."Character"`, `data."StatAttribute"`, `data."Account"`). In domain mode
-Caddy exposes it at `site.<domain>`; in IP mode it is port `8082`. Its panel is `/admin` on the same
-origin, with the same login and bcrypt hash as the OpenMU admin panel. The session cookie is signed
-with `MU_SITE_SECRET` (older state files fall back to the shop ticket secret).
+count, game-account login/account creation and the VIP checkout. It keeps its own SQLite database at
+`/data/site/site.sqlite`; it reads OpenMU's Postgres (`data."Character"`, `data."StatAttribute"`,
+`data."Account"`) and creates game accounts through the same helper as the register service. In
+domain mode Caddy exposes it at the bare domain (`https://<domain>`); `www.` and `site.` redirect to
+it. In IP mode it is port `8082`. Its panel is `/admin` on the same origin, with the same login and
+bcrypt hash as the OpenMU admin panel. The session cookie is signed with `MU_SITE_SECRET` (older
+state files fall back to the shop ticket secret). Players log in with their game password; account
+creation asks for login, name, e-mail and password, never CPF. The CPF is requested only for a Pix
+purchase.
 
 Mercado Pago is configured in the panel, never in the repository:
 
 1. Create a Checkout Pro application at Mercado Pago and copy its **Access Token** (and public key).
 2. In `/admin` → **Mercado Pago**, paste the token, enable purchases, save, and use **Testar conexão**.
-3. Register the webhook URL shown in the panel (`https://site.<domain>/api/vip/webhook`, event
+3. Register the webhook URL shown in the panel (`https://<domain>/api/vip/webhook`, event
    **Pagamentos**). If Mercado Pago gives you a signing secret, paste it in the same form.
 4. Make a low-value test purchase. The order only unlocks VIP after the payment is approved and its
    amount/currency match the order.
@@ -236,6 +240,9 @@ it makes the DKIM key first if there is none yet.
 
 | type | name | value |
 |---|---|---|
+| A | `<domain>` | this server's IP (public site) |
+| A | `www.<domain>`, `site.<domain>` | this server's IP (redirect to the bare domain) |
+| A | `play.<domain>`, `ws.<domain>`, `register.<domain>`, `api.<domain>`, `admin.<domain>` | this server's IP |
 | A | `mail.<domain>` | this server's IP (with the other A records) |
 | MX | `<domain>` | `10 mail.<domain>` |
 | TXT | `<domain>` | `v=spf1 mx -all` |
@@ -287,6 +294,6 @@ it makes the DKIM key first if there is none yet.
 | build failed | the log path it prints (`/etc/mu-server/logs/`) |
 | OpenMU did not start in time | `mu logs openmu-startup` |
 | a service DOWN in `mu status` | `mu logs <service>` |
-| HTTPS not working | DNS A records for play., ws., register., api., site., admin. must point here; `mu logs web` |
+| HTTPS not working | DNS A records for the bare domain, www., site., play., ws., register., api. and admin. must point here; `mu logs web` |
 | mail does not arrive or leave | port 25 open at the VPS provider; `mu mail dns` records in place; `mu logs mailserver` |
 | Mail server (IMAPS) DOWN | Caddy has no certificate for mail.<domain> yet: its A record; `mu logs web` |

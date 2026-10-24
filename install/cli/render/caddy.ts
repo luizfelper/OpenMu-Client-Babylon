@@ -64,12 +64,15 @@ export function caddyfile(c: Config): string {
     return [
       // Let's Encrypt needs no e-mail; without one Caddy just sends no expiry warnings.
       ...(c.email ? [`{\n\temail ${c.email}\n}\n`] : []),
-      block(d, `\tredir https://play.${d}{uri}`),
+      // The public site owns the bare domain. The old site./www. hosts redirect to it so one
+      // canonical origin owns the player cookie and the Mercado Pago return URL.
+      block(d, publicSite()),
+      block(`www.${d}`, `\tredir https://${d}{uri} permanent`),
+      block(`site.${d}`, `\tredir https://${d}{uri} permanent`),
       block(`play.${d}`, clientSite(`https://register.${d}`)),
       block(`api.${d}`, apiRoutes()),
       block(`ws.${d}`, proxySite()),
       block(`register.${d}`, registerSite()),
-      block(`site.${d}`, publicSite()),
       block(`admin.${d}`, adminSite(c)),
       // Let's Encrypt only, so the mail server finds the certificate at a known path (mail.ts certFiles).
       ...(mailOn(c) ? [block(mailHost(c), `\ttls {\n\t\tissuer acme\n\t}\n\treverse_proxy ${HOSTS.webmail}:${PORTS.webmail}`)] : []),

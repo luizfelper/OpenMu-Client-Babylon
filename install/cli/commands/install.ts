@@ -77,8 +77,9 @@ export async function finish(stack: Stack): Promise<void> {
   ui.note(
     [
       `Play:         ${pc.cyan(clientOrigin(c))}`,
-      `Site:         ${pc.cyan(c.mode === 'domain' ? `https://site.${c.domain}` : `http://${c.publicIp}:${PORTS.siteSite}`)}`,
-      `Admin panel:  ${pc.cyan(admin)}  (login ${c.adminUser})`,
+      `Site:         ${pc.cyan(c.mode === 'domain' ? `https://${c.domain}` : `http://${c.publicIp}:${PORTS.siteSite}`)}`,
+      `Site panel:   ${pc.cyan(c.mode === 'domain' ? `https://${c.domain}/admin` : `http://${c.publicIp}:${PORTS.siteSite}/admin`)}  (login ${c.adminUser})`,
+      `OpenMU admin: ${pc.cyan(admin)}  (login ${c.adminUser})`,
       ...(mailOn(c) ? [`Webmail:      ${pc.cyan(`https://${mailHost(c)}`)}  (login ${adminMailbox(c)})`] : []),
       `Settings:     ${stack.paths.state}`,
       '',

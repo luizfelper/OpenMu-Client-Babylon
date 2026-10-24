@@ -11,10 +11,10 @@ export function databaseUrl(c: Config): string {
   return `postgres://postgres:${encodeURIComponent(c.postgresPassword)}@${HOSTS.database}:5432/openmu`;
 }
 
-/** The public site's origin: its own subdomain, or a plain port in IP mode. */
+/** The public site's origin: the bare domain, or a plain port in IP mode. */
 export function siteOrigin(c: Config): string {
   return c.mode === 'domain'
-    ? `https://site.${c.domain}`
+    ? `https://${c.domain}`
     : `http://${c.publicIp}:${PORTS.siteSite}`;
 }
 

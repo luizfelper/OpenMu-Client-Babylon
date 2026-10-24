@@ -55,7 +55,7 @@ describe('service env', () => {
     expect(env.site).toMatchObject({
       PORT: '3400',
       SITE_DB: '/data/site/site.sqlite',
-      SITE_BASE_URL: 'https://site.example.com',
+      SITE_BASE_URL: 'https://example.com',
       SITE_ADMIN_USER: DEFAULTS.adminUser,
       SITE_ADMIN_HASH: domain.adminHash,
       SITE_SESSION_SECRET: 'shop-secret',
@@ -216,9 +216,13 @@ describe('server.json', () => {
 });
 
 describe('caddyfile', () => {
-  it('serves every subdomain over HTTPS in domain mode', () => {
+  it('serves the public site on the bare domain and every service over HTTPS', () => {
     const text = caddyfile(domain);
-    for (const host of ['play', 'api', 'ws', 'register', 'site', 'admin']) expect(text).toContain(`${host}.example.com {`);
+    expect(text).toMatch(/^example\.com \{/m);
+    for (const host of ['www', 'site', 'play', 'api', 'ws', 'register', 'admin']) {
+      expect(text).toContain(`${host}.example.com {`);
+    }
+    expect(text).toContain('redir https://example.com{uri} permanent');
     expect(text).toContain('email ops@example.com');
     expect(text.indexOf('/api/market*')).toBeLessThan(text.indexOf('/api/*'));
     expect(text).not.toContain('auto_https off');
@@ -277,10 +281,10 @@ describe('lighter assets', () => {
 
 describe('public site URL', () => {
   it('reaches the client build and the site env', () => {
-    expect(clientBuildArgs(domain).VITE_SITE_URL).toBe('https://site.example.com');
+    expect(clientBuildArgs(domain).VITE_SITE_URL).toBe('https://example.com');
     expect(clientBuildArgs(ip).VITE_SITE_URL).toBe('http://203.0.113.7:8082');
     expect(stackEnv(domain, { repo: '/opt/mu', state: '/etc/mu-server' }).VITE_SITE_URL).toBe(
-      'https://site.example.com'
+      'https://example.com'
     );
   });
 
