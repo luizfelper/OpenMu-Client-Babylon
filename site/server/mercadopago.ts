@@ -131,3 +131,73 @@ export async function testConnection(): Promise<{ ok: boolean; nickname?: string
   });
   return { ok: true, nickname: user.nickname, email: user.email };
 }
+
+export type PixPayment = {
+  id: string;
+  status: string;
+  qrCode: string;
+  qrCodeBase64: string;
+};
+
+export type PixPayer = {
+  cpf: string;
+  name?: string;
+  email?: string;
+};
+
+export async function createPixPayment(order: PreferenceOrder, payer: PixPayer): Promise<PixPayment> {
+  const settings = getMpSettings();
+  if (!settings.enabled) {
+    throw new HttpError(503, 'As compras de VIP estão desativadas no momento.');
+  }
+  const cpf = payer.cpf.replace(/\D/g, '');
+  if (!/^\d{11}$/.test(cpf)) {
+    throw new HttpError(400, 'Informe um CPF válido.');
+  }
+  const nameParts = (payer.name || '').trim().split(/\s+/).filter(Boolean);
+  const firstName = nameParts[0] || 'Cliente';
+  const lastName = nameParts.slice(1).join(' ') || firstName;
+
+  const body = {
+    transaction_amount: order.amountCents / 100,
+    description: `${order.planName} — MUCURA`,
+    payment_method_id: 'pix',
+    external_reference: order.id,
+    notification_url: `${SITE_BASE_URL}/api/vip/webhook`,
+    payer: {
+      email: payer.email || order.email || undefined,
+      first_name: firstName,
+      last_name: lastName,
+      identification: {
+        type: 'CPF',
+        number: cpf,
+      },
+    },
+  };
+
+  const response = await request<{
+    id?: number | string;
+    status?: string;
+    point_of_interaction?: {
+      transaction_data?: {
+        qr_code?: string;
+        qr_code_base64?: string;
+      };
+    };
+  }>('/v1/payments', settings, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+  const qrCode = response.point_of_interaction?.transaction_data?.qr_code;
+  const qrCodeBase64 = response.point_of_interaction?.transaction_data?.qr_code_base64;
+  if (!response.id || !qrCode) {
+    throw new HttpError(502, 'O Mercado Pago não gerou o QR Code Pix.');
+  }
+  return {
+    id: String(response.id),
+    status: response.status || 'pending',
+    qrCode,
+    qrCodeBase64: qrCodeBase64 || '',
+  };
+}

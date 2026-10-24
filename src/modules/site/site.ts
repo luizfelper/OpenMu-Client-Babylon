@@ -4,6 +4,8 @@
 // a fallback for a client built without that argument: play.<domain> -> site.<domain>, and a
 // plain client origin -> the site's IP-mode port.
 
+import { sessionNonce } from '@/controllers/net/sessionNonce';
+
 const CONFIGURED = (import.meta.env?.VITE_SITE_URL as string | undefined)?.replace(/\/+$/, '');
 
 export function siteUrl(path = '/'): string {
@@ -17,10 +19,13 @@ export function siteUrl(path = '/'): string {
 
 /** Opens the VIP store in a new tab. A blocked popup simply does nothing, like the other menus. */
 export function openVipStore(): void {
+  const nonce = sessionNonce();
   const opener = (
     globalThis as {
       open?: (url?: string | URL, target?: string, features?: string) => unknown;
     }
   ).open;
-  if (typeof opener === 'function') opener(siteUrl('/vip'), '_blank', 'noopener,noreferrer');
+  if (typeof opener === 'function') {
+    opener(siteUrl(`/vip?session=${nonce}`), '_blank', 'noopener,noreferrer');
+  }
 }

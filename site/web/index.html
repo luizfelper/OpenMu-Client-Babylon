@@ -259,9 +259,30 @@
             <input id="vip-email" name="email" type="email" maxlength="160" autocomplete="email" />
             <small>Para receber a confirmação do Mercado Pago.</small>
           </label>
-          <button class="btn btn-primary btn-wide" type="submit" id="vip-submit">
-            Ir para o pagamento
-          </button>
+          <label>
+            Nome completo (Pix)
+            <input id="vip-name" name="name" maxlength="80" autocomplete="name" />
+            <small>Necessário para gerar o QR Code Pix.</small>
+          </label>
+          <label>
+            CPF (Pix)
+            <input id="vip-cpf" name="cpf" maxlength="14" autocomplete="off" inputmode="numeric" />
+            <small>Somente números.</small>
+          </label>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-wide" type="submit" id="vip-submit">
+              Ir para o pagamento
+            </button>
+            <button class="btn btn-ghost btn-wide" type="button" id="vip-pix">
+              Gerar QR Code Pix
+            </button>
+          </div>
+          <div id="pix-box" hidden>
+            <p class="fineprint" id="pix-status">Gerando QR Code...</p>
+            <img id="pix-qr" alt="QR Code Pix" width="220" height="220" />
+            <textarea id="pix-code" readonly rows="3"></textarea>
+            <button class="btn btn-ghost btn-wide" type="button" id="pix-copy">Copiar código Pix</button>
+          </div>
         </form>
         <p class="fineprint">
           O pagamento é processado pelo Mercado Pago. O MUCURA não armazena dados de cartão. O VIP é

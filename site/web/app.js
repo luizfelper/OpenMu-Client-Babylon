@@ -395,6 +395,10 @@ function openPlanModal(planId) {
   }
   const modal = $('#vip-modal');
   if (!modal) return;
+  const pixBox = $('#pix-box');
+  if (pixBox) pixBox.hidden = true;
+  const pixStatus = $('#pix-status');
+  if (pixStatus) pixStatus.textContent = 'Gerando QR Code...';
   $('#vip-plan-id').value = plan.id;
   $('#vip-modal-title').textContent = plan.name;
   $('#vip-modal-plan').textContent = `${formatBrl(plan.price_cents)} • ${plan.days} dias de VIP`;
@@ -404,6 +408,10 @@ function openPlanModal(planId) {
 }
 
 function closePlanModal() {
+  if (pixPollTimer) {
+    clearInterval(pixPollTimer);
+    pixPollTimer = null;
+  }
   const modal = $('#vip-modal');
   if (!modal) return;
   modal.hidden = true;
@@ -444,6 +452,83 @@ async function submitPlan(event) {
       submit.textContent = 'Ir para o pagamento';
     }
   }
+}
+
+async function submitPix() {
+  const submit = $('#vip-pix');
+  const account = $('#vip-account').value.trim();
+  const email = $('#vip-email').value.trim();
+  const name = $('#vip-name').value.trim();
+  const cpf = $('#vip-cpf').value.trim();
+  const planId = $('#vip-plan-id').value;
+  if (!account) {
+    showToast('Informe a conta do jogo.', true);
+    return;
+  }
+  if (!name) {
+    showToast('Informe o nome completo para o Pix.', true);
+    return;
+  }
+  if (!cpf) {
+    showToast('Informe o CPF para o Pix.', true);
+    return;
+  }
+  if (submit) {
+    submit.disabled = true;
+    submit.textContent = 'Gerando QR Code...';
+  }
+  const pixBox = $('#pix-box');
+  const pixStatus = $('#pix-status');
+  const pixQr = $('#pix-qr');
+  const pixCode = $('#pix-code');
+  try {
+    const result = await api('/api/vip/checkout/pix', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ account, email, name, cpf, planId }),
+    });
+    if (pixBox) pixBox.hidden = false;
+    if (pixQr && result.qrCodeBase64) {
+      pixQr.src = `data:image/png;base64,${result.qrCodeBase64}`;
+    }
+    if (pixCode) pixCode.value = result.qrCode || '';
+    if (pixStatus) pixStatus.textContent = 'Escaneie o QR Code ou copie o código. Aguardando pagamento...';
+    showToast('QR Code Pix gerado.');
+    pollOrder(result.order.id);
+  } catch (error) {
+    if (pixBox) pixBox.hidden = true;
+    showToast(error.message || 'Não foi possível gerar o QR Code Pix.', true);
+  } finally {
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = 'Gerar QR Code Pix';
+    }
+  }
+}
+
+let pixPollTimer = null;
+function pollOrder(orderId) {
+  if (pixPollTimer) clearInterval(pixPollTimer);
+  pixPollTimer = setInterval(async () => {
+    try {
+      const order = await api(`/api/vip/order/${encodeURIComponent(orderId)}`);
+      if (order.status === 'approved') {
+        clearInterval(pixPollTimer);
+        pixPollTimer = null;
+        const pixStatus = $('#pix-status');
+        if (pixStatus) pixStatus.textContent = 'Pagamento aprovado! VIP liberado.';
+        showToast('Pagamento aprovado! VIP liberado.');
+      } else if (order.status === 'error') {
+        clearInterval(pixPollTimer);
+        pixPollTimer = null;
+        const pixStatus = $('#pix-status');
+        if (pixStatus) pixStatus.textContent = 'Não foi possível concluir o pagamento.';
+        showToast('Não foi possível concluir o pagamento.', true);
+      }
+    } catch {
+      // Keep polling; transient errors should not stop the wait.
+    }
+  }, 5000);
 }
 
 async function showArticle(slug) {
@@ -553,6 +638,15 @@ function bindVip() {
   }
   const form = $('#vip-form');
   if (form) form.addEventListener('submit', submitPlan);
+  $('#vip-pix')?.addEventListener('click', submitPix);
+  $('#pix-copy')?.addEventListener('click', () => {
+    const code = $('#pix-code');
+    if (code) {
+      code.select();
+      document.execCommand('copy');
+      showToast('Código Pix copiado.');
+    }
+  });
   $('#vip-modal-close')?.addEventListener('click', closePlanModal);
   $$('[data-close-modal]').forEach(element => element.addEventListener('click', closePlanModal));
   document.addEventListener('keydown', event => {
@@ -568,6 +662,18 @@ async function init() {
   try {
     const data = await api('/api/site');
     renderSite(data);
+    const gameSession = new URLSearchParams(window.location.search).get('session');
+    if (gameSession) {
+      try {
+        const status = await api(`/api/vip/me?session=${encodeURIComponent(gameSession)}`);
+        if (status.account) {
+          const account = $('#vip-account');
+          if (account) account.value = status.account;
+        }
+      } catch {
+        // The game session may have expired; the user can type the account manually.
+      }
+    }
   } catch (error) {
     showToast('Não foi possível carregar o site. Tente novamente.', true);
     console.error(error);

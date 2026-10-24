@@ -6,7 +6,7 @@ import { all, db, one, run } from './db';
 import { HttpError, numberField, optionalString, stringField } from './http';
 import { accountForSession } from './presence';
 import { getMpSettings, getPlans } from './settings';
-import { createPreference, getPayment, type MpPayment } from './mercadopago';
+import { createPreference, createPixPayment, getPayment, type MpPayment } from './mercadopago';
 import { findPlan } from './plans';
 import { accountExists } from './openmu';
 
@@ -134,6 +134,105 @@ export async function createCheckout(value: unknown): Promise<{
     const order = orderById(id);
     if (!order) throw new HttpError(500, 'O pedido não foi gravado.');
     return { order: publicOrder(order), initPoint: preference.initPoint };
+  } catch (error) {
+    run(
+      `UPDATE vip_orders SET status = 'error', raw_json = ?, updated_at = ? WHERE id = ?`,
+      JSON.stringify({ error: (error as Error).message }),
+      Date.now(),
+      id
+    );
+    throw error;
+  }
+}
+
+export async function createPixCheckout(value: unknown): Promise<{
+  order: Record<string, unknown>;
+  qrCode: string;
+  qrCodeBase64: string;
+  paymentId: string;
+}> {
+  if (!value || typeof value !== 'object') throw new HttpError(400, 'Pedido inválido.');
+  const raw = value as Record<string, unknown>;
+  const account = stringField(raw.account, 'Conta do jogo', 10);
+  const name = optionalString(raw.name, 'Nome completo', 80);
+  const cpf = optionalString(raw.cpf, 'CPF', 20);
+  const email = optionalString(raw.email, 'E-mail', 160);
+  const planId = stringField(raw.planId, 'Plano', 32);
+  if (email && !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {
+    throw new HttpError(400, 'Informe um e-mail válido.');
+  }
+
+  const plans = getPlans();
+  const plan = findPlan(plans, planId);
+  if (!plan) throw new HttpError(400, 'Plano VIP não encontrado.');
+
+  const mp = getMpSettings();
+  if (!mp.enabled) throw new HttpError(503, 'As compras de VIP estão desativadas no momento.');
+  if (!mp.accessToken) {
+    throw new HttpError(503, 'O Mercado Pago ainda não foi configurado. Fale com a administração.');
+  }
+
+  if (ACCOUNT_CHECK) {
+    let exists = false;
+    try {
+      exists = await accountExists(account);
+    } catch (error) {
+      console.warn(`account check failed: ${(error as Error).message}`);
+      throw new HttpError(503, 'Não foi possível validar a conta agora. Tente novamente.');
+    }
+    if (!exists) throw new HttpError(400, 'Conta não encontrada. Confira o login do jogo.');
+  }
+
+  const id = randomUUID();
+  const now = Date.now();
+  const external = `mucura-vip-${id}`;
+  run(
+    `INSERT INTO vip_orders
+       (id, account, email, plan_id, plan_name, days, amount_cents, currency, status, provider,
+        external_reference, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'BRL', 'pending', 'mercadopago', ?, ?, ?)`,
+    id,
+    account,
+    email,
+    plan.id,
+    plan.name,
+    plan.days,
+    plan.price_cents,
+    external,
+    now,
+    now
+  );
+
+  try {
+    const payment = await createPixPayment(
+      {
+        id,
+        account,
+        email,
+        planId: plan.id,
+        planName: plan.name,
+        amountCents: plan.price_cents,
+        currency: 'BRL',
+        days: plan.days,
+      },
+      { cpf, name, email }
+    );
+    run(
+      `UPDATE vip_orders SET payment_id = ?, preference_id = ?, raw_json = ?, updated_at = ? WHERE id = ?`,
+      payment.id,
+      payment.id,
+      JSON.stringify({ pix: payment, cpf }),
+      Date.now(),
+      id
+    );
+    const order = orderById(id);
+    if (!order) throw new HttpError(500, 'O pedido não foi gravado.');
+    return {
+      order: publicOrder(order),
+      qrCode: payment.qrCode,
+      qrCodeBase64: payment.qrCodeBase64,
+      paymentId: payment.id,
+    };
   } catch (error) {
     run(
       `UPDATE vip_orders SET status = 'error', raw_json = ?, updated_at = ? WHERE id = ?`,

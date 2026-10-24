@@ -42,6 +42,7 @@ import { verifyWebhookSignature } from './mpSignature';
 import { testConnection } from './mercadopago';
 import {
   createCheckout,
+  createPixCheckout,
   getOrder,
   listOrders,
   manualApprove,
@@ -272,6 +273,15 @@ async function handle(request: Request, ip: string): Promise<Response> {
     }
     const body = await readJson<unknown>(request);
     const result = await createCheckout(body);
+    return json(result, 201, cors);
+  }
+
+  if (path === '/api/vip/checkout/pix' && request.method === 'POST') {
+    if (!checkoutAllowed(ip)) {
+      throw new HttpError(429, 'Muitas tentativas de compra. Aguarde um minuto.');
+    }
+    const body = await readJson<unknown>(request);
+    const result = await createPixCheckout(body);
     return json(result, 201, cors);
   }
 
