@@ -24,6 +24,14 @@ const WALK_MOVEMENT_SPEED = 12;
 const RUNNING_GEAR_MOVEMENT_SPEED = 15;
 const RUNNING_GEAR_MINIMUM_LEVEL = 5;
 const REFERENCE_FRAME_SECONDS = 0.04;
+/**
+ * Margin the walk keeps below the server's pace. Wall-clock timers, a render
+ * frame of jitter and the tile rounding of a WalkRequest all land on the
+ * server's side of the ledger, so the hero must never arrive first: being a
+ * little behind costs nothing (ObjectMoved snaps the rest), arriving early is
+ * what the walk speed check counts as a speed hack.
+ */
+const WALK_PACE_MARGIN = 0.97;
 
 /** Tiles per second the server expects for `movementSpeed`. */
 function tilesPerSecond(movementSpeed: number): number {
@@ -84,6 +92,14 @@ function runningMovementSpeed(entity: Entity, world: number): number {
 
 /** `PlayerMovement.GetClientMovementSpeed` for player entities. */
 function playerTilesPerSecond(entity: Entity, inSafeZone: boolean, world: number): number {
+  const attributes = entity.attributeSystem;
+  // The server derives the pace from its own attributes, not from the gear table below: buffs,
+  // a MovementSpeedFactor or a GM speed all change it there and are invisible to the table. When
+  // the attribute is present it is the same number the server works with, so the two cannot drift.
+  if (!inSafeZone && attributes?.hasAttribute('totalMovementSpeed')) {
+    const live = attributes.getValue('totalMovementSpeed');
+    if (live > 0) return live * WALK_PACE_MARGIN;
+  }
   if (inSafeZone) return tilesPerSecond(WALK_MOVEMENT_SPEED);
   return tilesPerSecond(
     Math.max(WALK_MOVEMENT_SPEED, runningMovementSpeed(entity, world))
@@ -157,11 +173,22 @@ export const MoveAlongPathSystem: ISystemFactory = world => {
         // is parked - by several tiles. The next WalkRequest then starts from
         // a tile the server has not reached, which is what it reports as a
         // speedhack and what rubber-bands the player back a moment later.
-        if (localPlayer && pathfinding.sentThrough && pathfinding.path) {
-          deltaSpeed = Math.min(
-            deltaSpeed,
-            distanceAlongPath(transform.pos, pathfinding.path, pathfinding.sentThrough)
-          );
+        if (localPlayer && pathfinding.path) {
+          if (pathfinding.sentThrough) {
+            deltaSpeed = Math.min(
+              deltaSpeed,
+              distanceAlongPath(transform.pos, pathfinding.path, pathfinding.sentThrough)
+            );
+          } else if (pathfinding.calculated) {
+            // A fresh path, or one the MU Helper re-issued (a regroup walk, a
+            // walk to a drop): the server has not been told about it yet. The
+            // walk system and the network system run in the same frame, but
+            // the network one may be behind, so a step here would put the hero
+            // one tile ahead of the source tile the WalkRequest declares and
+            // the walk speed check would count that as arriving early. Wait for
+            // the packet: one frame of delay, never a tile of drift.
+            deltaSpeed = 0;
+          }
         }
 
         if (

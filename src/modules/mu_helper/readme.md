@@ -18,6 +18,12 @@ the two server packets, with its running state and the raw config blob (`MuHelpe
   `totalMoneyConsumed`, `config` blob), `setMuHelperStatus`, `setMuHelperConfig` and
   `toggleMuHelper()` (sends `MuHelperStatusChangeRequest`; refused in a safe zone; local flip offline),
   `stop()` (the session ended; no packet), `triggerStop()` (`CMuHelper::TriggerStop`: the pause request alone).
+- The loop never walks faster than the server thinks the hero can walk: it only uses the seams a click
+  uses (`playerMoveTo`, the cast and pickup requests), and those keep the two in step (see the walk note
+  in `src/ecs/systems/moveAlongPathSystem.ts`). Never make a step send a `WalkRequest` from a tile
+  ahead of the server's position: OpenMU counts that as a speed hack (`SpeedHackDetectPlugIn`,
+  `WalkSpeedValidator`) and bans after `MaxWarnings`. The regroup re-issue and a walk to a drop are
+  fresh paths, so the walk waits for their packet before the hero moves.
 - `config.ts` encodes and decodes the 257-byte blob. The layout is `PRECEIVE_MUHELPER_DATA`
   (`WSclient.h:3592-3642`) as `ConfigDataSerDe` (`MuHelperData.cpp`) writes it, so configs move
   between this client and the reference client.
