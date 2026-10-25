@@ -10,6 +10,7 @@ import {
   itemDef,
 } from '@/controllers/item_rules';
 import type { Item } from '../../ecs/world';
+import { sameStack, stackRoom } from './itemStack';
 
 /**
  * The packing behind the inventory's auto-arrange (`inventorySort.ts`):
@@ -21,6 +22,9 @@ import type { Item } from '../../ecs/world';
  */
 
 export type Square = { slot: number; item: Item; w: number; h: number };
+
+/** A merge the server accepts: `from`'s pieces go onto `to`'s stack. */
+export type StackMerge = { from: number; to: number };
 
 /** Grid footprint of an item, from its Item.txt row. */
 export function itemSquares(item: Item): { w: number; h: number } {
@@ -96,6 +100,40 @@ export function squareFits(
     }
   }
   return true;
+}
+
+/**
+ * The next stack to merge, or null. Complete merges are preferred, so the
+ * run removes a square instead of leaving a remainder whenever it can.
+ * `skip` keeps a pair the server already refused from being retried.
+ */
+export function planStackMerge(
+  squares: readonly Square[],
+  skip?: (from: number, to: number) => boolean
+): StackMerge | null {
+  const ordered = [...squares].sort((a, b) => a.slot - b.slot);
+
+  for (const target of ordered) {
+    const room = stackRoom(target.item);
+    if (room <= 0) continue;
+    for (const source of ordered) {
+      if (source.slot === target.slot || !sameStack(source.item, target.item)) continue;
+      const count = source.item.durability ?? 0;
+      if (count <= 0 || skip?.(source.slot, target.slot)) continue;
+      if (count <= room) return { from: source.slot, to: target.slot };
+    }
+  }
+
+  for (const target of ordered) {
+    if (stackRoom(target.item) <= 0) continue;
+    for (const source of ordered) {
+      if (source.slot === target.slot || !sameStack(source.item, target.item)) continue;
+      if ((source.item.durability ?? 0) <= 0 || skip?.(source.slot, target.slot)) continue;
+      return { from: source.slot, to: target.slot };
+    }
+  }
+
+  return null;
 }
 
 /** Where every item wants to end up: first-fit, in `compareSquares` order. */

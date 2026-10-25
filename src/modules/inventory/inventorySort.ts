@@ -6,6 +6,7 @@ import { addNotification } from '../chat';
 import {
   itemSquares,
   planLayout,
+  planStackMerge,
   squareFits,
   stampSquares,
   type Square,
@@ -35,8 +36,8 @@ import {
  * move.
  */
 
-/** Ceiling on the moves one run may send; a full grid needs far fewer. */
-const MAX_MOVES = 120;
+/** Ceiling on the moves one run may send: a full inventory may merge every stack and then pack. */
+const MAX_MOVES = 256;
 
 /** How many times a run may park a blocker to break a cycle. */
 const MAX_PARKS = 6;
@@ -80,6 +81,7 @@ export const InventorySort = new (class _InventorySort {
   private moves = 0;
   private parks = 0;
   private stop: (() => void) | null = null;
+  private failedMerges = new Set<string>();
 
   get active(): boolean {
     return this.running;
@@ -100,6 +102,10 @@ export const InventorySort = new (class _InventorySort {
     this.running = true;
     this.moves = 0;
     this.parks = 0;
+    this.failedMerges.clear();
+    Bag.onStackMoveRefused = (refusedStorage, from, to) => {
+      if (refusedStorage === this.storage) this.failedMerges.add(this.pairKey(from, to));
+    };
 
     // Each answered move (`confirmItemMove` / `rollbackItemMove` clear the
     // pending record) releases the next one.
@@ -121,6 +127,7 @@ export const InventorySort = new (class _InventorySort {
     this.stop?.();
     this.stop = null;
     this.running = false;
+    Bag.onStackMoveRefused = null;
     if (done && this.moves > 0) addNotification(t('notify.inventorySorted'));
   }
 
@@ -137,8 +144,22 @@ export const InventorySort = new (class _InventorySort {
     // Planned afresh every step: after a move (or a park) the grid is a
     // different grid, and a plan keyed by the old slots would be stale.
     const grid = read(this.storage);
-    const targets = planLayout(grid.squares, grid.columns, grid.rows, grid.first);
 
+    // Merge first: the layout is packed after the stack count stops falling.
+    const merge = this.nextStackMerge(grid);
+    if (merge) {
+      this.moves++;
+      if (!Bag.mergeItemStacks(this.storage, merge.from, merge.to)) {
+        this.failedMerges.add(this.pairKey(merge.from, merge.to));
+        this.step();
+        return;
+      }
+      // Offline there is no answer to wait for, so drive the next step here.
+      if (Session.isOffline) this.step();
+      return;
+    }
+
+    const targets = planLayout(grid.squares, grid.columns, grid.rows, grid.first);
     const move = this.nextMove(grid, targets) ?? this.parkMove(grid, targets);
     if (!move) {
       this.finish(true);
@@ -152,6 +173,18 @@ export const InventorySort = new (class _InventorySort {
     }
     // Offline there is no answer to wait for, so drive the next step here.
     if (Session.isOffline) this.step();
+  }
+
+  /** The next merge worth asking the server for; vault moves cannot stack. */
+  private nextStackMerge(grid: Grid): { from: number; to: number } | null {
+    if (this.storage !== StorageKind.Inventory) return null;
+    return planStackMerge(grid.squares, (from, to) =>
+      this.failedMerges.has(this.pairKey(from, to))
+    );
+  }
+
+  private pairKey(from: number, to: number): string {
+    return `${from}:${to}`;
   }
 
   /** The next item that can go straight to its planned square. */

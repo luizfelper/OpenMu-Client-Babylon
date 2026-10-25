@@ -10,12 +10,18 @@ export function isPackedJewel(group: number, num: number): boolean {
   return group === 12 && PACKED.has(num);
 }
 
+/** A group-14 item whose `durability` is a piece count (`RenderNumberOfItem`), not wear. */
+export function isStackingPotion(group: number, num: number): boolean {
+  if (group !== 14) return false;
+  for (const [first, last] of STACKING_POTIONS) {
+    if (num >= first && num <= last) return true;
+  }
+  return false;
+}
+
 /** The number drawn on a square: a packed jewel's `(Level + 1) * 10` loose jewels (`CalcCompiledCount`), a potion's pieces; 1 or less draws none. */
 export function stackCount(item: { group: number; num: number; lvl?: number; durability?: number }): number {
   if (isPackedJewel(item.group, item.num)) return ((item.lvl ?? 0) + 1) * 10;
-  if (item.group !== 14) return 0;
-  for (const [first, last] of STACKING_POTIONS) {
-    if (item.num >= first && item.num <= last) return item.durability ?? 0;
-  }
-  return 0;
+  if (!isStackingPotion(item.group, item.num)) return 0;
+  return item.durability ?? 0;
 }

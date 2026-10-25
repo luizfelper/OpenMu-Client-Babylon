@@ -14,7 +14,8 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
 - `isEquipable(slot, item)`, `equipDestination(item, worn)` (`controllers/item_rules/equipSlots.ts`): where an
   item can be worn; there because the compare tooltip reads them.
 - `findFreeSlot(occupied, rows, w, h)`: first-fit free square (`FindEmptySlot`).
-- `itemSquares`, `stampSquares`, `squareFits`: grid footprint helpers (`inventoryLayout.ts`).
+- `itemSquares`, `stampSquares`, `squareFits`, `planStackMerge`: grid footprint and stack-merge planning
+  (`inventoryLayout.ts`); `stackLimit`, `stackRoom`, `sameStack` (`itemStack.ts`).
 - `InventorySort.start()`: auto-arrange. `BulkMove.start(from, to, wanted)`: move every matching item.
 - `QuickItemActions`: Ctrl-click moves, sell / drop confirmations, the merchant's bulk buy. `MAX_BULK_BUY`.
 - `isUpgradeJewel`, `jewelTargetError`, `JEWEL_OF_CHAOS` (`jewelUpgrade.ts`; versions re-export it as `jewelRules`).
@@ -26,12 +27,14 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
 ## How it works
 - State is `Bag` (`state.ts`, through `index.ts`, the door): `pickedItem`, `pendingItemMove`, `itemHotkeys`
   (open state: `MuWindows.isOpen('inventory')`; the items are `Hero.items`). Actions: `pickItem`, `placePickedItem`, `cancelPickedItem`,
-  `moveItemToSquare`, `autoMoveItem`, `findFreeSquare`, `itemsOfStorage`, `confirmItemMove`, `rollbackItemMove`,
-  `applyPickedJewel`, `consumeItemRequest`, `upgradeInventoryItem`, `setItemHotkey`, `useItemHotkey`,
-  `learnSkillItem`, `dropPickedItem`, `beginItemMove`. `beforeConsume` is the npc_shop's hook: a use
+  `moveItemToSquare`, `mergeItemStacks`, `autoMoveItem`, `findFreeSquare`, `itemsOfStorage`, `confirmItemMove`,
+  `confirmStackMove`, `stackMoveFailed`, `rollbackItemMove`, `applyPickedJewel`, `consumeItemRequest`,
+  `upgradeInventoryItem`, `setItemHotkey`, `useItemHotkey`, `learnSkillItem`, `dropPickedItem`, `beginItemMove`.
+  `beforeConsume` is the npc_shop's hook: a use
   closes the merchant window first. The door also exports `itemSize`, `ITEM_MOVE_TIMEOUT`, `PickedItem`.
 - The server owns every grid. A move is one `ItemMoveRequest`; only one is in flight (`Bag.pendingItemMove`).
-  `ItemMoved` paints it, `ItemMoveRequestFailed` rolls it back. `Bag.itemsOfStorage` maps a `StorageKind`
+  `ItemMoved` paints it, `ItemMoveRequestFailed` rolls a normal move back (stack moves are the exception
+  below). `Bag.itemsOfStorage` maps a `StorageKind`
   to the bag or to an `Economy` grid, so pick / place code is written once. The economy hands its
   grids in (`Bag.grids`, type `EconomyGrids`) when it loads, so the bag never imports it back.
 - Local index vs wire slot: the bag array starts with the 12 worn slots; the personal shop sits inside the
@@ -39,6 +42,18 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
 - `InventorySort` and `BulkMove` are small state machines: send one move, wait for the answer (a mobx
   `reaction` on `pendingItemMove`), plan again. A step does nothing while the player holds an item.
   `inventoryLayout.ts` is the pure packing (by kind, big items first, first fit).
+- Auto-arrange merges first, then packs. `planStackMerge` picks two squares the server will stack
+  (`sameStack`: same definition and level, both stackable), preferring a complete merge; a partial
+  merge leaves the source remainder in place for the next plan. Merging only happens in the player's
+  inventory: OpenMU's `MoveItemAction` refuses to stack vault-to-vault, so the vault stays packing-only.
+  `stackLimit` keeps the Season 6 potion sizes the client item files omit (3 for most, 10 for the siege
+  and event potions); `isStackingPotion` decides which group-14 `durability` values are piece counts.
+- A stack move is not an `ItemMoved` move. OpenMU's `FullStackAsync` / `PartiallyStackAsync` send
+  `ItemMoveRequestFailed` first, then the real answer: `ItemRemoved(source)` + target
+  `ItemDurabilityChanged` for a complete merge, or source + target `ItemDurabilityChanged` for a partial
+  one. `Bag.mergeItemStacks` keeps the source in its square until then; `stackMoveFailed` waits
+  `STACK_MOVE_GRACE` for those packets and only then treats the failure as a refusal, remembering the
+  source/target pair (`Bag.onStackMoveRefused`) so the run does not retry it forever.
 - Ctrl-click: `quickItemRules.ts` decides (storage window wins over the merchant, valuable items ask first),
   `quickItemActions.ts` sends the same requests a drag would. Ctrl-click needs `GameOptions.quickItemActions`,
   the yes/no needs `GameOptions.confirmValuableItems`.
@@ -52,7 +67,9 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
 ## Packets
 - `CharacterInventory`: the full bag, emptied first (WSclient.cpp:1672-1683); slots past `FirstStoreItemSlotIndex` go to `Economy.myShopItems`.
 - `ItemMoved`: the server's answer to a move, into any storage (chaos card byte 9 maps to the chaos machine).
-- `ItemMoveRequestFailed`: rolls the move back.
+- `ItemMoveRequestFailed`: rolls a normal move back. For a stack move it is the server's first packet
+  even on success; the removal/durability packets decide, and only a failure with no follow-up rolls
+  back (`STACK_MOVE_GRACE`).
 - `ItemAddedToInventory`: one slot set, with the pickup sound (WSclient.cpp:5727-5734). `ItemRemoved`: one slot cleared.
 - `InventoryItemUpgraded` / `ItemConsumptionFailed`: the result of a jewel or a consume.
 - `ItemDurabilityChanged`, `InventoryMoneyUpdate`: durability of one slot, zen in the bag. A durability change
@@ -82,11 +99,14 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
 
 ## Tests
 - `inventoryFit.test.ts`: `findFreeSlot` first fit, edge clipping, ignored slots, row count.
-- `inventoryLayout.test.ts`: `planLayout` packs into the top-left, no overlaps, leaves a packed grid alone.
+- `inventoryLayout.test.ts`: `planLayout` packs into the top-left, no overlaps, leaves a packed grid alone;
+  `planStackMerge` prefers complete merges, skips full stacks and different levels, and knows the potion limits.
+- `inventorySort.test.ts`: offline auto-arrange merges mana potions before packing, and leaves vault stacks alone.
 - `quickItemRules.test.ts`: Ctrl-click target, `isValuableItem`, when a bulk buy stops.
 - `itemStorage.test.ts`: `storageBan` returns a translated refusal per storage.
 - `itemHotkeys.test.ts`: which slots a version lets Ctrl+key or a drop bind.
-- `net.test.ts`: `CharacterInventory` empties the bag and the stall before filling them.
+- `net.test.ts`: `CharacterInventory` empties the bag and the stall before filling them; a stack answer waits
+  for the removal/durability packets, and a bare `ItemMoveRequestFailed` becomes a refusal.
 - `jewelUpgrade.test.ts`: a ring or pendant takes Bless, Soul and Life only with `jewelryUpgrade` on a world that allows it.
 - `autoMana.test.ts`: low mana drinks the W key's mana potion once a second, and nothing happens
   where the server or the player has not turned it on, for a dead hero or with no potion.

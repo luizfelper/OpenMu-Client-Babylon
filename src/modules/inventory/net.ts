@@ -112,6 +112,15 @@ export function installNet(): void {
   EventBus.on('ItemMoveRequestFailed', () => {
     // A refusal is still an answer, so it times the same round trip.
     NetStats.markAnswered('itemMove');
+
+    // OpenMU sends this packet before the durability/removal packets even
+    // when a stack merge worked (MoveItemAction.FullStackAsync /
+    // PartiallyStackAsync), so it is not a rollback for that move.
+    if (Bag.pendingItemMove?.stack) {
+      Bag.stackMoveFailed();
+      return;
+    }
+
     console.warn('ItemMoveRequestFailed - rolling the item back');
     Bag.rollbackItemMove();
     addNotification(t('notify.cannotMoveItem'), 'error');
@@ -179,6 +188,18 @@ export function installNet(): void {
     });
     // ReceiveDurability (WSclient.cpp:7164-7167): a use answered.
     if (p.ByConsumption) Bag.useAnswered();
+
+    // A stack move ends with the target's durability change; the source may
+    // have been removed (complete) or reduced (partial) just before it.
+    const pending = Bag.pendingItemMove;
+    if (
+      !p.ByConsumption &&
+      pending?.stack &&
+      pending.toStorage === StorageKind.Inventory &&
+      p.InventorySlot === pending.toSlot
+    ) {
+      Bag.confirmStackMove();
+    }
   });
 
   // ReceiveHelperItem (WSclient.cpp:7172-7193): the Ale or Potion of Soul timer only changes the ping's attack

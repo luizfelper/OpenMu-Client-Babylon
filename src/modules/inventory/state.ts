@@ -36,9 +36,16 @@ import {
 import { jewelTargetError } from './jewelUpgrade';
 import { jewelryUpgradeAllowed } from './jewelryUpgrade';
 import { gameVersion } from '../../version';
+import { sameStack, stackRoom } from './itemStack';
 
 /** How long an item move (or a merchant buy) waits for the server's answer. */
 export const ITEM_MOVE_TIMEOUT = 5000;
+
+/**
+ * How long a stack move waits for the durability/removal packets which
+ * follow `ItemMoveRequestFailed` before it treats that packet as a refusal.
+ */
+export const STACK_MOVE_GRACE = 250;
 
 /**
  * `CNewUIPickedItem`: the item hanging off the cursor, together with the
@@ -95,7 +102,14 @@ export const Bag = new (class {
     fromSlot: number;
     toStorage: StorageKind;
     toSlot: number;
+    /** A merge onto an occupied stack: its answer is a durability/removal packet, not `ItemMoved`. */
+    stack: boolean;
   } | null = null;
+
+  /** Set by `InventorySort` to remember a stack pair the server refused. */
+  onStackMoveRefused:
+    | ((fromStorage: StorageKind, fromSlot: number, toSlot: number) => void)
+    | null = null;
 
   private pendingItemMoveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -220,6 +234,50 @@ export const Bag = new (class {
   }
 
   /**
+   * Merge `fromSlot`'s stack onto `toSlot`'s, the auto-arrange path. The
+   * source stays in its square until the server answers: a partial stack
+   * leaves a remainder there, and the answer is a durability change rather
+   * than `ItemMoved` (`MoveItemAction.PartiallyStackAsync` / `FullStackAsync`).
+   */
+  mergeItemStacks(storage: StorageKind, fromSlot: number, toSlot: number): boolean {
+    if (this.pickedItem || this.pendingItemMove) return false;
+    // OpenMU only stacks when both ends are the player's inventory.
+    if (storage !== StorageKind.Inventory) return false;
+
+    const items = this.itemsOfStorage(storage);
+    const source = items[fromSlot];
+    const target = items[toSlot];
+    if (!source || !target || source === target) return false;
+    if (!sameStack(source, target)) return false;
+
+    const count = source.durability ?? 0;
+    const room = stackRoom(target);
+    if (count <= 0 || room <= 0) return false;
+
+    if (Session.isOffline) {
+      const moved = Math.min(room, count);
+      runInAction(() => {
+        const total = (target.durability ?? 0) + moved;
+        target.durability = total;
+        if (target.raw && target.raw.length > 2) target.raw[2] = total;
+
+        const left = count - moved;
+        if (left > 0) {
+          source.durability = left;
+          if (source.raw && source.raw.length > 2) source.raw[2] = left;
+        } else {
+          items[fromSlot] = null;
+        }
+        Hero.syncPlayerAppearance();
+      });
+      return true;
+    }
+
+    this.moveItemRequest(storage, fromSlot, storage, toSlot, source, true);
+    return true;
+  }
+
+  /**
    * The raw `ItemMoveRequest` (0x24), with the pending-move guard. Slots go
    * in as local array indices; the packet carries the wire slots.
    */
@@ -228,7 +286,8 @@ export const Bag = new (class {
     fromSlot: number,
     toStorage: StorageKind,
     toSlot: number,
-    item: Item
+    item: Item,
+    stack = false
   ): void {
     // The mix tray's wire byte depends on its mix type: 3 for the goblin, 9 for the
     // Chaos Card Master, 11-14 for the seed trays (modules/economy/economy.ts `mixWireStorage`).
@@ -242,7 +301,7 @@ export const Bag = new (class {
     packet.ToSlot = wireSlotOf(toStorage, toSlot);
     packet.setItemData(serializeItemBytes(item), 12);
 
-    this.beginItemMove(fromStorage, fromSlot, toStorage, toSlot);
+    this.beginItemMove(fromStorage, fromSlot, toStorage, toSlot, stack);
     NetStats.markSent('itemMove');
     Session.sendToGS(packet.buffer);
   }
@@ -578,17 +637,22 @@ export const Bag = new (class {
     fromStorage: StorageKind,
     fromSlot: number,
     toStorage: StorageKind,
-    toSlot: number
+    toSlot: number,
+    stack = false
   ): void {
     runInAction(() => {
-      this.pendingItemMove = { fromStorage, fromSlot, toStorage, toSlot };
+      this.pendingItemMove = { fromStorage, fromSlot, toStorage, toSlot, stack };
     });
 
     if (this.pendingItemMoveTimer) clearTimeout(this.pendingItemMoveTimer);
 
     this.pendingItemMoveTimer = setTimeout(() => {
-      if (!this.pendingItemMove) return;
+      const pending = this.pendingItemMove;
+      if (!pending) return;
 
+      if (pending.stack) {
+        this.onStackMoveRefused?.(pending.fromStorage, pending.fromSlot, pending.toSlot);
+      }
       console.warn('Item move timed out with no answer - rolling it back');
       this.rollbackItemMove();
       addNotification(t('notify.noAnswerRestored'), 'error');
@@ -609,6 +673,37 @@ export const Bag = new (class {
       // ReceiveInventoryItemMove (WSclient.cpp:6133): SOUND_GET_ITEM01.
       if (toSlot >= 0) playUiSound('getItem');
 
+      this.pickedItem = null;
+      this.pendingItemMove = null;
+      Hero.syncPlayerAppearance();
+    });
+  }
+
+  /**
+   * `ItemMoveRequestFailed` for a stack attempt: OpenMU sends it before the
+   * durability/removal packets even when the merge worked, so wait briefly
+   * for those before treating it as a refusal.
+   */
+  stackMoveFailed(): void {
+    const pending = this.pendingItemMove;
+    if (!pending?.stack) return;
+
+    this.clearItemMoveTimer();
+    this.pendingItemMoveTimer = setTimeout(() => {
+      const refused = this.pendingItemMove;
+      if (!refused?.stack) return;
+
+      this.onStackMoveRefused?.(refused.fromStorage, refused.fromSlot, refused.toSlot);
+      this.rollbackItemMove();
+    }, STACK_MOVE_GRACE);
+  }
+
+  /** The target's durability change ends a successful stack move. */
+  confirmStackMove(): void {
+    if (!this.pendingItemMove?.stack) return;
+
+    this.clearItemMoveTimer();
+    runInAction(() => {
       this.pickedItem = null;
       this.pendingItemMove = null;
       Hero.syncPlayerAppearance();

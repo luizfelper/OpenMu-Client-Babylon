@@ -23,4 +23,4 @@ export { hasSpecial, optionSpecials } from './itemSpecials';
 export type { OptionSpecial } from './itemSpecials';
 export { isOptionWing, wingOptionKind, wingOptions } from './wingOptions';
 export type { WingOption, WingOptionKind } from './wingOptions';
-export { isPackedJewel, stackCount } from './packedJewels';
+export { isPackedJewel, isStackingPotion, stackCount } from './packedJewels';
