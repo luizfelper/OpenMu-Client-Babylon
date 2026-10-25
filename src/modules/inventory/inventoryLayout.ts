@@ -106,6 +106,10 @@ export function squareFits(
  * The next stack to merge, or null. Complete merges are preferred, so the
  * run removes a square instead of leaving a remainder whenever it can.
  * `skip` keeps a pair the server already refused from being retried.
+ *
+ * A partial merge never takes from a full stack: that would only swap which
+ * stack is full (a 2 and a 3 become a 3 and a 2), so the planner would keep
+ * asking for the same move forever.
  */
 export function planStackMerge(
   squares: readonly Square[],
@@ -128,7 +132,10 @@ export function planStackMerge(
     if (stackRoom(target.item) <= 0) continue;
     for (const source of ordered) {
       if (source.slot === target.slot || !sameStack(source.item, target.item)) continue;
-      if ((source.item.durability ?? 0) <= 0 || skip?.(source.slot, target.slot)) continue;
+      const count = source.item.durability ?? 0;
+      // A full stack cannot be a partial source: moving pieces out would only
+      // swap which stack is full.
+      if (count <= 0 || stackRoom(source.item) <= 0 || skip?.(source.slot, target.slot)) continue;
       return { from: source.slot, to: target.slot };
     }
   }

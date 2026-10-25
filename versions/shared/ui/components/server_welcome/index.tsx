@@ -2,6 +2,7 @@ import './style.less';
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { AppState, UIState } from '@/controllers/interface/uiState';
+import { Loading } from '@/controllers/loading';
 import { Session } from '@/modules/session';
 import { Servers } from '@/modules/servers';
 import { ServerConfig } from '@/modules/servers/serverConfig';
@@ -9,10 +10,11 @@ import { siteUrl } from '@/modules/site/site';
 import { t } from '@/i18n';
 
 /**
- * Ours: the server-information card shown once after a login, at the character
- * screen, in the spirit of Open.MU's welcome window. The public site owns the
- * words and numbers (`/api/site`); the client only draws them, with the active
- * profile and the selected channel as the fallback when the site is offline.
+ * Ours: the server-information card shown once after a login, when the player
+ * actually enters the map, in the spirit of Open.MU's welcome window. The
+ * public site owns the words and numbers (`/api/site`); the client only draws
+ * them, with the active profile and the selected channel as the fallback when
+ * the site is offline.
  */
 
 type SiteFact = { label: string; value: string };
@@ -116,20 +118,29 @@ let shownForLogin = false;
 
 export const ServerWelcome = observer(() => {
   const state = AppState.uiState;
+  // `warpCompleted` fires before the loading screen is cleared, so the card
+  // waits for the map itself to be on screen.
+  const sceneLoading = Loading.sceneLoading;
   const [open, setOpen] = useState(false);
   const [info, setInfo] = useState<SiteInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (state !== UIState.Characters) {
-      // A new login flow gets the card again; leaving the character screen
-      // (a reconnect, the world) closes it rather than floating over the game.
+    if (state !== UIState.World) {
+      // A new login flow gets the card again; leaving the world (logout, a
+      // reconnect to the character screen) closes it rather than floating over
+      // the pregame pages.
       if (state === UIState.Preloader || state === UIState.Login) shownForLogin = false;
       setOpen(false);
       return;
     }
 
     if (shownForLogin || Session.isOffline) return;
+
+    if (sceneLoading) {
+      setOpen(false);
+      return;
+    }
 
     shownForLogin = true;
     setOpen(true);
@@ -139,7 +150,7 @@ export const ServerWelcome = observer(() => {
       setInfo(data);
       setLoading(false);
     });
-  }, [state]);
+  }, [state, sceneLoading]);
 
   useEffect(() => {
     if (!open) return;

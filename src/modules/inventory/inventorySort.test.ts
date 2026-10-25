@@ -43,6 +43,20 @@ describe('InventorySort stack merging', () => {
     expect(InventorySort.active).toBe(false);
   });
 
+  it('stops when a full stack sits beside a partial one', () => {
+    runInAction(() => {
+      Session.isOffline = true;
+      Hero.items[12] = mana(2);
+      Hero.items[13] = mana(3);
+    });
+
+    InventorySort.start(StorageKind.Inventory);
+
+    expect(Hero.items[12]).toMatchObject({ durability: 2 });
+    expect(Hero.items[13]).toMatchObject({ durability: 3 });
+    expect(InventorySort.active).toBe(false);
+  });
+
   it('leaves vault stacks alone: OpenMU only stacks inventory-to-inventory', () => {
     const vault: (Item | null)[] = new Array(VAULT_SLOTS).fill(null);
     vault[0] = mana(1);

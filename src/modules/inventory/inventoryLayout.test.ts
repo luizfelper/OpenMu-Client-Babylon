@@ -99,6 +99,11 @@ describe('inventory stack merging', () => {
     expect(planStackMerge(squares)).toEqual({ from: FIRST + 1, to: FIRST });
   });
 
+  it('does not swap a full stack with a partial one forever', () => {
+    expect(planStackMerge([potion(FIRST, 2), potion(FIRST + 1, 3)])).toBeNull();
+    expect(planStackMerge([potion(FIRST, 3), potion(FIRST + 1, 2)])).toBeNull();
+  });
+
   it('does not merge different item levels', () => {
     const squares = [potion(FIRST, 1, 5, 0), potion(FIRST + 1, 1, 5, 1)];
     expect(planStackMerge(squares)).toBeNull();

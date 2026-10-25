@@ -44,8 +44,9 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
   `inventoryLayout.ts` is the pure packing (by kind, big items first, first fit).
 - Auto-arrange merges first, then packs. `planStackMerge` picks two squares the server will stack
   (`sameStack`: same definition and level, both stackable), preferring a complete merge; a partial
-  merge leaves the source remainder in place for the next plan. Merging only happens in the player's
-  inventory: OpenMU's `MoveItemAction` refuses to stack vault-to-vault, so the vault stays packing-only.
+  merge leaves the source remainder in place for the next plan and never drains a full stack (that
+  would only swap a 2 and a 3 forever). Merging only happens in the player's inventory: OpenMU's
+  `MoveItemAction` refuses to stack vault-to-vault, so the vault stays packing-only.
   `stackLimit` keeps the Season 6 potion sizes the client item files omit (3 for most, 10 for the siege
   and event potions); `isStackingPotion` decides which group-14 `durability` values are piece counts.
 - A stack move is not an `ItemMoved` move. OpenMU's `FullStackAsync` / `PartiallyStackAsync` send
@@ -101,7 +102,8 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
 - `inventoryFit.test.ts`: `findFreeSlot` first fit, edge clipping, ignored slots, row count.
 - `inventoryLayout.test.ts`: `planLayout` packs into the top-left, no overlaps, leaves a packed grid alone;
   `planStackMerge` prefers complete merges, skips full stacks and different levels, and knows the potion limits.
-- `inventorySort.test.ts`: offline auto-arrange merges mana potions before packing, and leaves vault stacks alone.
+- `inventorySort.test.ts`: offline auto-arrange merges mana potions before packing, stops when a full
+  stack sits beside a partial one, and leaves vault stacks alone.
 - `quickItemRules.test.ts`: Ctrl-click target, `isValuableItem`, when a bulk buy stops.
 - `itemStorage.test.ts`: `storageBan` returns a translated refusal per storage.
 - `itemHotkeys.test.ts`: which slots a version lets Ctrl+key or a drop bind.
