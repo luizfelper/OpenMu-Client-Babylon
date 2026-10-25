@@ -38,22 +38,25 @@ import {
 } from '@/modules/mu_helper/state';
 
 /**
- * `CNewUIMuHelper` (NewUIMuHelper.cpp): the S6 MU Helper settings dialog. The
- * original stacks hunt / obtain in two tabs of a 190 x 429 item window; here
- * the window is drawn wider and both sections sit side by side (hunt left,
- * obtain right) so nothing is hidden behind a tab. The original's condition
- * sub-window (`CNewUIMuHelperExt`) and skill-list popup
- * (`CNewUIMuHelperSkillList`) collapse into inline rows and an in-window
- * picker overlay. Class-conditional rows follow `RegisterBoxCharacter`. Save
- * encodes the 257-byte blob and sends `MuHelperSaveDataRequest`.
+ * `CNewUIMuHelper` (NewUIMuHelper.cpp): the S6 MU Helper settings dialog,
+ * arranged as the reference's two tabs. Combat holds the hunt controls, the
+ * skills and the healing; Collect holds the pickup filters. The priority strip
+ * between them is ours: the loop follows it while a drop and a monster are
+ * both in reach. The original's condition sub-window (`CNewUIMuHelperExt`) and
+ * skill-list popup (`CNewUIMuHelperSkillList`) collapse into inline rows and
+ * an in-window picker overlay. Class-conditional rows follow
+ * `RegisterBoxCharacter`. Save encodes the 257-byte blob and sends
+ * `MuHelperSaveDataRequest`.
  */
 
 const WINDOW_ID = 'mu-helper';
 
-// Wider than the standard frame: two columns of controls plus the frame's own
-// margins. The frame art stretches to it (`MuItemWindow` width/height).
-const WINDOW_WIDTH = 384;
+// The reference's item window is 190 wide and stacks its two tabs; this one
+// keeps the same height and widens just enough for the inline condition rows.
+const WINDOW_WIDTH = 360;
 const WINDOW_HEIGHT = 429;
+
+type HelperTab = 'combat' | 'collect';
 
 const CHECK_SPRITE = 'op2_ch.OZT';
 const CHECK_SIZE = 16;
@@ -157,6 +160,46 @@ const Stepper = ({
     </button>
   </div>
 );
+
+/**
+ * Ours: the loop can see a drop and a monster at the same time. This strip makes
+ * the choice explicit, and the hint says what the loop will do, so the player is
+ * never surprised by the hero walking away from one to the other.
+ */
+const PriorityControl = observer(() => {
+  const priority = MuHelperState.draft.priority;
+
+  return (
+    <div className="helper-priority">
+      <span className="helper-priority-label">{t('muHelper.priority')}</span>
+      <div className="helper-priority-options">
+        <button
+          type="button"
+          className={priority === 'combat' ? 'is-on' : ''}
+          aria-pressed={priority === 'combat'}
+          onClick={uiClick(() => edit(d => (d.priority = 'combat')))}
+        >
+          {t('muHelper.priorityCombat')}
+        </button>
+        <button
+          type="button"
+          className={priority === 'collect' ? 'is-on' : ''}
+          aria-pressed={priority === 'collect'}
+          onClick={uiClick(() => edit(d => (d.priority = 'collect')))}
+        >
+          {t('muHelper.priorityCollect')}
+        </button>
+      </div>
+      <span className="helper-priority-hint">
+        {t(
+          priority === 'combat'
+            ? 'muHelper.priorityHintCombat'
+            : 'muHelper.priorityHintCollect'
+        )}
+      </span>
+    </div>
+  );
+});
 
 /** A drag control for the hunting range (`<input type=range>`), with the value read out beside it. */
 const RangeSlider = ({
@@ -367,7 +410,7 @@ const ActivationSkill = observer(
   }
 );
 
-const HuntTab = observer(
+const CombatTab = observer(
   ({ onPick }: { onPick: (target: PickerTarget) => void }) => {
     const draft = MuHelperState.draft;
     const baseClass = getBaseClass(Hero.charClass);
@@ -587,7 +630,7 @@ const HuntTab = observer(
   }
 );
 
-const ObtainTab = observer(() => {
+const CollectTab = observer(() => {
   const draft = MuHelperState.draft;
   const [itemName, setItemName] = useState('');
   const [selected, setSelected] = useState(-1);
@@ -719,6 +762,7 @@ const ObtainTab = observer(() => {
 
 export const MuHelperWindow = observer(() => {
   const open = MuHelperState.windowOpen;
+  const [tab, setTab] = useState<HelperTab>('combat');
   const [picker, setPicker] = useState<PickerTarget | null>(null);
 
   useEventBus('keyPressed', key => {
@@ -762,20 +806,38 @@ export const MuHelperWindow = observer(() => {
         onClick={close}
       />
 
-      <div className="helper-columns" data-no-drag="true">
-        <section className="helper-section-panel">
-          <div className="helper-section-head">{t('muHelper.tabHunt')}</div>
-          <div className="helper-body">
-            <HuntTab onPick={setPicker} />
-          </div>
-        </section>
+      <div className="helper-tabs" role="tablist" data-no-drag="true">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'combat'}
+          className={tab === 'combat' ? 'is-on' : ''}
+          onClick={uiClick(() => {
+            setTab('combat');
+            setPicker(null);
+          })}
+        >
+          {t('muHelper.tabCombat')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'collect'}
+          className={tab === 'collect' ? 'is-on' : ''}
+          onClick={uiClick(() => {
+            setTab('collect');
+            setPicker(null);
+          })}
+        >
+          {t('muHelper.tabCollect')}
+        </button>
+      </div>
 
-        <section className="helper-section-panel">
-          <div className="helper-section-head">{t('muHelper.tabObtain')}</div>
-          <div className="helper-body">
-            <ObtainTab />
-          </div>
-        </section>
+      <div className="helper-panel" data-no-drag="true">
+        <PriorityControl />
+        <div className="helper-body" role="tabpanel">
+          {tab === 'combat' ? <CombatTab onPick={setPicker} /> : <CollectTab />}
+        </div>
       </div>
 
       {picker && (

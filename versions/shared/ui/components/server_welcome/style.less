@@ -1,0 +1,334 @@
+@import (reference) '@/controllers/interface/components/mu_text/style.less';
+@import (reference) '@/controllers/interface/theme.less';
+
+// Ours: the after-login server card, over the character screen. It reads like
+// the site's welcome panel rather than a game window: black glass, a gold
+// double edge and the warm MUCURA palette.
+.server-welcome {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  pointer-events: auto;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(20, 8, 6, 0.35), rgba(0, 0, 0, 0.78) 72%),
+    rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  .mu-font();
+  color: @mucura-beige;
+  user-select: none;
+}
+
+.server-welcome-panel {
+  position: relative;
+  width: min(760px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: clamp(22px, 3.4vw, 38px) clamp(22px, 3.6vw, 44px) 26px;
+  box-sizing: border-box;
+  background:
+    linear-gradient(180deg, rgba(28, 9, 9, 0.97), rgba(7, 4, 4, 0.97)),
+    @mucura-panel;
+  border: 2px solid @mucura-red;
+  border-radius: 8px;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(231, 199, 119, 0.16),
+    0 0 40px rgba(231, 199, 119, 0.06);
+  scrollbar-width: thin;
+  scrollbar-color: #7a6b45 transparent;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 7px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, @mucura-gold, transparent);
+    opacity: 0.6;
+  }
+}
+
+.server-welcome-eyebrow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: @mucura-gold;
+  font-family: @mucura-serif;
+  font-size: clamp(10px, 0.9vw, 12px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+
+  span {
+    color: @mucura-beige-dim;
+    letter-spacing: 0.08em;
+    text-transform: none;
+
+    &::before {
+      content: '•';
+      margin-right: 10px;
+      color: rgba(231, 199, 119, 0.55);
+    }
+  }
+}
+
+.server-welcome-title {
+  margin: 12px 0 4px;
+  color: #ffe9a6;
+  font-family: @mucura-serif;
+  font-size: clamp(26px, 3.2vw, 42px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: 0.02em;
+  text-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.8),
+    0 0 26px rgba(231, 199, 119, 0.12);
+}
+
+.server-welcome-subtitle {
+  margin: 0 0 18px;
+  color: @mucura-beige-dim;
+  font-family: @mucura-serif;
+  font-size: clamp(12px, 1.1vw, 15px);
+  line-height: 1.4;
+}
+
+.server-welcome-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.server-welcome-chip {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 11px;
+  border: 1px solid rgba(231, 199, 119, 0.24);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+
+  span {
+    color: @mucura-beige-dim;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: @mucura-gold;
+    font-size: 12px;
+    font-weight: 700;
+  }
+}
+
+.server-welcome-rates {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0 16px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    border: 1px solid rgba(107, 20, 20, 0.9);
+    border-radius: 5px;
+    background: linear-gradient(180deg, rgba(42, 9, 8, 0.7), rgba(8, 5, 5, 0.6));
+    text-align: center;
+  }
+
+  span {
+    color: @mucura-beige-dim;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: #ffe9a6;
+    font-family: @mucura-serif;
+    font-size: clamp(16px, 1.8vw, 22px);
+    font-weight: 400;
+  }
+}
+
+.server-welcome-text {
+  margin: 0 0 14px;
+  color: @mucura-beige;
+  font-family: @mucura-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  opacity: 0.92;
+}
+
+.server-welcome-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 18px;
+  margin: 0 0 18px;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(231, 199, 119, 0.14);
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(231, 199, 119, 0.06);
+
+    span {
+      color: @mucura-beige-dim;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    strong {
+      color: @mucura-gold;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: right;
+    }
+  }
+}
+
+.server-welcome-loading {
+  margin: 2px 0 14px;
+  color: @mucura-beige-dim;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  &::after {
+    content: '…';
+    animation: server-welcome-dots 1.4s steps(4, end) infinite;
+  }
+}
+
+@keyframes server-welcome-dots {
+  0%,
+  20% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
+}
+
+.server-welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+
+  button,
+  a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    height: 34px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    border: 1px solid rgba(231, 199, 119, 0.4);
+    border-radius: 4px;
+    background: linear-gradient(180deg, rgba(42, 12, 10, 0.85), rgba(16, 7, 6, 0.9));
+    color: @mucura-beige;
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      background 120ms ease,
+      color 120ms ease;
+
+    &:hover {
+      border-color: @mucura-gold;
+      color: #ffe9a6;
+      background: linear-gradient(180deg, rgba(70, 18, 14, 0.9), rgba(22, 8, 7, 0.92));
+    }
+  }
+
+  .is-primary {
+    border-color: @mucura-gold;
+    background: linear-gradient(180deg, #7a1a16, #3a0909);
+    color: #ffe9a6;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 220, 150, 0.2),
+      0 0 16px rgba(231, 199, 119, 0.1);
+  }
+}
+
+.server-welcome-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: @mucura-beige-dim;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: #ffe9a6;
+    border-color: rgba(231, 199, 119, 0.35);
+    border-radius: 3px;
+  }
+}
+
+@media (max-width: 560px) {
+  .server-welcome {
+    padding: 10px;
+  }
+
+  .server-welcome-panel {
+    max-height: 94vh;
+    padding: 20px 18px 20px;
+  }
+
+  .server-welcome-rates {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+
+    div {
+      padding: 8px 4px;
+    }
+  }
+
+  .server-welcome-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .server-welcome-actions {
+    button,
+    a {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 0 10px;
+    }
+  }
+}

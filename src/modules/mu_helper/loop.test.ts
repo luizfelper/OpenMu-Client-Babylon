@@ -200,4 +200,68 @@ describe('updateMuHelperLoop', () => {
     expect(result.attack).toBe(false);
     expect(result.cast).toBe(true);
   });
+
+  /**
+   * One helper tick with a drop and a monster in reach, and optionally a target
+   * left over from the previous priority. What the tick leaves at both seams.
+   */
+  function priorityTick(
+    priority: 'combat' | 'collect',
+    leftOver: 'drop' | 'monster' | null = null
+  ) {
+    on.module = true;
+    on.state.config = { ...defaultMuHelperConfig(), priority, pickAllItems: true };
+    HeroSkills.setSkillList([]);
+    const hero = {
+      transform: { pos: { x: 10, z: 10 } },
+      attributeSystem: { isAboveZero: () => false },
+    };
+    const drop = {
+      netId: 5,
+      worldIndex: 0,
+      transform: { pos: { x: 11, z: 10 } },
+      droppedItem: { isMoney: false, group: 14, num: 0, pickupAsked: false },
+    };
+    const monster = {
+      netId: 7,
+      npcType: 1,
+      transform: { pos: { x: 12, z: 10 } },
+    };
+    const world = {
+      playerEntity: hero,
+      mapIndex: 0,
+      castRequest: null,
+      attackTarget: leftOver === 'monster' ? monster : null,
+      pickupTarget: leftOver === 'drop' ? drop : null,
+      netObjsQuery: { entities: [drop, monster] },
+      playersQuery: { entities: [] },
+      getTerrainFlag: () => 0,
+    } as unknown as World;
+
+    on.helper.active = true;
+    updateMuHelperLoop(world, 0.3);
+    const result = {
+      pickup: world.pickupTarget === (drop as unknown),
+      attack: world.attackTarget === (monster as unknown),
+      cast: world.castRequest !== null,
+    };
+    on.helper.active = false;
+    updateMuHelperLoop(world, 0.3);
+    return result;
+  }
+
+  it('combat first clears the drop and fights the monster', () => {
+    expect(priorityTick('combat')).toEqual({ pickup: false, attack: true, cast: false });
+  });
+
+  it('collect first clears the monster and walks to the drop', () => {
+    expect(priorityTick('collect')).toEqual({ pickup: true, attack: false, cast: false });
+  });
+
+  it('switches targets when the priority changes instead of holding both', () => {
+    // A drop from the collect run, then the player picks combat first.
+    expect(priorityTick('combat', 'drop')).toEqual({ pickup: false, attack: true, cast: false });
+    // A monster from the combat run, then the player picks collect first.
+    expect(priorityTick('collect', 'monster')).toEqual({ pickup: true, attack: false, cast: false });
+  });
 });

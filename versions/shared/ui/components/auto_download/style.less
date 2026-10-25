@@ -61,7 +61,9 @@
   margin-top: 4px;
 }
 
-// The first screen: covers the login and the character select until the essentials are in or skipped.
+// The first screen: covers the login and the character select until the basic
+// items are in or skipped. A dark vignette over the character art, then the
+// gold-framed panel of the Open.MU loading screen.
 .auto-download-screen {
   position: absolute;
   inset: 0;
@@ -72,40 +74,146 @@
   background-size: cover;
   background-position: center;
   z-index: 101;
+  pointer-events: auto;
   .mu-font();
   color: #d8ccb0;
   user-select: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.76) 68%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.82));
+  }
 }
 
 .auto-download-panel {
-  width: min(420px, 90vw);
-  padding: 20px 24px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 1px solid rgba(120, 100, 70, 0.9);
+  position: relative;
+  width: min(470px, 92vw);
+  padding: 26px 30px 22px;
+  box-sizing: border-box;
+  background:
+    linear-gradient(180deg, rgba(28, 9, 9, 0.96), rgba(7, 4, 4, 0.96)),
+    rgba(0, 0, 0, 0.88);
+  border: 2px solid #a8863f;
+  border-radius: 6px;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(231, 199, 119, 0.18),
+    0 0 32px rgba(231, 199, 119, 0.08);
   font-size: 12px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 6px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e7c777, transparent);
+    opacity: 0.65;
+  }
+}
+
+// The gold seal over the title: a slow ring, a red core and a small diamond.
+.auto-download-seal {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 12px;
+  border: 1px solid rgba(231, 199, 119, 0.55);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 4px rgba(0, 0, 0, 0.55),
+    inset 0 0 18px rgba(231, 199, 119, 0.12);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 2px solid transparent;
+    border-top-color: #e7c777;
+    border-right-color: rgba(231, 199, 119, 0.3);
+    border-radius: 50%;
+    animation: auto-download-spin 2.4s linear infinite;
+  }
+
+  span {
+    position: absolute;
+    inset: 21px;
+    background: linear-gradient(135deg, #6b1414, #2b0707);
+    border: 1px solid #c8a95a;
+    transform: rotate(45deg);
+    box-shadow: 0 0 12px rgba(231, 199, 119, 0.25);
+  }
+}
+
+@keyframes auto-download-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .auto-download-heading {
-  font-size: 16px;
-  color: rgb(255, 204, 26);
+  font-size: 19px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffe9a6;
   text-align: center;
-  margin-bottom: 10px;
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.8),
+    0 0 18px rgba(231, 199, 119, 0.16);
+  margin-bottom: 12px;
+}
+
+.auto-download-screen .auto-download-row {
+  color: #c8b58f;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.auto-download-screen .auto-download-bar.is-big {
+  height: 12px;
+  border: 1px solid #a8863f;
+  border-radius: 2px;
+  background: #160b09;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.auto-download-screen .auto-download-fill {
+  background: linear-gradient(180deg, #ffe08a, #d0a63c 48%, #8c651f);
+  box-shadow: 0 0 10px rgba(231, 199, 119, 0.35);
 }
 
 .auto-download-note {
   margin-top: 12px;
   text-align: center;
+  line-height: 1.4;
+  color: #bfb08c;
 
   &.is-small {
-    font-size: 11px;
+    font-size: 10px;
     opacity: 0.75;
   }
 }
 
 .auto-download-screen .auto-download-skip {
   display: block;
-  margin: 12px auto 0;
-  padding: 4px 16px;
-  border: 1px solid #8a6d2f;
-  color: rgb(255, 204, 26);
+  margin: 14px auto 0;
+  padding: 6px 20px;
+  border: 1px solid #a8863f;
+  border-radius: 3px;
+  background: linear-gradient(#3a1414, #1d0808);
+  color: #ffe9a6;
+  letter-spacing: 0.04em;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+
+  &:hover {
+    border-color: #ffe9a6;
+    background: linear-gradient(#5a1b1b, #2a0b0b);
+  }
 }

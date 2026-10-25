@@ -1,7 +1,9 @@
 @import (reference) '@/controllers/interface/components/mu_text/style.less';
 
-// Ours (`muHelperButtons`): two square plates stacked against the left side of the
-// corner minimap, as tall together as the minimap (the component supplies the sizes).
+// Ours (`muHelperButtons`): two circular gold plates stacked against the left
+// side of the corner minimap, as tall together as the minimap (the component
+// supplies the sizes). The icons carry the action; the labels live in `title`
+// and `aria-label`.
 .mu-helper-buttons {
   .mu-font();
   user-select: none;
@@ -13,20 +15,46 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
-    border: 1px solid rgba(214, 178, 106, 0.55);
-    background: rgba(58, 10, 10, 0.72);
+    padding: 0;
+    border: 1px solid rgba(231, 199, 119, 0.82);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 28%, rgba(112, 24, 22, 0.96), rgba(42, 8, 8, 0.97) 64%, rgba(18, 5, 5, 0.98));
     // Gold by default, the start/stop button sets its own (gold / green) inline.
     color: #ffd700;
-    font-family: inherit;
-    font-weight: bold;
-    line-height: 1.15;
-    text-align: center;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 220, 150, 0.14),
+      inset 0 -5px 10px rgba(0, 0, 0, 0.5),
+      0 2px 7px rgba(0, 0, 0, 0.55);
     cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      box-shadow 120ms ease,
+      transform 120ms ease;
 
     &:hover {
-      background: rgba(92, 18, 18, 0.82);
-      border-color: rgba(240, 208, 138, 0.9);
+      border-color: #ffe9a6;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 230, 170, 0.28),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.45),
+        0 0 12px rgba(231, 199, 119, 0.28);
+      transform: scale(1.04);
     }
+
+    &:active {
+      transform: scale(0.97);
+    }
+
+    &:focus-visible {
+      outline: 1px solid #fff;
+      outline-offset: 2px;
+    }
+  }
+
+  .mu-helper-icon {
+    display: block;
+    width: 46%;
+    height: 46%;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
   }
 }

@@ -6,7 +6,8 @@
  * (MuHelperData.cpp). OpenMU stores the blob opaquely, so this layout is the
  * client-to-client contract: a config saved by the reference client decodes
  * here and vice versa. The C++ struct covers bytes 0-244; OpenMU's field is
- * 257 bytes, the tail stays zero.
+ * 257 bytes. Ours puts the target priority at byte 245, in the tail the
+ * reference client ignores.
  */
 
 export const MU_HELPER_BLOB_SIZE = 257;
@@ -37,7 +38,16 @@ interface ActivationCondition {
 
 export type DarkRavenMode = 0 | 1 | 2; // cease / auto / together
 
+/**
+ * Ours: which target the loop goes for first while a drop and a monster are
+ * both in reach. The reference client has no such switch; byte 245 of the
+ * blob's unused tail keeps it, so it round-trips through the server.
+ */
+export type HelperPriority = 'combat' | 'collect';
+
 export interface MuHelperConfig {
+  /** Combat first (monsters), or collect first (drops). */
+  priority: HelperPriority;
   huntingRange: number;
   longRangeCounterAttack: boolean;
   returnToOriginalPosition: boolean;
@@ -90,6 +100,7 @@ function defaultActivationCondition(): ActivationCondition {
 /** `CNewUIMuHelper::Reset` (NewUIMuHelper.cpp:971-1012). */
 export function defaultMuHelperConfig(): MuHelperConfig {
   return {
+    priority: 'combat',
     huntingRange: 6,
     longRangeCounterAttack: false,
     returnToOriginalPosition: true,
@@ -214,6 +225,11 @@ export function encodeMuHelperConfig(config: MuHelperConfig): Uint8Array {
 
   out[28] = config.darkRavenMode & 0xff;
 
+  // Ours: the tail is unused by the reference client, so byte 245 carries the
+  // priority without changing anything it reads. 0 keeps a reference blob
+  // (and every old save) on combat-first.
+  out[245] = config.priority === 'collect' ? 1 : 0;
+
   for (let slot = 0; slot < MAX_EXTRA_ITEMS; slot++) {
     const name = config.extraItems[slot];
     if (!name) continue;
@@ -295,6 +311,9 @@ export function decodeMuHelperConfig(blob: Uint8Array): MuHelperConfig {
 
   const raven = blob[28];
   config.darkRavenMode = raven === 1 || raven === 2 ? raven : 0;
+
+  // Ours: byte 245 is absent from a short/legacy blob; anything but 1 is combat.
+  config.priority = blob.length > 245 && blob[245] === 1 ? 'collect' : 'combat';
 
   config.extraItems = [];
   for (let slot = 0; slot < MAX_EXTRA_ITEMS; slot++) {

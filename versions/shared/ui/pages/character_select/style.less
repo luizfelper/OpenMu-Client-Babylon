@@ -51,9 +51,12 @@
   // way to pick one.
   .char-roster-panel {
     position: absolute;
-    right: 3.2%;
-    top: 29%;
-    width: clamp(250px, 23vw, 340px);
+    // Keep the roster beside the line-up rather than pinned to the far edge;
+    // the cards read as part of the characters, not as a detached sidebar.
+    right: clamp(20px, 8vw, 150px);
+    top: 50%;
+    transform: translateY(-50%);
+    width: clamp(260px, 22vw, 330px);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -207,7 +210,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 5.5%;
+    bottom: 4.5%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -454,7 +457,8 @@
     .char-roster-panel {
       right: 2%;
       width: 220px;
-      top: 27%;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     .char-roster-card {

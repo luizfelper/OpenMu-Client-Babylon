@@ -25,7 +25,7 @@ describe('the first-run download (AutoDownload)', () => {
     set(UIState.Login, true);
     const html = renderToStaticMarkup(<AutoDownload />);
     expect(html).toContain('auto-download-screen');
-    expect(html).toContain('Preparing your adventure');
+    expect(html).toContain('Loading basic items');
     expect(html).toContain('Enter anyway');
   });
 });

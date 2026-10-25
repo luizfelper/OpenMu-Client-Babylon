@@ -9,10 +9,10 @@ import { MenuCluster } from './menuCluster';
 import { HELPER_ICON } from './consts';
 
 /**
- * The two hamburgers at the top right of a phone, in the MU Helper's own plate
- * (dark translucent red, gold trim). The left one, three gold bars, unfolds the
- * five main-frame buttons (`MenuCluster`); the right one, the macro system's
- * gold wrench, unfolds the helper's pair of plates, which on a desktop sit
+ * The two circular gold buttons at the top right of a phone, in the MU Helper's
+ * own dark red. The left one, three gold bars, unfolds the five main-frame
+ * buttons (`MenuCluster`); the right one, the macro system's gold wrench,
+ * unfolds the helper's play/stop and settings icons, which on a desktop sit
  * against the minimap - a phone has no room there, and the touch cluster would
  * sit on top of them.
  *
@@ -65,18 +65,20 @@ export const TopMenus = observer(() => {
         <div className="mobile-helper-panel">
           <MobileButton
             className={`mobile-helper-plate${MuHelper.active ? ' running' : ''}`}
+            title={t(MuHelper.active ? 'muHelperButtons.stop' : 'muHelperButtons.start')}
             onTap={() => MuHelper.toggleMuHelper()}
           >
-            {() => t(MuHelper.active ? 'muHelperButtons.stop' : 'muHelperButtons.start')}
+            {() => (MuHelper.active ? STOP_ICON : PLAY_ICON)}
           </MobileButton>
           <MobileButton
             className="mobile-helper-plate"
+            title={t('muHelperButtons.settings')}
             onTap={() => {
               toggleMuHelperWindow();
               setOpen(null);
             }}
           >
-            {() => t('muHelperButtons.settings')}
+            {() => SETTINGS_ICON}
           </MobileButton>
         </div>
       )}
@@ -91,4 +93,31 @@ const BARS = (
     <span />
     <span />
   </span>
+);
+
+const PLAY_ICON = (
+  <svg className="mobile-helper-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8 5.5 18 12 8 18.5Z" fill="currentColor" />
+  </svg>
+);
+
+const STOP_ICON = (
+  <svg className="mobile-helper-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor" />
+  </svg>
+);
+
+const SETTINGS_ICON = (
+  <svg
+    className="mobile-helper-icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="3.2" />
+    <path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1" />
+  </svg>
 );

@@ -359,7 +359,14 @@ function shouldObtain(config: MuHelperConfig, e: Entity): boolean {
 
 /** `CMuHelper::ObtainItem` via the pickup seam (`world.pickupTarget`). */
 function obtainItem(world: World, hero: Entity, config: MuHelperConfig): boolean {
-  if (world.pickupTarget) return false; // still walking to one
+  if (world.pickupTarget) {
+    // Still walking to one. Keep it the only action, even if the player just
+    // switched the priority while a monster target was left behind.
+    currentTarget = null;
+    if (!world.castRequest) world.attackTarget = null;
+    return false;
+  }
+  if (world.castRequest) return false; // the player's own cast owns the frame
 
   const maxDistance = distanceByRange(config.obtainRange);
   const from = heroTile(hero);
@@ -378,6 +385,12 @@ function obtainItem(world: World, hero: Entity, config: MuHelperConfig): boolean
   }
 
   if (!best) return true;
+
+  // One action at a time: starting a pickup drops the monster the helper was
+  // walking to, so the hero never changes direction between a drop and a mob
+  // on consecutive ticks (which reads as speed-hacking to the server).
+  currentTarget = null;
+  if (!world.castRequest) world.attackTarget = null;
   world.pickupTarget = best;
   return false;
 }
@@ -389,6 +402,12 @@ function regroup(world: World, hero: Entity, config: MuHelperConfig): boolean {
   }
 
   if (tileDistance(heroTile(hero), originalPos) > 1) {
+    // The walk home is the action: release any target from the tick before.
+    currentTarget = null;
+    if (!world.castRequest) {
+      world.attackTarget = null;
+      world.pickupTarget = null;
+    }
     if (moveReissueCooldown <= 0) {
       moveReissueCooldown = MOVE_REISSUE_SECONDS;
       walkTo(hero, originalPos);
@@ -429,8 +448,8 @@ function selectAttackSkill(world: World, hero: Entity, config: MuHelperConfig): 
   return isLearned(config.skills[0]) ? config.skills[0] : 0;
 }
 
-/** `CMuHelper::Attack` (+ `SimulateComboAttack`) through the cast seam. */
-function attack(world: World, hero: Entity, config: MuHelperConfig): void {
+/** `CMuHelper::Attack` (+ `SimulateComboAttack`) through the cast seam. Busy when it acted or walks. */
+function attack(world: World, hero: Entity, config: MuHelperConfig): boolean {
   const huntDistance = distanceByRange(config.huntingRange);
 
   if (
@@ -448,7 +467,7 @@ function attack(world: World, hero: Entity, config: MuHelperConfig): void {
     // target would keep the hero walking at a monster that is already gone).
     // A cast the player himself issued owns the frame - never step on it.
     if (!world.castRequest) world.attackTarget = null;
-    return;
+    return true;
   }
 
   let skillNum: number;
@@ -459,7 +478,11 @@ function attack(world: World, hero: Entity, config: MuHelperConfig): void {
     skillNum = selectAttackSkill(world, hero, config);
   }
 
-  if (world.castRequest) return; // the player's own cast wins (castSkill's rule)
+  if (world.castRequest) return false; // the player's own cast wins (castSkill's rule)
+
+  // Starting an attack owns the action: a pickup left from the previous tick
+  // must go, or the hero would walk to both the drop and the monster.
+  world.pickupTarget = null;
 
   // No skill is set in the window (or none is learned yet): the original
   // simply stands there, but that reads as "the helper does nothing". Fall
@@ -467,13 +490,13 @@ function attack(world: World, hero: Entity, config: MuHelperConfig): void {
   // the hero walk into weapon reach and swing on his own (attackSystem).
   if (skillNum <= 0) {
     world.attackTarget = currentTarget;
-    return;
+    return false;
   }
 
   // A skill takes over: the swing engine yields while a cast is being served,
   // so drop the plain target it would otherwise keep walking to.
   world.attackTarget = null;
-  castSkill(world, skillNum, currentTarget);
+  return !castSkill(world, skillNum, currentTarget);
 }
 
 /** `CMuHelper::RepairEquipments` at the 50% durability line, throttled. */
@@ -504,9 +527,21 @@ function work(world: World, hero: Entity, config: MuHelperConfig): void {
   activatePet(config);
   if (!buff(world, hero, config)) return;
   if (!recoverHealth(world, hero, config)) return;
-  if (!obtainItem(world, hero, config)) return;
-  if (!regroup(world, hero, config)) return;
-  attack(world, hero, config);
+
+  if (config.priority === 'collect') {
+    // The original order: a drop in reach owns the tick; otherwise regroup,
+    // then fight. Attack only starts when there is nothing to collect.
+    if (!obtainItem(world, hero, config)) return;
+    if (!regroup(world, hero, config)) return;
+    if (!attack(world, hero, config)) return;
+  } else {
+    // Combat first: clear the monster before walking to a drop, so the hero
+    // never alternates between the two and trips the speed check.
+    if (!attack(world, hero, config)) return;
+    if (!obtainItem(world, hero, config)) return;
+    if (!regroup(world, hero, config)) return;
+  }
+
   repairEquipment(config);
 }
 

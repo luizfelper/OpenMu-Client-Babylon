@@ -8,12 +8,12 @@ Ours, from gonzaPollini/mu-season1-client: the first-run download screen. Mounte
 - `plan.ts`: `isEssential`, `firstRunDue`, `currentGroup`, `DONE_KEY`.
 
 ## How it works
-- Once the worlds page's Enter moves the app on (`UIState.Login` or later), and only on a world whose
-  build ships lighter assets for a player who reads them (`liteAssetsReady`, `modules/servers`: the
-  installer's setting and the `liteAssets` improvement, off on Classic), it runs `startDownload` twice:
-  the essentials (`isEssential`: all but the music and the far maps) behind a screen, then every group
-  (cached files skipped) behind a small panel at the top. Groups with a bundle come down as one file
-  (`controllers/assets`, Bundles).
+- Once the worlds page's Enter moves the app on (`UIState.Login` or later), on the first visit of a
+  build with an assets index, it runs `startDownload` twice: the essentials (`isEssential`: all but
+  the music and the far maps; the item icons and interface are here) behind a screen titled "Loading
+  basic items", then every group (cached files skipped) behind a small panel at the top. The index
+  check and the start of the first run keep the screen up, so the login page never flashes over a
+  half-loaded client. Groups with a bundle come down as one file (`controllers/assets`, Bundles).
 - While the screen is up `assetDownload.blocking` is set and `app/boot.tsx` draws no frame; "Enter
   anyway" drops the screen and the download goes on under the panel, which has Cancel and a close
   button (the download goes on).
@@ -23,8 +23,7 @@ Ours, from gonzaPollini/mu-season1-client: the first-run download screen. Mounte
   run's progress.
 
 ## Depends on / used by
-- uses: `controllers/assets` (`assetDownload`), `controllers/interface` (`AppState`), `modules/servers`
-  (`liteAssetsReady`), `i18n`.
+- uses: `controllers/assets` (`assetDownload`), `controllers/interface` (`AppState`), `i18n`.
 - used by: `src/app/App.tsx`.
 
 ## Tests

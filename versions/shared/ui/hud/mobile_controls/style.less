@@ -104,34 +104,43 @@
   gap: @button-gap;
 }
 
-// The MU Helper's plate, small: dark translucent red, gold trim, gold bars.
-// `clamp` keeps it a thumb target on a phone and out of the way on a watch-wide
-// screen, without a media query per device.
+// The MU Helper's plate, small: a circular gold-edged icon, matching the
+// desktop pair. `clamp` keeps it a thumb target on a phone and out of the way
+// on a watch-wide screen, without a media query per device.
 .mobile-hamburger {
-  width: clamp(28px, 9vw, 38px);
-  height: clamp(28px, 9vw, 38px);
+  width: clamp(34px, 10vw, 44px);
+  height: clamp(34px, 10vw, 44px);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(214, 178, 106, 0.55);
-  background: rgba(58, 10, 10, 0.72);
+  padding: 0;
+  border: 1px solid rgba(231, 199, 119, 0.82);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(112, 24, 22, 0.96), rgba(42, 8, 8, 0.97) 64%, rgba(18, 5, 5, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 220, 150, 0.14),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.5),
+    0 2px 7px rgba(0, 0, 0, 0.55);
 
   &:active,
   &.open {
-    background: rgba(92, 18, 18, 0.9);
-    border-color: rgba(240, 208, 138, 0.9);
+    border-color: #ffe9a6;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 230, 170, 0.28),
+      0 0 12px rgba(231, 199, 119, 0.28);
   }
 
   // The helper is running: the desktop plate's green, as a lamp.
   &.running {
-    border-color: rgba(124, 252, 124, 0.75);
+    border-color: rgba(124, 252, 124, 0.85);
   }
 
   .mobile-hamburger-bars {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    width: 60%;
+    width: 52%;
 
     span {
       display: block;
@@ -150,28 +159,42 @@
   gap: @button-gap;
 
   .mobile-helper-plate {
-    min-height: 32px;
-    padding: 4px 10px;
+    width: clamp(38px, 11vw, 48px);
+    height: clamp(38px, 11vw, 48px);
+    min-height: 0;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    font-weight: bold;
-    line-height: 1.15;
-    text-align: center;
     color: #ffd700;
-    background: rgba(58, 10, 10, 0.72);
-    border: 1px solid rgba(214, 178, 106, 0.55);
+    background:
+      radial-gradient(circle at 34% 28%, rgba(112, 24, 22, 0.96), rgba(42, 8, 8, 0.97) 64%, rgba(18, 5, 5, 0.98));
+    border: 1px solid rgba(231, 199, 119, 0.82);
+    border-radius: 50%;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 220, 150, 0.14),
+      inset 0 -5px 10px rgba(0, 0, 0, 0.5),
+      0 2px 7px rgba(0, 0, 0, 0.55);
 
     &:active {
-      background: rgba(92, 18, 18, 0.9);
-      border-color: rgba(240, 208, 138, 0.9);
+      border-color: #ffe9a6;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 230, 170, 0.28),
+        0 0 12px rgba(231, 199, 119, 0.28);
     }
 
     // The desktop plate's green while the helper runs.
     &.running {
       color: #7cfc7c;
+      border-color: rgba(124, 252, 124, 0.85);
     }
+  }
+
+  .mobile-helper-icon {
+    display: block;
+    width: 46%;
+    height: 46%;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
   }
 }
 

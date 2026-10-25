@@ -5,15 +5,14 @@ import { observer } from 'mobx-react-lite';
 import { assetDownload, cancelDownload, loadAssetsIndex, startDownload, type AssetGroup } from '@/controllers/assets/assetDownload';
 import { AppState, UIState } from '@/controllers/interface/uiState';
 import { LocalStorage } from '@/core/localStorage';
-import { liteAssetsReady } from '@/modules/servers/liteAssets';
 import { t, type TextKey } from '@/i18n';
 import { DONE_KEY, currentGroup, firstRunDue, isEssential } from './plan';
 
 /**
- * Ours, from gonzaPollini/mu-season1-client: past the worlds page, on a world with lighter assets for
- * a player who reads them (`liteAssetsReady`), the first visit of a build downloads every group into
- * the cache worker: the essentials behind a screen (the game paused, `assetDownload.blocking`), the
- * rest behind a small panel. Mounted by `src/app/App.tsx`. See readme.md.
+ * Ours, from gonzaPollini/mu-season1-client: the first visit of a build downloads every group into
+ * the cache worker before the login page is usable. The basic items and interface (the essentials)
+ * sit behind a screen, so the login never flashes over a half-loaded client; the rest follows behind
+ * a small panel. Mounted by `src/app/App.tsx`. See readme.md.
  */
 
 const DONE_SHOWN_MS = 4000;
@@ -34,10 +33,9 @@ function phaseText(group: AssetGroup | undefined): string {
   return group ? t(PHASES[group.kind], { name: group.name }) : t('autoDownload.phase.core');
 }
 
-/** The two runs: the essentials, then everything (cached files skipped). False when not wanted. */
+/** The two runs: the essentials, then everything (cached files skipped). False when there is no index. */
 async function firstRun(onRest: () => void): Promise<boolean> {
-  if (!firstRunDue(LocalStorage.load(DONE_KEY), buildId())) return false;
-  if (!(await liteAssetsReady()) || !(await loadAssetsIndex())) return false;
+  if (!(await loadAssetsIndex())) return false;
   assetDownload.chooseOnly(isEssential);
   await startDownload();
   if (!assetDownload.done) return false;
@@ -55,25 +53,32 @@ export const AutoDownload = observer(() => {
   const [skipped, setSkipped] = useState(false);
   const [showDone, setShowDone] = useState(false);
   const [phase, setPhase] = useState<'essential' | 'rest'>('essential');
+  /** The index is being read or the essentials are starting: keep the login hidden. */
+  const [preparing, setPreparing] = useState(false);
 
   useEffect(() => {
     if (!entered || started) return;
     started = true;
-    void firstRun(() => setPhase('rest')).then(done => {
-      if (!done) return;
-      setShowDone(true);
-      setTimeout(() => setShowDone(false), DONE_SHOWN_MS);
-    });
+    if (!firstRunDue(LocalStorage.load(DONE_KEY), buildId())) return;
+    setPreparing(true);
+    void firstRun(() => setPhase('rest'))
+      .then(done => {
+        if (!done) return;
+        setShowDone(true);
+        setTimeout(() => setShowDone(false), DONE_SHOWN_MS);
+      })
+      .catch(() => undefined)
+      .finally(() => setPreparing(false));
   }, [entered]);
 
-  const screenUp = entered && phase === 'essential' && !skipped && assetDownload.running;
+  const screenUp = entered && phase === 'essential' && !skipped && (preparing || assetDownload.running);
   useEffect(() => {
     runInAction(() => {
       assetDownload.blocking = screenUp;
     });
   }, [screenUp]);
 
-  if (!entered || hidden || !(assetDownload.running || showDone)) return null;
+  if (!entered || hidden || !(preparing || assetDownload.running || showDone)) return null;
 
   const percent = Math.floor(assetDownload.progress * 100);
   const total = assetDownload.selectedTransfer;
@@ -84,6 +89,9 @@ export const AutoDownload = observer(() => {
     return (
       <div className="auto-download-screen" style={{ backgroundImage: `url(${BACKDROP_ART})` }}>
         <div className="auto-download-panel">
+          <div className="auto-download-seal" aria-hidden="true">
+            <span />
+          </div>
           <div className="auto-download-heading">{t('autoDownload.screenTitle')}</div>
           <div className="auto-download-row">
             <span>{phaseText(group)}</span>

@@ -10,6 +10,7 @@ import {
 
 function maximalConfig(): MuHelperConfig {
   return {
+    priority: 'collect',
     huntingRange: MAX_HUNTING_RANGE,
     longRangeCounterAttack: true,
     returnToOriginalPosition: true,
@@ -75,9 +76,10 @@ describe('MU Helper blob codec', () => {
     expect(blob[26]).toBe(0x05); // BuffDurationParty + BuffDuration
     expect(blob[27]).toBe(0);
     expect(blob[28]).toBe(0);
-    // Padding and tail stay zero.
+    // Padding stays zero; the tail carries only our priority byte.
     for (let i = 29; i < 65; i++) expect(blob[i]).toBe(0);
-    for (let i = 245; i < 257; i++) expect(blob[i]).toBe(0);
+    expect(blob[245]).toBe(0); // default: combat first
+    for (let i = 246; i < 257; i++) expect(blob[i]).toBe(0);
   });
 
   it('packs the flag bytes bit-for-bit', () => {
@@ -92,6 +94,7 @@ describe('MU Helper blob codec', () => {
     // skill2 con(1) + precon attacking(2) + subcon 3 (>=5) + repair(5) + pickSelected(7)
     expect(blob[27]).toBe(0x02 | 0x04 | (3 << 3) | 0x20 | 0x80);
     expect(blob[28]).toBe(2);
+    expect(blob[245]).toBe(1); // ours: collect first
   });
 
   it('round-trips a maximal config', () => {
@@ -112,6 +115,18 @@ describe('MU Helper blob codec', () => {
     expect(config.skills).toEqual([0, 0, 0]);
     expect(config.extraItems).toEqual([]);
     expect(config.skillConditions[1].minMobs).toBe(2);
+  });
+
+  it('keeps the priority in the unused tail and defaults old blobs to combat', () => {
+    const collect = { ...defaultMuHelperConfig(), priority: 'collect' as const };
+    expect(decodeMuHelperConfig(encodeMuHelperConfig(collect)).priority).toBe('collect');
+
+    const legacy = encodeMuHelperConfig(defaultMuHelperConfig());
+    legacy[245] = 0;
+    expect(decodeMuHelperConfig(legacy).priority).toBe('combat');
+
+    // A blob that stops at the reference struct's last byte has no tail at all.
+    expect(decodeMuHelperConfig(legacy.slice(0, 245)).priority).toBe('combat');
   });
 
   it('truncates extra item names to 14 ANSI chars and drops non-ANSI ones', () => {
