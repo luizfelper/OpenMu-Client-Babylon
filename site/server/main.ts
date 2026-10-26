@@ -174,9 +174,13 @@ async function staticFile(pathname: string): Promise<Response | null> {
       ? 'text/css; charset=utf-8'
       : filePath.endsWith('.webp')
         ? 'image/webp'
-        : filePath.endsWith('.txt')
-          ? 'text/plain; charset=utf-8'
-          : undefined;
+        : filePath.endsWith('.png')
+          ? 'image/png'
+          : filePath.endsWith('.svg')
+            ? 'image/svg+xml'
+            : filePath.endsWith('.txt')
+              ? 'text/plain; charset=utf-8'
+              : undefined;
   if (isHtml) {
     const html = (await file.text()).replaceAll('__ASSET_VERSION__', ASSET_VERSION);
     return new Response(html, { headers: HTML_HEADERS });
@@ -184,7 +188,10 @@ async function staticFile(pathname: string): Promise<Response | null> {
   return new Response(file, {
     headers: {
       ...(type ? { 'content-type': type } : {}),
-      'cache-control': 'public, max-age=3600',
+      // The HTML above already points at ?v=__ASSET_VERSION__, so a deploy gets its own URL: a
+      // caller holding the old file for an hour would only keep the old copy of a file nobody asks
+      // for any more. Images keep the long cache; code and styles revalidate every time.
+      'cache-control': pathname.startsWith('/assets/') ? 'public, max-age=3600' : 'no-cache',
       'x-content-type-options': 'nosniff',
     },
   });
