@@ -377,6 +377,10 @@ function fillSettings(settings) {
   val('hero-subtitle', site.subtitle);
   val('hero-text', site.text);
 
+  const vip = settings.vip || {};
+  val('vip-notice', vip.notice);
+  val('support-email', vip.support_email);
+
   const server = settings.server;
   val('server-name', server.name);
   val('server-description', server.description);
@@ -471,6 +475,10 @@ function settingsPayload() {
       title: text('hero-title'),
       subtitle: text('hero-subtitle'),
       text: text('hero-text'),
+    },
+    vip: {
+      notice: text('vip-notice'),
+      support_email: text('support-email'),
     },
     server: {
       name: text('server-name'),

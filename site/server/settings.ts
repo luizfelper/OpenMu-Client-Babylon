@@ -43,6 +43,9 @@ const DEFAULTS: Record<string, string> = {
   hero_subtitle: 'Entre em MUCURA e escreva a sua história.',
   hero_text:
     'Um servidor brasileiro feito para durar: progressão justa, eventos toda semana e uma comunidade que joga junto.',
+  vip_notice:
+    'O VIP é opcional. Cada plano ajuda a manter o servidor online e faz o MUCURA crescer junto com você.',
+  support_email: 'luizfelper@gmail.com',
   server_name: SERVER_NAME,
   server_description: SERVER_DESCRIPTION,
   server_version: SERVER_VERSION,
@@ -97,7 +100,7 @@ const DEFAULTS: Record<string, string> = {
     {
       question: 'O que o VIP inclui?',
       answer:
-        'Os benefícios de cada plano aparecem na seção VIP. Eles são cadastrados pela administração e podem mudar com aviso no site.',
+        'Os benefícios de cada plano aparecem na seção VIP. Eles podem mudar com aviso no site.',
     },
     {
       question: 'Como funciona o pagamento?',
@@ -222,6 +225,10 @@ export function publicSite(): Record<string, unknown> {
       subtitle: get('hero_subtitle'),
       text: get('hero_text'),
     },
+    vip: {
+      notice: get('vip_notice'),
+      support_email: get('support_email'),
+    },
     server: {
       name: get('server_name'),
       description: get('server_description'),
@@ -289,6 +296,7 @@ function safeLinkUrl(value: unknown, name: string): string {
 
 export type AdminSettings = {
   site: { name: string; tagline: string; eyebrow: string; title: string; subtitle: string; text: string };
+  vip: { notice: string; support_email: string };
   server: {
     name: string;
     description: string;
@@ -335,6 +343,10 @@ export function adminSettings(): AdminSettings {
       title: get('hero_title'),
       subtitle: get('hero_subtitle'),
       text: get('hero_text'),
+    },
+    vip: {
+      notice: get('vip_notice'),
+      support_email: get('support_email'),
     },
     server: {
       name: get('server_name'),
@@ -387,6 +399,10 @@ export function saveAdminSettings(body: unknown): AdminSettings {
   setSetting('hero_title', stringField(site.title, 'Título principal', 100));
   setSetting('hero_subtitle', textOr(site.subtitle, 'Subtítulo', 180));
   setSetting('hero_text', textOr(site.text, 'Texto de apresentação', 600));
+
+  const vip = asRecord(root.vip, 'VIP');
+  setSetting('vip_notice', textOr(vip.notice, 'Texto do VIP', 300));
+  setSetting('support_email', textOr(vip.support_email, 'E-mail de suporte', 160));
 
   setSetting('server_name', stringField(server.name, 'Nome do servidor', 60));
   setSetting('server_description', textOr(server.description, 'Descrição do servidor', 300));

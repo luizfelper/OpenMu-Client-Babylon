@@ -6,9 +6,12 @@ import { className, heroStateName } from '../../src/controllers/net/protocols/ad
 import { BurstLimit } from '../../src/core/rateLimit';
 import { HttpError } from './http';
 import { findWarpMap, publicWarpMaps } from './maps';
+import { listNews } from './news';
 import { panelAllowed } from './panelRules';
-import { playerGameState, warpPlayer } from './presence';
-import { userPanelVipOnly } from './settings';
+import { profileFor } from './players';
+import { onlinePlayers, playerGameState, warpPlayer } from './presence';
+import { getRankings } from './rankings';
+import { publicSite, userPanelVipOnly } from './settings';
 import { pushAccountToGame, vipHistory, vipStatus } from './vip';
 
 const warpAttempts = new BurstLimit(6, 60_000);
@@ -44,6 +47,27 @@ export async function playerPanel(account: string): Promise<Record<string, unkno
       hero_state_name: game.online ? heroStateName(game.heroState) : '',
     },
     maps: publicWarpMaps(),
+  };
+}
+
+/** The dedicated /painel page: the site's public information plus this account's own panel. */
+export async function panelPage(account: string): Promise<Record<string, unknown>> {
+  const site = publicSite();
+  const [panel, rankings, online, news] = await Promise.all([
+    playerPanel(account),
+    getRankings(),
+    onlinePlayers(),
+    listNews({ publishedOnly: true, limit: 4 }),
+  ]);
+  const [local, domain] = (profileFor(account)?.email || '').split('@');
+  return {
+    ...panel,
+    profile: { email_hint: domain ? `${local.slice(0, 2)}••••@${domain}` : '' },
+    site,
+    news,
+    rankings,
+    online,
+    generatedAt: Date.now(),
   };
 }
 

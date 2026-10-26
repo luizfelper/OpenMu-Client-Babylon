@@ -20,6 +20,7 @@ once for everyone and cannot have been compiled knowing your addresses:
 | `ws.<domain>` | the proxy the browser opens, since it cannot open a TCP socket |
 | `register.<domain>` | the signup page the login window links to |
 | `api.<domain>` | the cash shop service |
+| `painel.<domain>` | the player's panel (character, VIP, ranking); it relays to the site |
 
 The connect server is then wherever your proxy reaches it, which is loopback:
 the two share a machine.

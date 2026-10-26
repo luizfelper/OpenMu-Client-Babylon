@@ -242,7 +242,7 @@ it makes the DKIM key first if there is none yet.
 |---|---|---|
 | A | `<domain>` | this server's IP (public site) |
 | A | `www.<domain>`, `site.<domain>` | this server's IP (redirect to the bare domain) |
-| A | `play.<domain>`, `ws.<domain>`, `register.<domain>`, `api.<domain>`, `admin.<domain>` | this server's IP |
+| A | `play.<domain>`, `ws.<domain>`, `register.<domain>`, `api.<domain>`, `painel.<domain>`, `admin.<domain>` | this server's IP |
 | A | `mail.<domain>` | this server's IP (with the other A records) |
 | MX | `<domain>` | `10 mail.<domain>` |
 | TXT | `<domain>` | `v=spf1 mx -all` |

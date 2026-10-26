@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0908" />
+    <meta name="robots" content="noindex" />
+    <meta
+      name="description"
+      content="MUCURA — painel do jogador: personagem, VIP, ranking e notícias em um só lugar."
+    />
+    <title>Painel — MUCURA</title>
+    <link rel="icon" href="/assets/mucura.webp" type="image/webp" />
+    <link rel="stylesheet" href="/styles.css?v=__ASSET_VERSION__" />
+  </head>
+  <body class="panel-page">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="#" data-site-link aria-label="MUCURA — início">
+          <img src="/assets/mucura.webp" alt="" width="46" height="46" />
+          <span class="brand-text">
+            <strong id="brand-name">MUCURA</strong>
+            <small id="brand-tagline">Season 6 Episode 3</small>
+          </span>
+        </a>
+        <nav class="main-nav panel-nav" aria-label="Navegação do painel">
+          <a href="#" data-site-link>Início</a>
+          <a href="#vip" data-site-link>VIP</a>
+          <a href="#ranking" data-site-link>Ranking</a>
+          <a href="#noticias" data-site-link>Notícias</a>
+          <button class="auth-button" id="top-login" type="button">Entrar</button>
+          <button class="auth-button" id="logout" type="button" hidden>Sair</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section panel-main">
+      <div class="container">
+        <div class="panel-login panel" id="login-card" hidden>
+          <p class="eyebrow">Sua conta</p>
+          <h1>Entre para abrir o painel</h1>
+          <p class="section-sub">
+            Use o mesmo login e senha do jogo. É por aqui que você acompanha o personagem, o VIP e o
+            seu histórico de compras.
+          </p>
+          <form id="login-form" class="panel-login-form">
+            <label>
+              Conta do jogo
+              <input id="login-account" name="account" maxlength="10" autocomplete="username" required />
+            </label>
+            <label>
+              Senha
+              <input id="login-password" name="password" type="password" maxlength="10" autocomplete="current-password" required />
+            </label>
+            <p class="auth-error" id="login-error" hidden></p>
+            <button class="btn btn-primary btn-wide" type="submit" id="login-submit">Entrar no painel</button>
+          </form>
+          <p class="fineprint">Sua senha do jogo não é armazenada no site.</p>
+        </div>
+
+        <div id="panel-content" hidden>
+          <div class="panel-hero reveal">
+            <div>
+              <p class="eyebrow">Painel do jogador</p>
+              <h1>Olá, <span id="panel-account">jogador</span></h1>
+              <p class="section-sub" id="panel-greeting">Consultando o seu personagem...</p>
+            </div>
+            <div class="panel-hero-card">
+              <span class="user-vip-badge" id="panel-vip-badge">Jogador</span>
+              <p class="user-panel-vip" id="panel-vip-status"></p>
+              <div class="panel-hero-actions">
+                <a class="btn btn-primary" id="panel-play" href="/">Jogar agora</a>
+                <a class="btn btn-ghost" href="#vip" data-site-link>Ver planos VIP</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-dash">
+            <article class="panel dash-card dashboard-card">
+              <div class="panel-head">
+                <h3>Personagem online</h3>
+                <span class="tag" id="panel-game-tag">—</span>
+              </div>
+              <div class="panel-game">
+                <strong id="panel-game-status">Consultando...</strong>
+                <small id="panel-game-detail"></small>
+              </div>
+              <dl class="user-game-stats" id="panel-game-stats"></dl>
+              <dl class="panel-facts" id="panel-facts"></dl>
+            </article>
+
+            <article class="panel dash-card">
+              <div class="panel-head">
+                <h3>Painel do servidor</h3>
+                <span class="tag tag-gold" id="panel-online">—</span>
+              </div>
+              <dl class="server-facts" id="panel-server-facts"></dl>
+              <div class="rate-strip panel-rates" id="panel-rates"></div>
+            </article>
+
+            <article class="panel dash-card">
+              <div class="panel-head">
+                <h3>Meu VIP</h3>
+                <a class="text-link" href="#vip" data-site-link>Renovar <span aria-hidden="true">→</span></a>
+              </div>
+              <p class="user-panel-vip" id="panel-vip-detail"></p>
+              <div class="user-vip-history" id="panel-vip-history"></div>
+            </article>
+          </div>
+
+          <div class="panel-dash">
+            <article class="panel dash-card">
+              <div class="panel-head">
+                <h3>Trocar de mapa</h3>
+                <span class="tag">Pelo site</span>
+              </div>
+              <label class="user-map-label" for="panel-map-select">Destino</label>
+              <div class="user-map-row">
+                <select id="panel-map-select" disabled>
+                  <option value="">Escolha o destino</option>
+                </select>
+                <button class="btn btn-ghost btn-small" id="panel-map-button" type="button" disabled>Ir</button>
+              </div>
+              <p class="user-panel-note" id="panel-map-note"></p>
+            </article>
+
+            <article class="panel dash-card">
+              <div class="panel-head">
+                <h3>Top geral</h3>
+                <a class="text-link" href="#ranking" data-site-link>Ranking <span aria-hidden="true">→</span></a>
+              </div>
+              <div class="ranking-list" id="panel-ranking"></div>
+            </article>
+          </div>
+
+          <div class="panel-dash">
+            <article class="panel dash-card">
+              <div class="panel-head">
+                <h3>Últimas notícias</h3>
+                <a class="text-link" href="#noticias" data-site-link>Ver todas <span aria-hidden="true">→</span></a>
+              </div>
+              <div class="panel-news" id="panel-news"></div>
+            </article>
+
+            <article class="panel dash-card">
+              <div class="panel-head"><h3>Informações do servidor</h3></div>
+              <dl class="server-facts" id="panel-server-info"></dl>
+            </article>
+
+            <article class="panel dash-card">
+              <div class="panel-head"><h3>Links úteis</h3></div>
+              <div class="panel-links" id="panel-links"></div>
+            </article>
+          </div>
+
+          <p class="fineprint panel-foot">
+            Dúvidas ou problemas com a conta? Escreva para
+            <a id="panel-support" href="mailto:luizfelper@gmail.com">luizfelper@gmail.com</a>
+            <span id="panel-support-note"></span> -
+            <a href="#" data-site-link>voltar ao site</a>
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/painel.js?v=__ASSET_VERSION__"></script>
+  </body>
+</html>

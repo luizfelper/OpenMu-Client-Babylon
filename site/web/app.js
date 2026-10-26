@@ -227,6 +227,8 @@ function renderUserPanel() {
   if (initial) initial.textContent = (state.player.account || '?').slice(0, 1).toUpperCase();
   const panelButton = $('#user-panel-button');
   if (panelButton) panelButton.hidden = false;
+  const headerPanel = $('#header-panel');
+  if (headerPanel) headerPanel.hidden = true;
 
   const panelState = state.playerPanel;
   const vip = panelState?.vip;
@@ -306,15 +308,13 @@ function renderUserPanel() {
     play.hidden = !url;
     if (url) play.href = url;
   }
-  // The hero's "Jogar!" opens the client; without a configured URL it falls back to the VIP anchor.
+  // The hero's "Jogar!" opens the client; without a configured URL it keeps the VIP anchor.
   const heroPlay = $('#hero-play');
-  if (heroPlay) {
-    // const url = safeUrl(state.urls.play);
-    // if (url) {
-      heroPlay.href = url;
-      heroPlay.target = '_blank';
-      heroPlay.rel = 'noopener';
-    // }
+  const playUrl = safeUrl(state.urls.play);
+  if (heroPlay && playUrl) {
+    heroPlay.href = playUrl;
+    heroPlay.target = '_blank';
+    heroPlay.rel = 'noopener';
   }
   syncMapButton();
 }
@@ -333,6 +333,7 @@ async function loadPlayerPanel() {
       renderAuth();
       return;
     }
+    showToast(error.message || 'Não foi possível consultar o seu painel agora.', true);
   }
   renderUserPanel();
 }
@@ -356,7 +357,7 @@ async function changeMap() {
     if (select) select.value = '';
     await loadPlayerPanel();
     setTimeout(() => {
-      if (state.player) loadPlayerPanel();
+      if (state.player) loadPlayerPanel().catch(() => {});
     }, 2000);
   } catch (error) {
     showToast(error.message || 'Não foi possível trocar de mapa.', true);
@@ -369,13 +370,16 @@ async function changeMap() {
 function renderAuth() {
   const open = $('#auth-open');
   const account = $('#auth-account');
+  const headerPanel = $('#header-panel');
   if (state.player) {
     if (open) open.hidden = true;
     if (account) account.hidden = false;
+    if (headerPanel) headerPanel.hidden = true;
     renderUserPanel();
   } else {
     if (open) open.hidden = false;
     if (account) account.hidden = true;
+    if (headerPanel) headerPanel.hidden = false;
     state.playerPanel = null;
     closeUserPanel();
   }
@@ -390,13 +394,13 @@ async function loadPlayer() {
     state.player = null;
   }
   renderAuth();
-  if (state.player) await loadPlayerPanel();
+  if (state.player) await loadPlayerPanel().catch(() => {});
 }
 
 function afterLogin(player) {
   state.player = player;
   renderAuth();
-  loadPlayerPanel();
+  loadPlayerPanel().catch(() => {});
   closeAuthModal();
   const loginPassword = $('#auth-login-password');
   if (loginPassword) loginPassword.value = '';
@@ -507,6 +511,9 @@ function bindAuth() {
   $('#auth-open')?.addEventListener('click', () => showAuthModal('login'));
   $('#vip-login')?.addEventListener('click', () => showAuthModal('login'));
   $('#vip-register')?.addEventListener('click', () => showAuthModal('register'));
+  $$('[data-open-auth]').forEach(element =>
+    element.addEventListener('click', () => showAuthModal(element.dataset.openAuth))
+  );
   $('#auth-close')?.addEventListener('click', closeAuthModal);
   $$('[data-close-auth]').forEach(element => element.addEventListener('click', closeAuthModal));
   $$('[data-auth-tab]').forEach(tab =>
@@ -523,24 +530,13 @@ function bindAuth() {
 function bindUserPanel() {
   const toggle = $('#user-menu-toggle');
   const panel = $('#user-panel');
-  const openPanel = () => {
-    if (!panel) return;
-    panel.hidden = false;
-    toggle?.setAttribute('aria-expanded', 'true');
-    loadPlayerPanel();
-  };
   toggle?.addEventListener('click', event => {
     event.stopPropagation();
     if (!panel) return;
     const willOpen = panel.hidden;
     panel.hidden = !willOpen;
     toggle.setAttribute('aria-expanded', String(willOpen));
-    if (willOpen) loadPlayerPanel();
-  });
-  $('#user-panel-button')?.addEventListener('click', event => {
-    event.stopPropagation();
-    if (panel?.hidden) openPanel();
-    else closeUserPanel();
+    if (willOpen) loadPlayerPanel().catch(() => {});
   });
   document.addEventListener('click', event => {
     if (!event.target.closest('#auth-account')) closeUserPanel();
@@ -578,6 +574,13 @@ function renderHero(data) {
   setText('#hero-subtitle', data.site.subtitle);
   setText('#hero-text', data.site.text);
   setText('#server-version', data.server.version || '—');
+  setText('#vip-notice', data.vip?.notice || '');
+  const support = data.vip?.support_email || '';
+  const supportLink = $('#vip-support');
+  if (supportLink) {
+    supportLink.href = `mailto:${support || 'luizfelper@gmail.com'}`;
+    supportLink.textContent = support || 'luizfelper@gmail.com';
+  }
   document.title = `${data.site.name} — ${data.site.tagline}`;
 
   const facts = Array.isArray(data.server.facts) ? data.server.facts : [];
@@ -641,46 +644,45 @@ function renderNews(news) {
     .join('');
 }
 
-function rankingRow(entry, weekly) {
-  const position = entry.position;
-  const rankClass = position === 1 ? 'gold' : position === 2 ? 'silver' : position === 3 ? 'bronze' : '';
-  const level = entry.level ? `Nível ${entry.level}` : 'Nível —';
-  const className = entry.className ? ` • ${entry.className}` : '';
-  const value = weekly ? entry.gained : entry.experience;
-  const suffix = weekly ? 'XP ganho' : 'XP';
-  return `
-    <div class="ranking-row">
-      <span class="rank ${rankClass}">${position}</span>
-      <span class="ranking-name">
-        <strong>${escapeHtml(entry.name)}</strong>
-        <small>${escapeHtml(level)}${escapeHtml(className)}</small>
-      </span>
-      <span class="ranking-value">
-        <strong>${escapeHtml(formatNumber(value))}</strong>
-        <small>${suffix}</small>
-      </span>
-    </div>`;
-}
-
 function renderRankings(rankings) {
   const top = $('#ranking-top');
   const weekly = $('#ranking-weekly');
-  if (!top || !weekly) return;
+  if (!top) return;
   setText('#ranking-week', rankings && rankings.weekStart ? formatWeek(rankings.weekStart) : '');
 
   if (!rankings || !rankings.available) {
     const message = (rankings && rankings.error) || 'Ranking indisponível agora.';
     top.innerHTML = `<div class="ranking-empty">${escapeHtml(message)}</div>`;
-    weekly.innerHTML = `<div class="ranking-empty">${escapeHtml(message)}</div>`;
+    if (weekly) weekly.innerHTML = `<div class="ranking-empty">${escapeHtml(message)}</div>`;
     return;
   }
 
   top.innerHTML = rankings.top.length
-    ? rankings.top.map(entry => rankingRow(entry, false)).join('')
+    ? rankings.top
+        .slice(0, 5)
+        .map(entry => {
+          const position = entry.position;
+          const rankClass = position === 1 ? 'gold' : position === 2 ? 'silver' : position === 3 ? 'bronze' : '';
+          return `
+            <div class="rank-row">
+              <span class="rank-cell"><span class="rank ${rankClass}">${escapeHtml(position)}</span><strong>${escapeHtml(entry.name)}</strong></span>
+              <span class="rank-class">${escapeHtml(entry.className || '—')}</span>
+              <span class="rank-value">${escapeHtml(formatNumber(entry.experience))}</span>
+            </div>`;
+        })
+        .join('')
     : '<div class="ranking-empty">Nenhum personagem no ranking ainda.</div>';
-  weekly.innerHTML = rankings.weekly.length
-    ? rankings.weekly.map(entry => rankingRow(entry, true)).join('')
-    : '<div class="ranking-empty">A temporada semanal começa agora. Jogue para aparecer aqui.</div>';
+
+  if (weekly) {
+    weekly.hidden = !rankings.weekly.length;
+    weekly.innerHTML = rankings.weekly.length
+      ? '<span class="rank-weekly-title">Mais XP ganho esta semana</span>' +
+        rankings.weekly
+          .slice(0, 3)
+          .map(entry => `<span class="rank-weekly-row">${escapeHtml(entry.name)} <b>+${escapeHtml(formatNumber(entry.gained))}</b></span>`)
+          .join('')
+      : '';
+  }
 }
 
 function renderPlans(plans, payments) {
@@ -754,15 +756,17 @@ function renderEvents(events) {
     return;
   }
   list.innerHTML = events
+    .slice(0, 4)
     .map(
-      event => `
-        <article class="event">
-          <span class="event-time">${escapeHtml(event.schedule || 'Em breve')}</span>
-          <div>
-            <h3>${escapeHtml(event.title)}</h3>
-            <p>${escapeHtml(event.description || '')}</p>
-          </div>
-        </article>`
+      (event, index) => `
+        <div class="event-row">
+          <span class="event-index" aria-hidden="true">${index + 1}</span>
+          <span class="event-main">
+            <strong>${escapeHtml(event.title)}</strong>
+            <small>${escapeHtml(event.description || '')}</small>
+          </span>
+          <span class="event-when">${escapeHtml(event.schedule || 'Em breve')}</span>
+        </div>`
     )
     .join('');
 }
@@ -792,6 +796,25 @@ function renderLinks(links) {
         ? `<a class="link-card" href="${escapeHtml(href)}">${inner}</a>`
         : `<div class="link-card">${inner}</div>`;
     })
+    .join('');
+}
+
+/** The VIP section's plan list: what each plan includes, in the page's own voice. */
+function renderVipPlanos(plans) {
+  const box = $('#vip-planos');
+  if (!box) return;
+  const rows = Array.isArray(plans) ? plans : [];
+  box.innerHTML = rows
+    .map(
+      plan => `
+        <div class="vip-plano${plan.highlight ? ' highlight' : ''}">
+          <div>
+            <strong>${escapeHtml(plan.name)}</strong>
+            <span>${escapeHtml(plan.description || `${plan.days} dias de VIP`)}</span>
+          </div>
+          <b>${escapeHtml(formatBrl(plan.price_cents))}</b>
+        </div>`
+    )
     .join('');
 }
 
@@ -841,6 +864,7 @@ function renderSite(data) {
   renderNews(data.news);
   renderRankings(data.rankings);
   renderPlans(data.plans, data.payments);
+  renderVipPlanos(data.plans);
   renderServer(data);
   renderEvents(data.server.events);
   renderFaq(data.faq);
@@ -1331,28 +1355,31 @@ async function init() {
   try {
     const data = await api('/api/site');
     renderSite(data);
-    await loadPlayer();
-    const gameSession = new URLSearchParams(window.location.search).get('session');
-    if (gameSession) {
-      try {
-        const status = await api(`/api/vip/me?session=${encodeURIComponent(gameSession)}`);
-        if (status.account) {
-          const account = $('#vip-account');
-          if (account) account.value = status.account;
-          const loginAccount = $('#auth-login-account');
-          if (loginAccount) loginAccount.value = status.account;
-          // Coming from the in-game VIP button: ask for the game password instead of making the
-          // player type the login again.
-          if (!state.player) showAuthModal('login');
-        }
-      } catch {
-        // The game session may have expired; the user can type the account manually.
-      }
-    }
   } catch (error) {
     showToast('Não foi possível carregar o site. Tente novamente.', true);
     console.error(error);
     return;
+  }
+
+  // The site is already on screen here: a slow player lookup or a game session that expired must
+  // never keep the page from opening at its route.
+  await loadPlayer();
+  const gameSession = new URLSearchParams(window.location.search).get('session');
+  if (gameSession) {
+    try {
+      const status = await api(`/api/vip/me?session=${encodeURIComponent(gameSession)}`);
+      if (status.account) {
+        const account = $('#vip-account');
+        if (account) account.value = status.account;
+        const loginAccount = $('#auth-login-account');
+        if (loginAccount) loginAccount.value = status.account;
+        // Coming from the in-game VIP button: ask for the game password instead of making the
+        // player type the login again.
+        if (!state.player) showAuthModal('login');
+      }
+    } catch {
+      // The game session may have expired; the user can type the account manually.
+    }
   }
 
   const path = window.location.pathname;

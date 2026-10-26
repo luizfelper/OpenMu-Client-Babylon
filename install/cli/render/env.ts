@@ -123,6 +123,12 @@ export function serviceEnv(c: Config): Partial<Record<Service, Env>> {
       REGISTER_URL: registerOrigin(c),
       TRUSTED_PROXIES: WEB_IP,
     },
+    // painel.<domain>: the panel relay; it forwards to the site and never holds data of its own.
+    panel: {
+      PORT: String(PORTS.panel),
+      HOSTNAME: '0.0.0.0',
+      SITE_BASE_URL: siteOrigin(c),
+    },
     ops: {
       OPENMU_LOG_DIR: DATA.openmuLogs,
       OPS_DB_PATH: DATA.ops,

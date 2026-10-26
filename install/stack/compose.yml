@@ -104,6 +104,17 @@ services:
       database: { condition: service_healthy }
       proxy: { condition: service_started }
 
+  # painel.<domain>: the player's panel on its own host, relaying to the site.
+  panel:
+    <<: *service
+    build:
+      context: ${MU_REPO}
+      dockerfile: install/stack/services.Dockerfile
+    pull_policy: never
+    command: ["bun", "site/server/panel.ts"]
+    env_file: ${MU_STATE}/env/panel.env
+    depends_on: [site]
+
   ops:
     <<: *service
     build:

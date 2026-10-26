@@ -9,6 +9,8 @@ export const PORTS = {
   cashshop: 3200,
   marketplace: 3300,
   site: 3400,
+  /** The panel's own host (painel.<domain>); it serves the page and relays to the site. */
+  panel: 3450,
   admin: 8080,
   connect: 44405,
   /** OpenMU 0.9.x seeds its game servers here; the newer versions seed `newerFirstGame`. */
@@ -18,6 +20,7 @@ export const PORTS = {
   /** IP mode only: the public site and the register site on their own ports. */
   registerSite: 8081,
   siteSite: 8082,
+  panelSite: 8083,
   /** The webmail behind Caddy, and the mail server's public ports (the `mail` profile only). */
   webmail: 80,
   smtp: 25,
@@ -34,6 +37,7 @@ export const HOSTS = {
   cashshop: 'cashshop',
   marketplace: 'marketplace',
   site: 'site',
+  panel: 'panel',
   webmail: 'webmail',
 } as const;
 
@@ -45,6 +49,7 @@ export type Service =
   | 'cashshop'
   | 'marketplace'
   | 'site'
+  | 'panel'
   | 'ops'
   | 'web'
   | 'mailserver'

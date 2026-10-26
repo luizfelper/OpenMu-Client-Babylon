@@ -35,16 +35,26 @@ export function text(body: string, status = 200, type = 'text/plain; charset=utf
   });
 }
 
-export function corsHeaders(request: Request): HeadersInit {
+export function corsHeaders(request: Request, credentials = false): HeadersInit {
   const origin = request.headers.get('origin') || '';
   const allowed = CORS_ORIGINS.includes(origin) || origin === SITE_BASE_URL;
   if (!allowed) return {};
   return {
     'access-control-allow-origin': origin,
     'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-headers': 'content-type, authorization',
+    ...(credentials ? { 'access-control-allow-credentials': 'true' } : {}),
     vary: 'origin',
   };
+}
+
+/**
+ * A cross-origin call is accepted only from a host the installer trusts (the client's origin), and
+ * must carry its session as a bearer token: the cookie is never read from another origin.
+ */
+export function isTrustedCrossOrigin(request: Request): boolean {
+  const origin = request.headers.get('origin') || '';
+  return Boolean(origin) && CORS_ORIGINS.includes(origin) && origin !== SITE_BASE_URL;
 }
 
 export async function readJson<T>(request: Request, maxBytes = 1_000_000): Promise<T> {

@@ -70,6 +70,11 @@ describe('service env', () => {
     expect(serviceEnv(ip).site?.REGISTER_URL).toBe('http://203.0.113.7:8081');
   });
 
+  it('gives the panel host its own port and the site it relays to', () => {
+    expect(env.panel).toEqual({ PORT: '3450', HOSTNAME: '0.0.0.0', SITE_BASE_URL: 'https://example.com' });
+    expect(serviceEnv(ip).panel?.SITE_BASE_URL).toBe('http://203.0.113.7:8082');
+  });
+
   it('allows the client origin for CORS', () => {
     expect(env.marketplace?.MARKETPLACE_CORS_ORIGIN).toBe('https://play.example.com');
     expect(serviceEnv(ip).register?.CORS_ORIGIN).toBe('http://203.0.113.7');
@@ -221,7 +226,7 @@ describe('caddyfile', () => {
   it('serves the public site on the bare domain and every service over HTTPS', () => {
     const text = caddyfile(domain);
     expect(text).toMatch(/^example\.com \{/m);
-    for (const host of ['www', 'site', 'play', 'api', 'ws', 'register', 'admin']) {
+    for (const host of ['www', 'site', 'play', 'api', 'ws', 'register', 'painel', 'admin']) {
       expect(text).toContain(`${host}.example.com {`);
     }
     expect(text).toContain('redir https://example.com{uri} permanent');
@@ -240,10 +245,16 @@ describe('caddyfile', () => {
     for (const c of [domain, ip]) expect(caddyfile(c)).toContain(`basic_auth {\n\t\tadmin ${domain.adminHash}\n\t}`);
   });
 
+  it('serves the panel page from its own host in both modes', () => {
+    expect(caddyfile(domain)).toContain('painel.example.com {\n\treverse_proxy panel:3450');
+    expect(caddyfile(ip)).toContain(':8083 {\n\treverse_proxy panel:3450');
+    expect(publicPorts(ip)).toContain(8083);
+  });
+
   it('uses plain ports in IP mode', () => {
     const text = caddyfile(ip);
     expect(text).toContain('auto_https off');
-    for (const port of [':80 {', ':3000 {', ':8081 {', ':8082 {', ':8080 {']) expect(text).toContain(port);
+    for (const port of [':80 {', ':3000 {', ':8081 {', ':8082 {', ':8083 {', ':8080 {']) expect(text).toContain(port);
   });
 
   it('balances its braces', () => {

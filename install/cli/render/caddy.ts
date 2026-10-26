@@ -55,6 +55,9 @@ function publicSite(): string {
 const block = (address: string, body: string) => `${address} {\n${body}\n}\n`;
 const proxyTo = (port: number) => `\treverse_proxy ${HOSTS.openmu}:${port}`;
 
+/** painel.<domain>: the player's panel on its own host; the site relays the few calls it needs. */
+const panelSite = () => `\treverse_proxy ${HOSTS.panel}:${PORTS.panel}`;
+
 /** OpenMU's admin panel has no login of its own in the releases we run; Caddy asks for one. */
 const adminSite = (c: Config) => `\tbasic_auth {\n\t\t${c.adminUser} ${c.adminHash}\n\t}\n${proxyTo(PORTS.admin)}`;
 
@@ -73,6 +76,7 @@ export function caddyfile(c: Config): string {
       block(`api.${d}`, apiRoutes()),
       block(`ws.${d}`, proxySite()),
       block(`register.${d}`, registerSite()),
+      block(`painel.${d}`, panelSite()),
       block(`admin.${d}`, adminSite(c)),
       // Let's Encrypt only, so the mail server finds the certificate at a known path (mail.ts certFiles).
       ...(mailOn(c) ? [block(mailHost(c), `\ttls {\n\t\tissuer acme\n\t}\n\treverse_proxy ${HOSTS.webmail}:${PORTS.webmail}`)] : []),
@@ -84,6 +88,7 @@ export function caddyfile(c: Config): string {
     block(`:${PORTS.proxy}`, proxySite()),
     block(`:${PORTS.registerSite}`, registerSite()),
     block(`:${PORTS.siteSite}`, publicSite()),
+    block(`:${PORTS.panelSite}`, panelSite()),
     block(`:${PORTS.admin}`, adminSite(c)),
   ].join('\n');
 }
@@ -91,7 +96,7 @@ export function caddyfile(c: Config): string {
 /** Ports the firewall opens. SSH stays open so the installer never locks you out. */
 export function publicPorts(c: Config): number[] {
   if (c.mode !== 'domain') {
-    return [22, 80, PORTS.proxy, PORTS.registerSite, PORTS.siteSite, PORTS.admin];
+    return [22, 80, PORTS.proxy, PORTS.registerSite, PORTS.siteSite, PORTS.panelSite, PORTS.admin];
   }
   return [22, 80, 443, ...(mailOn(c) ? MAIL_PORTS : [])];
 }

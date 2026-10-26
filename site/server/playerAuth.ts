@@ -98,7 +98,12 @@ export function readPlayerSession(request: Request): PlayerSession | null {
     .map(part => part.trim())
     .find(part => part.startsWith(`${COOKIE}=`))
     ?.slice(COOKIE.length + 1);
-  if (!token) return null;
+  return readPlayerToken(token);
+}
+
+/** A site player session token, as carried by the cookie or by the panel page's own origin. */
+export function readPlayerToken(token: string | null | undefined): PlayerSession | null {
+  if (!SESSION_SECRET || !token) return null;
   const dot = token.lastIndexOf('.');
   if (dot <= 0) return null;
   const payload = token.slice(0, dot);
@@ -127,6 +132,13 @@ export function playerFromRequest(request: Request): PlayerProfile | null {
   return profileFor(session.account) ?? { account: session.account, name: '', email: '' };
 }
 
+/** The player behind a bearer token (the dedicated panel page, which may live on its own host). */
+export function playerFromBearer(token: string | null | undefined): PlayerProfile | null {
+  const session = readPlayerToken(token);
+  if (!session) return null;
+  return profileFor(session.account) ?? { account: session.account, name: '', email: '' };
+}
+
 export function playerCookie(token: string): string {
   const secure = SITE_BASE_URL.startsWith('https://') ? '; Secure' : '';
   return `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_MS / 1000)}${secure}`;
@@ -135,6 +147,11 @@ export function playerCookie(token: string): string {
 export function clearPlayerCookie(): string {
   const secure = SITE_BASE_URL.startsWith('https://') ? '; Secure' : '';
   return `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+}
+
+/** Same cookie, handed to the panel page's host when it is not this origin. */
+export function playerCookieForOtherOrigin(token: string): string {
+  return `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=None${SITE_BASE_URL.startsWith('https://') ? '; Secure' : ''}; Max-Age=${Math.floor(SESSION_MS / 1000)}`;
 }
 
 export async function registerPlayer(

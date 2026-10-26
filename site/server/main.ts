@@ -14,6 +14,8 @@ import {
   clearPlayerCookie,
   loginPlayer,
   playerCookie,
+  playerCookieForOtherOrigin,
+  playerFromBearer,
   playerFromRequest,
   registerPlayer,
 } from './playerAuth';
@@ -22,6 +24,7 @@ import {
   HttpError,
   assertSameOrigin,
   corsHeaders,
+  isTrustedCrossOrigin,
   json,
   readJson,
 } from './http';
@@ -38,7 +41,7 @@ import {
 import { getRankings, rankingSnapshotCount } from './rankings';
 import { onlinePlayers } from './presence';
 import { deleteAccountWithCharacters, searchAccounts } from './openmu';
-import { changePlayerMap, playerPanel } from './playerPanel';
+import { changePlayerMap, panelPage, playerPanel } from './playerPanel';
 import {
   adminSettings,
   ensureDefaults,
@@ -130,9 +133,11 @@ async function staticFile(pathname: string): Promise<Response | null> {
   let rel: string;
   if (pathname === '/' || pathname === '/index.html') rel = 'index.html';
   else if (pathname === '/admin' || pathname === '/admin/') rel = 'admin.html';
+  else if (pathname === '/painel' || pathname === '/painel/') rel = 'painel.html';
   else if (
     pathname === '/app.js' ||
     pathname === '/admin.js' ||
+    pathname === '/painel.js' ||
     pathname === '/styles.css' ||
     pathname === '/admin.css'
   ) {
@@ -144,6 +149,7 @@ async function staticFile(pathname: string): Promise<Response | null> {
   } else if (
     pathname === '/vip' ||
     pathname === '/vip/retorno' ||
+    pathname === '/painel' ||
     pathname === '/ranking' ||
     pathname === '/regras' ||
     pathname === '/faq' ||
@@ -225,6 +231,12 @@ async function webhook(request: Request): Promise<Response> {
   }
 }
 
+/** The session of a request to the panel page, which may live on its own host. */
+function bearerToken(request: Request): string {
+  const header = request.headers.get('authorization') || '';
+  return header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+}
+
 async function handle(request: Request, ip: string): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -277,7 +289,11 @@ async function handle(request: Request, ip: string): Promise<Response> {
   }
 
   if (path === '/api/auth/me' && request.method === 'GET') {
-    return json({ player: playerFromRequest(request) }, 200, cors);
+    // Same origin reads its cookie; the panel page on another host sends the token instead.
+    const player = isTrustedCrossOrigin(request)
+      ? playerFromBearer(bearerToken(request))
+      : playerFromRequest(request);
+    return json({ player }, 200, cors);
   }
 
   if (path === '/api/auth/register' && request.method === 'POST') {
@@ -291,8 +307,15 @@ async function handle(request: Request, ip: string): Promise<Response> {
   }
 
   if (path === '/api/auth/login' && request.method === 'POST') {
-    assertSameOrigin(request);
     const body = await readJson<unknown>(request);
+    if (isTrustedCrossOrigin(request)) {
+      const result = await loginPlayer(body, ip);
+      return json({ ok: true, player: result.player, token: result.token }, 200, {
+        ...cors,
+        'set-cookie': playerCookieForOtherOrigin(result.token),
+      });
+    }
+    assertSameOrigin(request);
     const result = await loginPlayer(body, ip);
     return json({ ok: true, player: result.player }, 200, {
       ...cors,
@@ -301,7 +324,7 @@ async function handle(request: Request, ip: string): Promise<Response> {
   }
 
   if (path === '/api/auth/logout' && request.method === 'POST') {
-    assertSameOrigin(request);
+    if (!isTrustedCrossOrigin(request)) assertSameOrigin(request);
     return json({ ok: true }, 200, { ...cors, 'set-cookie': clearPlayerCookie() });
   }
 
@@ -311,9 +334,18 @@ async function handle(request: Request, ip: string): Promise<Response> {
     return json(await playerPanel(player.account), 200, cors);
   }
 
+  if (path === '/api/player/page' && request.method === 'GET') {
+    const player = isTrustedCrossOrigin(request)
+      ? playerFromBearer(bearerToken(request))
+      : playerFromRequest(request);
+    if (!player) throw new HttpError(401, 'Entre na sua conta para abrir o painel.');
+    return json(await panelPage(player.account), 200, cors);
+  }
+
   if (path === '/api/player/warp' && request.method === 'POST') {
-    assertSameOrigin(request);
-    const player = playerFromRequest(request);
+    const crossOrigin = isTrustedCrossOrigin(request);
+    if (!crossOrigin) assertSameOrigin(request);
+    const player = crossOrigin ? playerFromBearer(bearerToken(request)) : playerFromRequest(request);
     if (!player) throw new HttpError(401, 'Entre na sua conta para trocar de mapa.');
     const body = await readJson<unknown>(request);
     return json(await changePlayerMap(player.account, body), 200, cors);
@@ -459,6 +491,11 @@ async function handle(request: Request, ip: string): Promise<Response> {
   }
 
   if (path.startsWith('/api/')) {
+    // The panel page's host may read the public site payload; nothing else of the site's API is
+    // reachable through it (accounts, checkout and the admin panel stay on the site's origin).
+    if (isTrustedCrossOrigin(request) && path === '/api/site' && request.method === 'GET') {
+      return json(await sitePayload(), 200, cors);
+    }
     return json({ error: 'Not found.' }, 404, cors);
   }
 

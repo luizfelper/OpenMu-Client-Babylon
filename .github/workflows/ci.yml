@@ -68,7 +68,7 @@ jobs:
       - run: bun install --frozen-lockfile --cwd install
       - name: Client and tools (vitest, includes the skill golden tests)
         run: bun run test
-      - name: Marketplace service (bun test)
+      - name: Marketplace service and site services (bun test)
         run: bun run test:server
 
   lint:

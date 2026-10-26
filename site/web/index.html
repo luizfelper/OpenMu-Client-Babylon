@@ -32,12 +32,14 @@
         <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
           <a href="#noticias">Notícias</a>
           <a href="#ranking">Ranking</a>
+          <a href="#eventos">Eventos</a>
           <a href="#vip">VIP</a>
           <a href="#servidor">Servidor</a>
-          <a href="#eventos">Eventos</a>
           <a href="#faq">FAQ</a>
           <a class="nav-cta" href="#vip">Virar VIP</a>
+          <a class="auth-button" id="header-panel" href="/painel">Painel</a>
           <button class="auth-button" id="auth-open" type="button">Entrar</button>
+          <button class="auth-button auth-cta" type="button" data-open-auth="register">Criar conta</button>
           <div class="auth-account" id="auth-account" hidden>
             <button
               class="user-menu-toggle"
@@ -51,7 +53,7 @@
               <span class="user-menu-name" id="auth-account-name"></span>
               <span class="user-menu-caret" aria-hidden="true">▾</span>
             </button>
-            <button class="user-panel-button" id="user-panel-button" type="button" hidden>Painel</button>
+            <a class="user-panel-button" id="user-panel-button" href="/painel">Painel</a>
             <div class="user-panel" id="user-panel" hidden>
               <div class="user-panel-head">
                 <div>
@@ -80,6 +82,7 @@
               <p class="user-panel-note" id="user-panel-note"></p>
               <div class="user-panel-links">
                 <a class="text-link" id="user-play-link" href="#">Abrir o jogo</a>
+                <a class="text-link" href="/painel">Abrir o painel</a>
                 <a class="text-link" href="#vip" id="user-vip-link">Ver planos VIP</a>
               </div>
               <button class="btn btn-ghost btn-wide" id="auth-logout" type="button">Sair da conta</button>
@@ -94,99 +97,133 @@
         <div class="hero-glow" aria-hidden="true"></div>
         <div class="container hero-grid">
           <div class="hero-copy reveal">
-            <p class="eyebrow" id="hero-eyebrow">Servidor 100 % dedicado</p>
-            <h1 id="hero-title">Mu Online direto no navegador</h1>
-            <p class="hero-sub" id="hero-subtitle">Entre e escreva a sua história.</p>
-            <p class="hero-text" id="hero-text">
-              Um servidor brasileiro feito para durar: progressão justa, eventos toda semana e uma
-              comunidade que joga junto.
-            </p>
+            <img class="hero-logo" src="/assets/logo-mucura.png" alt="MUCURA — Season 6 Episode 3" width="760" height="252" />
+            <p class="hero-eyebrow-line eyebrow" id="hero-eyebrow">Season 6 · Episode 3</p>
+            <h1 id="hero-title">A lenda renasce.</h1>
+            <p class="hero-sub" id="hero-subtitle">Entre em MUCURA e escreva a sua história.</p>
+            <p class="hero-text" id="hero-text">Um servidor feito para durar.</p>
             <div class="hero-actions">
               <a class="btn btn-primary btn-hero" id="hero-play" href="#vip">Jogar!</a>
-              <a class="btn btn-primary" href="#vip">Quero ser VIP</a>
-              <a class="btn btn-ghost" href="#noticias">Últimas notícias</a>
+              <a class="btn btn-outline" href="#vip">Quero ser VIP</a>
+              <a class="hero-link" href="#noticias">Últimas notícias</a>
             </div>
           </div>
 
-          <aside class="status-card reveal" aria-label="Status do servidor">
-            <div class="status-top">
-              <span class="pulse" id="online-pulse" aria-hidden="true"></span>
-              <span id="online-label">Conectando ao servidor...</span>
-            </div>
-            <div class="online-number">
+          <div class="online-ring reveal" aria-label="Jogadores online agora">
+            <span class="online-ring-ticks" aria-hidden="true"></span>
+            <span class="online-ring-dot" aria-hidden="true"></span>
+            <div class="online-ring-core">
+              <span class="online-ring-label" id="online-label">Jogadores online agora</span>
               <strong id="online-count">—</strong>
-              <span>jogadores online</span>
+              <span class="online-ring-version">Versão <b id="server-version">—</b></span>
+              <span class="pulse" id="online-pulse" aria-hidden="true"></span>
             </div>
-            <dl class="facts" id="hero-facts"></dl>
-            <div class="status-footer">
-              <span>Versão</span>
-              <strong id="server-version">—</strong>
-            </div>
-          </aside>
+          </div>
         </div>
-        <div class="container rate-strip" id="rate-strip" aria-label="Taxas do servidor"></div>
+
+        <div class="rate-strip" aria-label="Taxas do servidor">
+          <div class="container rate-strip-inner" id="rate-strip"></div>
+        </div>
+      </section>
+
+      <section class="section" id="classes">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2><span class="title-line" aria-hidden="true"></span>Escolha a sua classe</h2>
+            </div>
+            <p class="section-note">
+              Sete classes da Season 6, cada uma com um jeito próprio de abrir caminho.
+            </p>
+          </div>
+          <ul class="class-grid">
+            <li class="class-card"><span class="class-emblem">DW</span><strong>Dark Wizard</strong><small>Magia pesada</small></li>
+            <li class="class-card"><span class="class-emblem">DK</span><strong>Dark Knight</strong><small>Linha de frente</small></li>
+            <li class="class-card"><span class="class-emblem">FE</span><strong>Fairy Elf</strong><small>Arco e apoio</small></li>
+            <li class="class-card"><span class="class-emblem">MG</span><strong>Magic Gladiator</strong><small>Espada e magia</small></li>
+            <li class="class-card"><span class="class-emblem">DL</span><strong>Dark Lord</strong><small>Comanda a guerra</small></li>
+            <li class="class-card"><span class="class-emblem">SU</span><strong>Summoner</strong><small>Invoca e amaldiçoa</small></li>
+            <li class="class-card"><span class="class-emblem">RF</span><strong>Rage Fighter</strong><small>Punhos em combo</small></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="eventos">
+        <div class="container">
+          <div class="split-grid">
+            <article class="panel feature-panel">
+              <div class="feature-head"><h3>Próximos eventos</h3><span>Horário de Brasília</span></div>
+              <div class="event-list" id="events-list" aria-live="polite"></div>
+            </article>
+            <article class="panel feature-panel" id="ranking">
+              <div class="feature-head"><h3>Quem está no topo</h3><span>Ranking geral por experiência</span></div>
+              <div class="rank-table">
+                <span class="rank-col-person">Personagem</span>
+                <span class="rank-col-class">Classe</span>
+                <span class="rank-col-value">XP</span>
+                <div id="ranking-top" class="rank-table-body" aria-live="polite"></div>
+              </div>
+              <div id="ranking-weekly" class="rank-weekly" aria-live="polite" hidden></div>
+            </article>
+          </div>
+        </div>
       </section>
 
       <section class="section" id="noticias">
         <div class="container">
           <div class="section-head">
             <div>
-              <p class="eyebrow">Diário do servidor</p>
-              <h2>Últimas notícias</h2>
+              <h2><span class="title-line" aria-hidden="true"></span>Últimas notícias</h2>
             </div>
-            <a class="text-link" href="/noticias">Ver todas <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="/noticias">Ver todas →</a>
           </div>
           <div class="news-grid" id="news-grid" aria-live="polite"></div>
         </div>
       </section>
 
-      <section class="section section-alt" id="ranking">
+      <section class="section" id="comecar">
         <div class="container">
           <div class="section-head">
             <div>
-              <p class="eyebrow">Salão dos heróis</p>
-              <h2>Ranking</h2>
+              <h2><span class="title-line" aria-hidden="true"></span>Do cadastro a Lorencia</h2>
             </div>
-            <p class="section-note" id="ranking-week"></p>
+            <p class="section-note">Três passos e você já está dentro.</p>
           </div>
-          <div class="ranking-grid">
-            <article class="panel ranking-panel">
-              <div class="panel-head">
-                <h3>Top geral</h3>
-                <span class="tag">Experiência</span>
-              </div>
-              <div id="ranking-top" class="ranking-list" aria-live="polite"></div>
-            </article>
-            <article class="panel ranking-panel">
-              <div class="panel-head">
-                <h3>Semanal</h3>
-                <span class="tag tag-gold">XP ganho</span>
-              </div>
-              <div id="ranking-weekly" class="ranking-list" aria-live="polite"></div>
-            </article>
-          </div>
+          <ol class="steps">
+            <li class="step">
+              <span class="step-number">1</span>
+              <h3>Crie sua conta</h3>
+              <p>Escolha um login e uma senha. É grátis e leva poucos segundos.</p>
+            </li>
+            <li class="step">
+              <span class="step-number">2</span>
+              <h3>Abra o jogo</h3>
+              <p>Clique em Jogar e o MUCURA abre direto no navegador.</p>
+            </li>
+            <li class="step">
+              <span class="step-number">3</span>
+              <h3>Entre em Lorencia</h3>
+              <p>Crie seu personagem, escolha a classe e comece a subir de nível.</p>
+            </li>
+          </ol>
         </div>
       </section>
 
-      <section class="section" id="vip">
+      <section class="section vip-callout-wrap" id="vip">
         <div class="container">
-          <div class="section-head">
+          <div class="vip-callout">
             <div>
-              <p class="eyebrow">Apoie o servidor</p>
-              <h2>MUCURA VIP</h2>
-              <p class="section-sub">
-                O VIP é opcional. Cada plano ajuda a manter o servidor online e libera vantagens
-                cadastradas pela administração.
+              <h2>Seja VIP no MUCURA</h2>
+              <p class="section-sub" id="vip-notice">
+                O VIP é opcional. Cada plano ajuda a manter o servidor online e faz o MUCURA crescer
+                junto com você.
               </p>
             </div>
+            <a class="btn btn-primary btn-vip" href="#vip-planos">Ver planos VIP</a>
           </div>
           <div class="vip-gate panel" id="vip-gate">
-            <p class="eyebrow">Acesso VIP</p>
-            <h3>Entre com sua conta do jogo</h3>
-            <p>
-              Use o mesmo login e senha do cliente para ver os planos e comprar VIP. O CPF só é
-              pedido no checkout.
-            </p>
+            <h3>Entre para comprar</h3>
+            <p>Mesmo login e senha do jogo. O CPF só é pedido no checkout.</p>
             <div class="vip-gate-actions">
               <button class="btn btn-primary" id="vip-login" type="button">Entrar</button>
               <button class="btn btn-ghost" id="vip-register" type="button">Criar conta</button>
@@ -194,15 +231,15 @@
           </div>
           <div class="vip-grid" id="vip-grid" aria-live="polite" hidden></div>
           <p class="vip-note" id="vip-note" hidden></p>
+          <div class="vip-planos" id="vip-planos"></div>
         </div>
       </section>
 
-      <section class="section section-alt" id="servidor">
+      <section class="section" id="servidor">
         <div class="container">
           <div class="section-head">
             <div>
-              <p class="eyebrow">Conheça o mundo</p>
-              <h2>Informações do servidor</h2>
+              <h2><span class="title-line" aria-hidden="true"></span>Informações do servidor</h2>
             </div>
           </div>
           <div class="server-grid">
@@ -218,24 +255,11 @@
         </div>
       </section>
 
-      <section class="section" id="eventos">
+      <section class="section" id="faq">
         <div class="container">
-          <div class="section-head">
+          <div class="section-head centered">
             <div>
-              <p class="eyebrow">Sempre tem algo acontecendo</p>
-              <h2>Eventos</h2>
-            </div>
-          </div>
-          <div class="events-list" id="events-list" aria-live="polite"></div>
-        </div>
-      </section>
-
-      <section class="section section-alt" id="faq">
-        <div class="container narrow">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Antes de perguntar</p>
-              <h2>Perguntas frequentes</h2>
+              <h2><span class="title-line" aria-hidden="true"></span>Perguntas frequentes</h2>
             </div>
           </div>
           <div class="faq-list" id="faq-list"></div>
@@ -246,8 +270,7 @@
         <div class="container">
           <div class="section-head">
             <div>
-              <p class="eyebrow">Tudo em um lugar</p>
-              <h2>Links úteis</h2>
+              <h2><span class="title-line" aria-hidden="true"></span>Links úteis</h2>
             </div>
           </div>
           <div class="links-grid" id="links-grid"></div>
@@ -270,7 +293,7 @@
 
     <footer class="footer">
       <div class="container footer-grid">
-        <div>
+        <div class="footer-about">
           <a class="brand footer-brand" href="/">
             <img src="/assets/mucura.webp" alt="" width="42" height="42" />
             <span class="brand-text"><strong>MUCURA</strong><small>Season 6 Episode 3</small></span>
@@ -280,24 +303,30 @@
             junto.
           </p>
         </div>
-        <div>
-          <h3>Navegar</h3>
+        <nav class="footer-group" aria-label="Navegar">
           <ul class="footer-links">
             <li><a href="#noticias">Notícias</a></li>
             <li><a href="#ranking">Ranking</a></li>
+            <li><a href="#eventos">Eventos</a></li>
             <li><a href="#vip">VIP</a></li>
             <li><a href="#faq">FAQ</a></li>
           </ul>
-        </div>
-        <div>
-          <h3>Comunidade</h3>
+        </nav>
+        <nav class="footer-group" aria-label="Conecte-se">
+          <ul class="footer-links">
+            <li><a href="#vip">VIP</a></li>
+            <li><a href="/painel">Painel</a></li>
+          </ul>
           <div class="social-icons" id="social-icons" aria-label="Redes sociais (em breve)"></div>
           <p class="fineprint">Os ícones serão ativados em breve.</p>
-        </div>
+        </nav>
       </div>
       <div class="container footer-bottom">
-        <span>© <span id="year"></span> MUCURA. Todos os direitos reservados.</span>
-        <a href="/admin">Painel administrativo</a>
+        <span>© <span id="year"></span> MUCURA · Season 6 Episode 3</span>
+        <span class="footer-legal">
+          <a href="/termos">Termos</a>
+          <a href="/privacidade">Privacidade</a>
+        </span>
       </div>
     </footer>
 
@@ -415,6 +444,10 @@
             </p>
           </div>
         </form>
+        <p class="fineprint checkout-help">
+          Deu algo errado? Entre em contato com
+          <a id="vip-support" href="mailto:luizfelper@gmail.com">luizfelper@gmail.com</a>
+        </p>
         <p class="fineprint">
           O pagamento é processado pelo Mercado Pago. O MUCURA não armazena dados de cartão. O VIP é
           liberado para a conta informada após a aprovação.
