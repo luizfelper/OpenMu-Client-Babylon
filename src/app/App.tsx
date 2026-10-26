@@ -19,7 +19,7 @@ import { CreditsWindow } from '@versions/shared/ui/windows/credits';
 import { ProjectCreditsWindow } from '@versions/shared/ui/windows/project_credits';
 import { GameCursor } from '../controllers/interface/components/game_cursor';
 import { ReconnectOverlay } from '@versions/shared/ui/components/reconnect_overlay';
-import { AutoDownload } from '@versions/shared/ui/components/auto_download';
+import { AUTO_DOWNLOAD_ENABLED, AutoDownload } from '@versions/shared/ui/components/auto_download';
 import { ServerWelcome } from '@versions/shared/ui/components/server_welcome';
 
 // The login and character screens are the version's own: Season 6 draws its
@@ -87,7 +87,7 @@ export const App = observer(() => {
       {}
       <LoadingScreen hidden={hideClassic} />
       <WarpFade />
-      <AutoDownload />
+      {AUTO_DOWNLOAD_ENABLED && <AutoDownload />}
       {}
       <ReconnectOverlay />
       {}

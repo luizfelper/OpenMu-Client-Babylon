@@ -15,6 +15,13 @@ import { DONE_KEY, currentGroup, firstRunDue, isEssential } from './plan';
  * a small panel. Mounted by `src/app/App.tsx`. See readme.md.
  */
 
+/**
+ * Temporarily off: every VPS build gets a new build id, so this screen would
+ * download every group again after a deploy. The manual Download tab still
+ * works; flip this to true to bring the first-run download back.
+ */
+export const AUTO_DOWNLOAD_ENABLED = false;
+
 const DONE_SHOWN_MS = 4000;
 const BACKDROP_ART = '/backdrops/character-select.jpeg';
 const PHASES: Record<AssetGroup['kind'], TextKey> = {

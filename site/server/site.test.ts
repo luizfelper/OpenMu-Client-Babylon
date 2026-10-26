@@ -4,7 +4,15 @@ import { renderMarkdown } from './markdown';
 import { WARP_MAPS, findWarpMap, publicWarpMaps } from './maps';
 import { verifyWebhookSignature } from './mpSignature';
 import { panelAllowed } from './panelRules';
-import { DEFAULT_BENEFITS, DEFAULT_PLANS, findPlan, formatBrl, parsePlans, renameTierPlans } from './plans';
+import {
+  DEFAULT_BENEFITS,
+  DEFAULT_PLANS,
+  findPlan,
+  formatBrl,
+  parsePlans,
+  renameTierPlans,
+  upgradeTierBenefits,
+} from './plans';
 import { slugify } from './slug';
 
 describe('slugify', () => {
@@ -73,6 +81,76 @@ describe('VIP plans', () => {
     expect(DEFAULT_PLANS.map(plan => plan.name)).toEqual(['VIP Bronze', 'VIP Prata', 'VIP Ouro']);
     expect(DEFAULT_PLANS.map(plan => plan.game.xp_multiplier)).toEqual([2, 4, 8]);
     expect(DEFAULT_PLANS.map(plan => plan.game.zen_multiplier)).toEqual([2, 4, 8]);
+  });
+
+  it('lists every applied benefit on each tier instead of "Tudo do ..."', () => {
+    expect(DEFAULT_PLANS.map(plan => plan.benefits)).toEqual([
+      [
+        '2x de XP de up',
+        '2x de XP Master',
+        '2x de Zen por monstro',
+        'Tag VIP no site',
+        'Troca de mapa pelo painel do site',
+      ],
+      [
+        '4x de XP de up',
+        '4x de XP Master',
+        '4x de Zen por monstro',
+        'Tag VIP no site',
+        'Troca de mapa pelo painel do site',
+        'Inclui todos os benefícios do Bronze',
+      ],
+      [
+        '8x de XP de up',
+        '8x de XP Master',
+        '8x de Zen por monstro',
+        'Tag VIP no site',
+        'Troca de mapa pelo painel do site',
+        'Inclui todos os benefícios do Prata',
+      ],
+    ]);
+    expect(DEFAULT_PLANS.flatMap(plan => plan.benefits).some(item => item.startsWith('Tudo do '))).toBe(false);
+  });
+
+  it('upgrades an old default benefit list but keeps a custom one', () => {
+    const old = parsePlans([
+      {
+        id: 'bronze',
+        name: 'VIP Bronze',
+        days: 30,
+        price_cents: 1990,
+        benefits: ['2x de XP de up', '2x de XP Master', '2x de zen por monstro', 'Tag VIP no site'],
+      },
+      {
+        id: 'prata',
+        name: 'VIP Prata',
+        days: 30,
+        price_cents: 2990,
+        benefits: ['Tudo do Bronze', 'Prioridade em eventos', 'Sorteios mensais'],
+      },
+      {
+        id: 'ouro',
+        name: 'VIP Ouro',
+        days: 30,
+        price_cents: 4990,
+        benefits: ['8x de XP e 8x de drop', '8x de zen por monstro', 'Tudo do Prata', 'Badge dourada no site'],
+      },
+      {
+        id: 'custom',
+        name: 'VIP Personalizado',
+        days: 30,
+        price_cents: 1990,
+        benefits: ['Benefício escolhido pela administração'],
+      },
+    ]);
+
+    const upgraded = upgradeTierBenefits(old);
+
+    expect(upgraded[0].benefits).toEqual(DEFAULT_PLANS[0].benefits);
+    expect(upgraded[1].benefits).toEqual(DEFAULT_PLANS[1].benefits);
+    expect(upgraded[2].benefits).toEqual(DEFAULT_PLANS[2].benefits);
+    expect(upgraded[3].benefits).toEqual(['Benefício escolhido pela administração']);
+    expect(upgradeTierBenefits(upgraded)).toBe(upgraded);
   });
 
   it('keeps the plan\'s game multipliers inside safe limits', () => {

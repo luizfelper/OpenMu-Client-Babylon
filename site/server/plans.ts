@@ -52,6 +52,36 @@ const tier = (multiplier: number) => ({
   party_xp_multiplier: multiplier,
 });
 
+/**
+ * What each card lists. The multipliers are the ones the game applies; drop and party XP are not
+ * listed because OpenMU still cannot apply them per player (openmu/readme.md, VIP plans).
+ */
+const TIER_BENEFITS = {
+  bronze: [
+    '2x de XP de up',
+    '2x de XP Master',
+    '2x de Zen por monstro',
+    'Tag VIP no site',
+    'Troca de mapa pelo painel do site',
+  ],
+  prata: [
+    '4x de XP de up',
+    '4x de XP Master',
+    '4x de Zen por monstro',
+    'Tag VIP no site',
+    'Troca de mapa pelo painel do site',
+    'Inclui todos os benefícios do Bronze',
+  ],
+  ouro: [
+    '8x de XP de up',
+    '8x de XP Master',
+    '8x de Zen por monstro',
+    'Tag VIP no site',
+    'Troca de mapa pelo painel do site',
+    'Inclui todos os benefícios do Prata',
+  ],
+} as const satisfies Record<string, readonly string[]>;
+
 export const DEFAULT_PLANS: VipPlan[] = [
   {
     id: 'bronze',
@@ -59,7 +89,7 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 1990,
     description: 'O primeiro passo para uma jornada com mais vantagens.',
-    benefits: ['2x de XP de up', '2x de XP Master', '2x de zen por monstro', 'Tag VIP no site'],
+    benefits: [...TIER_BENEFITS.bronze],
     highlight: false,
     game: tier(2),
   },
@@ -69,7 +99,7 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 2990,
     description: 'Para quem joga todo dia e quer sentir a diferença.',
-    benefits: ['4x de XP de up', '4x de XP Master', '4x de zen por monstro', 'Tudo do Bronze'],
+    benefits: [...TIER_BENEFITS.prata],
     highlight: false,
     game: tier(4),
   },
@@ -79,11 +109,34 @@ export const DEFAULT_PLANS: VipPlan[] = [
     days: 30,
     price_cents: 4990,
     description: 'A experiência completa MUCURA, sem limites.',
-    benefits: ['8x de XP de up', '8x de XP Master', '8x de zen por monstro', 'Tudo do Prata'],
+    benefits: [...TIER_BENEFITS.ouro],
     highlight: true,
     game: tier(8),
   },
 ];
+
+/**
+ * Benefit lists shipped by earlier releases. A site installed before the explicit lists existed
+ * keeps them in its settings, so the upgrade below replaces only an exact old default and never a
+ * list the owner edited in /admin.
+ */
+const LEGACY_TIER_BENEFITS: Record<string, readonly (readonly string[])[]> = {
+  bronze: [
+    ['2x de XP de up', '2x de XP Master', '2x de zen por monstro', 'Tag VIP no site'],
+    ['2x de XP e 2x de drop', '2x de zen por monstro', 'Tag VIP no site', 'Canal exclusivo no Discord'],
+    ['Tag VIP no site', 'Canal exclusivo no Discord', '30 dias de benefícios'],
+  ],
+  prata: [
+    ['4x de XP de up', '4x de XP Master', '4x de zen por monstro', 'Tudo do Bronze'],
+    ['4x de XP e 4x de drop', '4x de zen por monstro', 'Tudo do Bronze', 'Sorteios mensais'],
+    ['Tudo do Bronze', 'Prioridade em eventos', 'Sorteios mensais'],
+  ],
+  ouro: [
+    ['8x de XP de up', '8x de XP Master', '8x de zen por monstro', 'Tudo do Prata'],
+    ['8x de XP e 8x de drop', '8x de zen por monstro', 'Tudo do Prata', 'Badge dourada no site'],
+    ['Tudo do Prata', 'Badge dourada no site', 'Acesso antecipado a novidades'],
+  ],
+};
 
 const BENEFIT_KEYS = Object.keys(DEFAULT_BENEFITS) as (keyof VipBenefits)[];
 
@@ -162,6 +215,28 @@ export function parsePlans(value: unknown): VipPlan[] {
 
 export function findPlan(plans: VipPlan[], id: string): VipPlan | undefined {
   return plans.find(plan => plan.id === id);
+}
+
+function sameBenefitList(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((item, index) => item === b[index]);
+}
+
+/**
+ * Upgrades a default tier's old benefit list to the explicit one. Only an exact list shipped by
+ * this file is replaced; a list edited in /admin is left alone. Returns the same array when there
+ * is nothing to change, so the caller can skip the write.
+ */
+export function upgradeTierBenefits(plans: VipPlan[]): VipPlan[] {
+  let changed = false;
+  const upgraded = plans.map(plan => {
+    const current = DEFAULT_PLANS.find(candidate => candidate.id === plan.id);
+    const legacy = LEGACY_TIER_BENEFITS[plan.id];
+    if (!current || !legacy) return plan;
+    if (!legacy.some(list => sameBenefitList(plan.benefits, list))) return plan;
+    changed = true;
+    return { ...plan, benefits: [...current.benefits] };
+  });
+  return changed ? upgraded : plans;
 }
 
 /** Names a plan used to get from a fresh checkout, in order: "Vip 1", "VIP 2", ... */

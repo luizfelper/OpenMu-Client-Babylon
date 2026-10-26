@@ -1,15 +1,21 @@
 # auto_download
 
 Ours, from gonzaPollini/mu-season1-client: the first-run download screen. Mounted by
-`src/app/App.tsx` (not a HUD window: those draw only in the world).
+`src/app/App.tsx` when `AUTO_DOWNLOAD_ENABLED` is true (not a HUD window: those draw only in the
+world).
 
 ## Public API
-- `index.tsx`: `AutoDownload`.
+- `index.tsx`: `AutoDownload`, `AUTO_DOWNLOAD_ENABLED`.
 - `plan.ts`: `isEssential`, `firstRunDue`, `currentGroup`, `DONE_KEY`.
 
 ## How it works
-- Once the worlds page's Enter moves the app on (`UIState.Login` or later), on the first visit of a
-  build with an assets index, it runs `startDownload` twice: the essentials (`isEssential`: all but
+- Temporarily disabled: `AUTO_DOWNLOAD_ENABLED` is `false`, so `App.tsx` mounts nothing. Every VPS
+  build gets a new build id, and the first-run screen would download every group again after a
+  deploy. Set it to `true` to bring the screen back. The manual Download tab and the `?direct`
+  screen are separate and keep working.
+- When enabled, once the worlds page's Enter moves the app on (`UIState.Login` or later), on the
+  first visit of a build with an assets index, it runs `startDownload` twice: the essentials
+  (`isEssential`: all but
   the music and the far maps; the item icons and interface are here) behind a screen titled "Loading
   basic items", then every group (cached files skipped) behind a small panel at the top. The index
   check and the start of the first run keep the screen up, so the login page never flashes over a

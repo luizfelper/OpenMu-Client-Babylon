@@ -11,7 +11,7 @@ import {
 import { getSetting, setSetting } from './db';
 import { HttpError, booleanField, numberField, optionalString, safeHttpUrl, stringField } from './http';
 import { syncVipPlans } from './openmu';
-import { DEFAULT_PLANS, parsePlans, renameTierPlans, type VipPlan } from './plans';
+import { DEFAULT_PLANS, parsePlans, renameTierPlans, upgradeTierBenefits, type VipPlan } from './plans';
 
 export type ServerFact = { label: string; value: string };
 export type EventItem = { title: string; schedule: string; description: string };
@@ -143,15 +143,16 @@ export function ensureDefaults(): void {
   for (const [key, value] of Object.entries(DEFAULTS)) {
     if (getSetting(key) === undefined) setSetting(key, value);
   }
-  upgradePlanNames();
+  upgradeTierPlans();
 }
 
 /**
  * Plans saved before the tiers had names keep whatever the admin priced; only a generic name
- * ("Vip 1") becomes the tier name ("VIP Bronze"). Writes only when something actually changes,
- * so a name the admin chose by hand is never touched.
+ * ("Vip 1") becomes the tier name ("VIP Bronze"). Old default benefit lists are replaced with the
+ * current explicit lists, while anything the admin edited is left alone. Writes only when
+ * something actually changes.
  */
-function upgradePlanNames(): void {
+function upgradeTierPlans(): void {
   let plans: VipPlan[];
   try {
     plans = parsePlans(getJson<unknown>('vip_plans', DEFAULT_PLANS));
@@ -160,7 +161,8 @@ function upgradePlanNames(): void {
   }
 
   const renamed = renameTierPlans(plans);
-  if (renamed !== plans) setSetting('vip_plans', JSON.stringify(renamed));
+  const upgraded = upgradeTierBenefits(renamed);
+  if (upgraded !== plans) setSetting('vip_plans', JSON.stringify(upgraded));
 }
 
 export function get(key: string): string {
