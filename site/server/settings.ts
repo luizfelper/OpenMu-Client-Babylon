@@ -50,9 +50,9 @@ const DEFAULTS: Record<string, string> = {
   server_description: SERVER_DESCRIPTION,
   server_version: SERVER_VERSION,
   server_language: SERVER_LANGUAGE,
-  rate_exp: '100x',
+  rate_exp: '1000x',
   rate_drop: '50%',
-  rate_master: '100x',
+  rate_master: '500x',
   server_info: JSON.stringify([
     { label: 'Abertura', value: 'Servidor permanente' },
     { label: 'Season', value: 'Season 6 Episode 3' },
