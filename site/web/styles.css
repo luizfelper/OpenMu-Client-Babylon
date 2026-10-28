@@ -2461,3 +2461,62 @@ body {
   .footer-grid { grid-template-columns: 1fr; justify-items: center; gap: 16px; text-align: center; }
   .footer-copy { text-align: center; }
 }
+
+/* Header actions share one shape: auth, VIP, account menu and panel. The primary
+   register button keeps the gold fill; everything else is the same outline button. */
+.main-nav .auth-button,
+.main-nav .nav-cta,
+.main-nav .user-menu-toggle,
+.main-nav .user-panel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(215, 168, 75, 0.4);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--gold-bright);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.main-nav .auth-button:hover,
+.main-nav .nav-cta:hover,
+.main-nav .user-menu-toggle:hover,
+.main-nav .user-panel-button:hover {
+  border-color: var(--gold);
+  background: rgba(215, 168, 75, 0.12);
+  color: var(--gold-bright);
+}
+.main-nav .auth-cta {
+  color: #1b1107;
+  border-color: #f4e2b4;
+  background: linear-gradient(180deg, #f0d79a, #d7a84b 58%, #b48331);
+  box-shadow: 0 8px 20px rgba(215, 168, 75, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.main-nav .auth-cta:hover {
+  color: #120b05;
+  border-color: #ffe9b5;
+  background: linear-gradient(180deg, #ffe9b5, #e4b75b 58%, #c18d35);
+}
+.main-nav .auth-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.main-nav .user-menu-toggle { padding: 4px 10px 4px 5px; }
+
+@media (max-width: 760px) {
+  .main-nav .auth-button,
+  .main-nav .nav-cta,
+  .main-nav .user-menu-toggle,
+  .main-nav .user-panel-button { width: 100%; }
+  .main-nav .auth-account { flex-direction: column; align-items: stretch; }
+  .main-nav .user-menu-toggle { justify-content: flex-start; }
+}

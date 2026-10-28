@@ -373,15 +373,18 @@ async function changeMap() {
 
 function renderAuth() {
   const open = $('#auth-open');
+  const register = $('.auth-cta');
   const account = $('#auth-account');
   const headerPanel = $('#header-panel');
   if (state.player) {
     if (open) open.hidden = true;
+    if (register) register.hidden = true;
     if (account) account.hidden = false;
     if (headerPanel) headerPanel.hidden = true;
     renderUserPanel();
   } else {
     if (open) open.hidden = false;
+    if (register) register.hidden = false;
     if (account) account.hidden = true;
     if (headerPanel) headerPanel.hidden = false;
     state.playerPanel = null;
