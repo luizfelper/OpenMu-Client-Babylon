@@ -36,9 +36,23 @@ function safeUrl(value) {
   }
 }
 
+function clientUrlFallback() {
+  const { protocol, hostname, port } = window.location;
+  if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') return null;
+  if (hostname.startsWith('play.')) {
+    return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+  }
+  // IP mode: the site runs on :8082 and the client on port 80 of the same host.
+  if (port === '8082') return `${protocol}//${hostname}`;
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return null;
+  const base = hostname.replace(/^(www|site)\./, '');
+  const suffix = port && port !== '80' && port !== '443' ? `:${port}` : '';
+  return `${protocol}//play.${base}${suffix}`;
+}
+
 function resolveLink(value) {
   if (value === '@register') return safeUrl(state.urls.register);
-  if (value === '@play') return safeUrl(state.urls.play);
+  if (value === '@play') return safeUrl(state.urls.play) || clientUrlFallback();
   return safeUrl(value);
 }
 
@@ -306,20 +320,6 @@ function renderUserPanel() {
     else note.textContent = panel.message || '';
   }
 
-  const play = $('#user-play-link');
-  if (play) {
-    const url = safeUrl(state.urls.play);
-    play.hidden = !url;
-    if (url) play.href = url;
-  }
-  // The hero's "Jogar!" opens the client; without a configured URL it keeps the VIP anchor.
-  const heroPlay = $('#hero-play');
-  const playUrl = safeUrl(state.urls.play);
-  if (heroPlay && playUrl) {
-    heroPlay.href = playUrl;
-    heroPlay.target = '_blank';
-    heroPlay.rel = 'noopener';
-  }
   syncMapButton();
 }
 
@@ -554,6 +554,21 @@ function bindUserPanel() {
   $('#user-play-link')?.addEventListener('click', closeUserPanel);
 }
 
+function applyPlayLinks() {
+  const playUrl = safeUrl(state.urls.play) || clientUrlFallback();
+  const heroPlay = $('#hero-play');
+  if (heroPlay && playUrl) {
+    heroPlay.href = playUrl;
+    heroPlay.target = '_blank';
+    heroPlay.rel = 'noopener';
+  }
+  const play = $('#user-play-link');
+  if (play) {
+    play.hidden = !playUrl;
+    if (playUrl) play.href = playUrl;
+  }
+}
+
 function renderOnline(online) {
   const count = $('#online-count');
   const label = $('#online-label');
@@ -586,6 +601,7 @@ function renderHero(data) {
     supportLink.textContent = support || 'luizfelper@gmail.com';
   }
   document.title = `${data.site.name} — ${data.site.tagline}`;
+  applyPlayLinks();
 
   const facts = Array.isArray(data.server.facts) ? data.server.facts : [];
   const heroFacts = $('#hero-facts');

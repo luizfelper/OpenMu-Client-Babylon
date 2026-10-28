@@ -48,8 +48,25 @@ export const SERVER_VERSION = process.env.SERVER_VERSION || '0.9.10';
 export const SERVER_LANGUAGE = process.env.SERVER_LANGUAGE || 'pt';
 
 /** Where the client and the register page live, so default links can point at them. */
-export const CLIENT_URL = process.env.CLIENT_URL || '';
-export const REGISTER_URL = process.env.REGISTER_URL || '';
+function defaultClientUrl(): string {
+  const site = process.env.SITE_BASE_URL?.trim();
+  if (!site) return '';
+  try {
+    const url = new URL(site);
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return '';
+    if (url.hostname.startsWith('play.')) return url.origin;
+    // IP mode: the site is on :8082, the client on port 80 of the same host.
+    if (url.port === '8082') return `${url.protocol}//${url.hostname}`;
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(url.hostname)) return '';
+    // Domain mode: the client is play.<domain>, even if the site was opened on www./site.
+    return `${url.protocol}//play.${url.hostname.replace(/^(www|site)\./, '')}`;
+  } catch {
+    return '';
+  }
+}
+
+export const CLIENT_URL = trimSlash(process.env.CLIENT_URL || defaultClientUrl());
+export const REGISTER_URL = trimSlash(process.env.REGISTER_URL || '');
 
 /** How long a signed admin session lives. */
 export const SESSION_MS = 8 * 60 * 60 * 1000;

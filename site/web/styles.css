@@ -2147,15 +2147,23 @@ body {
 .online-ring-version { color: var(--muted); font-size: 0.62rem; }
 .online-ring .pulse { position: absolute; bottom: 8%; }
 
-/* Rates: four equal cells, value first and label underneath. */
+/* Rates: four equal cells fill the row; a shorter set stays centered. */
 .rate-strip {
+  display: block;
   margin-top: 52px;
   border-top: 1px solid rgba(215, 168, 75, 0.16);
   border-bottom: 1px solid rgba(215, 168, 75, 0.16);
   background: rgba(255, 255, 255, 0.012);
 }
-.rate-strip-inner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.rate-strip-inner {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 0;
+}
 .rate {
+  flex: 1 1 0;
+  max-width: 25%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -2433,8 +2441,8 @@ body {
   .btn-hero { width: auto; min-height: 50px; padding: 0 32px; font-size: 1.2rem; }
   .btn-outline { width: auto; min-height: 50px; padding: 0 22px; }
   .hero-link { width: 100%; padding-left: 0; }
-  .rate-strip-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .rate { border-left: 1px solid rgba(215, 168, 75, 0.12); border-top: 1px solid rgba(215, 168, 75, 0.12); padding: 16px 12px; }
+  .rate-strip-inner { flex-wrap: wrap; }
+  .rate { flex: 1 1 50%; max-width: 50%; border-left: 1px solid rgba(215, 168, 75, 0.12); border-top: 1px solid rgba(215, 168, 75, 0.12); padding: 16px 12px; }
   .rate:nth-child(odd) { border-left: 0; }
   .rate:nth-child(-n + 2) { border-top: 0; }
   .rate strong { font-size: 1.45rem; }
