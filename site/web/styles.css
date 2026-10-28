@@ -145,6 +145,10 @@ button, input, textarea, select { font: inherit; }
   font-size: 0.92rem;
 }
 .main-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
   color: var(--muted);
   padding: 6px 0;
   border-bottom: 1px solid transparent;
@@ -1096,7 +1100,6 @@ button, input, textarea, select { font: inherit; }
 .panel-page .main-nav { gap: 14px; }
 .panel-page .main-nav a { color: var(--muted); font-size: 0.88rem; }
 .panel-page .main-nav a:hover { color: var(--gold-bright); }
-.panel-page .main-nav .auth-button[hidden] { display: none; }
 
 @media (max-width: 980px) {
   .hero-grid { grid-template-columns: 1fr; gap: 36px; }
@@ -1130,7 +1133,7 @@ button, input, textarea, select { font: inherit; }
   }
   .main-nav.open { display: flex; }
   .main-nav a { padding: 10px 8px; }
-  .main-nav .nav-cta { text-align: center; margin-top: 6px; }
+  .main-nav .nav-cta { margin-top: 6px; }
   .main-nav .auth-button { width: 100%; }
   .main-nav .auth-account { width: 100%; padding-top: 6px; }
   .main-nav .user-menu-toggle { width: 100%; justify-content: flex-start; }
@@ -1311,7 +1314,7 @@ body {
   border-radius: 0;
   background: transparent;
 }
-.rate:first-child { border-left: 0; padding-left: 0; }
+.rate:first-child { border-left: 0; }
 .rate span { font-size: 0.64rem; letter-spacing: 0.2em; }
 .rate strong { font-family: var(--sans); font-size: 1.35rem; font-weight: 600; }
 
@@ -1744,8 +1747,7 @@ body { overflow-x: hidden; }
 
   .class-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rate-strip-inner { grid-template-columns: 1fr; }
-  .rate { border-left: 0; border-top: 1px solid rgba(215, 168, 75, 0.12); padding: 14px 0; }
-  .rate:first-child { border-top: 0; padding-left: 0; }
+  .rate { border-left: 0; border-top: 1px solid rgba(215, 168, 75, 0.12); padding: 14px 18px; }
   .event-row { grid-template-columns: 22px minmax(0, 1fr); row-gap: 4px; }
   .event-when { grid-column: 2; color: var(--muted-2); }
   .vip-gate { padding: 16px 18px; }
@@ -1937,7 +1939,7 @@ body { overflow-x: hidden; }
 @media (max-width: 760px) {
   .rate-strip-inner { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .rate { border-top: 0; border-left: 1px solid rgba(215, 168, 75, 0.12); padding: 14px 10px; }
-  .rate:first-child { border-left: 0; padding-left: 0; }
+  .rate:first-child { border-left: 0; }
   .rate span { font-size: 0.56rem; letter-spacing: 0.14em; }
   .rate strong { font-size: 1rem; }
 }
@@ -2147,7 +2149,7 @@ body {
 .online-ring-version { color: var(--muted); font-size: 0.62rem; }
 .online-ring .pulse { position: absolute; bottom: 8%; }
 
-/* Rates: four equal cells fill the row; a shorter set stays centered. */
+/* Rates: equal cells, label and value centred inside each one. */
 .rate-strip {
   display: block;
   margin-top: 52px;
@@ -2173,8 +2175,9 @@ body {
   border-left: 1px solid rgba(215, 168, 75, 0.12);
   border-radius: 0;
   background: transparent;
+  text-align: center;
 }
-.rate:first-child { border-left: 0; padding-left: 18px; }
+.rate:first-child { border-left: 0; }
 .rate strong {
   order: -1;
   color: #f3dfae;
@@ -2511,6 +2514,14 @@ body {
   gap: 6px;
 }
 .main-nav .user-menu-toggle { padding: 4px 10px 4px 5px; }
+
+/* The hidden attribute must win over the flex display above, or Entrar and
+   Criar conta keep showing after login. */
+.main-nav .auth-button[hidden],
+.main-nav .user-panel-button[hidden] { display: none; }
+
+.main-nav .auth-button[hidden],
+.main-nav .user-panel-button[hidden] { display: none; }
 
 @media (max-width: 760px) {
   .main-nav .auth-button,
