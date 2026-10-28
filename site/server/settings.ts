@@ -41,10 +41,9 @@ const DEFAULTS: Record<string, string> = {
   hero_eyebrow: 'O servidor que respira MU',
   hero_title: 'A lenda renasce.',
   hero_subtitle: 'Entre em MUCURA e escreva a sua história.',
-  hero_text:
-    'Um servidor brasileiro feito para durar: progressão justa, eventos toda semana e uma comunidade que joga junto.',
+  hero_text: 'Um servidor feito para durar.',
   vip_notice:
-    'O VIP é opcional. Cada plano ajuda a manter o servidor online e faz o MUCURA crescer junto com você.',
+    'Mais experiência, vantagens exclusivas e destaque no ranking, e você ajuda a manter o servidor no ar.',
   support_email: 'luizfelper@gmail.com',
   server_name: SERVER_NAME,
   server_description: SERVER_DESCRIPTION,
@@ -146,7 +145,26 @@ export function ensureDefaults(): void {
   for (const [key, value] of Object.entries(DEFAULTS)) {
     if (getSetting(key) === undefined) setSetting(key, value);
   }
+  upgradeHomeCopy();
   upgradeTierPlans();
+}
+
+/** Replaces old default copy without touching text the admin wrote. */
+function upgradeHomeCopy(): void {
+  const hero = getSetting('hero_text');
+  if (
+    hero ===
+    'Um servidor brasileiro feito para durar: progressão justa, eventos toda semana e uma comunidade que joga junto.'
+  ) {
+    setSetting('hero_text', DEFAULTS.hero_text);
+  }
+
+  const vip = getSetting('vip_notice');
+  const oldVipDefaults = [
+    'O VIP é opcional. Cada plano ajuda a manter o servidor online e faz o MUCURA crescer junto com você.',
+    'O VIP é opcional. Cada plano ajuda a manter o servidor online e libera vantagens cadastradas pela administração.',
+  ];
+  if (vip && oldVipDefaults.includes(vip)) setSetting('vip_notice', DEFAULTS.vip_notice);
 }
 
 /**

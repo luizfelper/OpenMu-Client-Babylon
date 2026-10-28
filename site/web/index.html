@@ -30,14 +30,13 @@
         </button>
 
         <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-          <a href="#noticias">Notícias</a>
-          <a href="#ranking">Ranking</a>
-          <a href="#eventos">Eventos</a>
-          <a href="#vip">VIP</a>
-          <a href="#servidor">Servidor</a>
-          <a href="#faq">FAQ</a>
-          <a class="nav-cta" href="#vip">Virar VIP</a>
-          <a class="auth-button" id="header-panel" href="/painel">Painel</a>
+          <a href="/">Início</a>
+          <a href="/noticias">Notícias</a>
+          <a href="/#ranking">Ranking</a>
+          <a href="/#eventos">Eventos</a>
+          <a href="/#vip">VIP</a>
+          <a href="/regras">Servidor</a>
+          <a href="/faq">FAQ</a>
           <button class="auth-button" id="auth-open" type="button">Entrar</button>
           <button class="auth-button auth-cta" type="button" data-open-auth="register">Criar conta</button>
           <div class="auth-account" id="auth-account" hidden>
@@ -105,7 +104,7 @@
             <div class="hero-actions">
               <a class="btn btn-primary btn-hero" id="hero-play" href="#vip">Jogar!</a>
               <a class="btn btn-outline" href="#vip">Quero ser VIP</a>
-              <a class="hero-link" href="#noticias">Últimas notícias</a>
+              <a class="hero-link" href="/noticias">Últimas notícias</a>
             </div>
           </div>
 
@@ -138,7 +137,7 @@
           </div>
           <ul class="class-grid">
             <li class="class-card"><span class="class-emblem">DW</span><strong>Dark Wizard</strong><small>Magia pesada</small></li>
-            <li class="class-card"><span class="class-emblem">DK</span><strong>Dark Knight</strong><small>Linha de frente</small></li>
+            <li class="class-card featured"><span class="class-emblem">DK</span><strong>Dark Knight</strong><small>Linha de frente</small></li>
             <li class="class-card"><span class="class-emblem">FE</span><strong>Fairy Elf</strong><small>Arco e apoio</small></li>
             <li class="class-card"><span class="class-emblem">MG</span><strong>Magic Gladiator</strong><small>Espada e magia</small></li>
             <li class="class-card"><span class="class-emblem">DL</span><strong>Dark Lord</strong><small>Comanda a guerra</small></li>
@@ -156,11 +155,11 @@
               <div class="event-list" id="events-list" aria-live="polite"></div>
             </article>
             <article class="panel feature-panel" id="ranking">
-              <div class="feature-head"><h3>Quem está no topo</h3><span>Ranking geral por experiência</span></div>
+              <div class="feature-head"><h3>Quem está no topo</h3><span>Ranking geral por resets</span></div>
               <div class="rank-table">
                 <span class="rank-col-person">Personagem</span>
                 <span class="rank-col-class">Classe</span>
-                <span class="rank-col-value">XP</span>
+                <span class="rank-col-value">Resets</span>
                 <div id="ranking-top" class="rank-table-body" aria-live="polite"></div>
               </div>
               <div id="ranking-weekly" class="rank-weekly" aria-live="polite" hidden></div>
@@ -215,13 +214,13 @@
             <div>
               <h2>Seja VIP no MUCURA</h2>
               <p class="section-sub" id="vip-notice">
-                O VIP é opcional. Cada plano ajuda a manter o servidor online e faz o MUCURA crescer
-                junto com você.
+                Mais experiência, vantagens exclusivas e destaque no ranking, e você ajuda a manter
+                o servidor no ar.
               </p>
             </div>
-            <a class="btn btn-primary btn-vip" href="#vip-planos">Ver planos VIP</a>
+            <a class="btn btn-primary btn-vip" id="vip-plans-toggle" href="#vip-planos">Ver planos VIP</a>
           </div>
-          <div class="vip-gate panel" id="vip-gate">
+          <div class="vip-gate panel" id="vip-gate" hidden>
             <h3>Entre para comprar</h3>
             <p>Mesmo login e senha do jogo. O CPF só é pedido no checkout.</p>
             <div class="vip-gate-actions">
@@ -231,7 +230,7 @@
           </div>
           <div class="vip-grid" id="vip-grid" aria-live="polite" hidden></div>
           <p class="vip-note" id="vip-note" hidden></p>
-          <div class="vip-planos" id="vip-planos"></div>
+          <div class="vip-planos" id="vip-planos" hidden></div>
         </div>
       </section>
 
@@ -293,40 +292,16 @@
 
     <footer class="footer">
       <div class="container footer-grid">
-        <div class="footer-about">
-          <a class="brand footer-brand" href="/">
-            <img src="/assets/mucura.webp" alt="" width="42" height="42" />
-            <span class="brand-text"><strong>MUCURA</strong><small>Season 6 Episode 3</small></span>
-          </a>
-          <p class="footer-text">
-            Um servidor feito por quem joga. Notícias, ranking, eventos e uma comunidade que cresce
-            junto.
-          </p>
-        </div>
-        <nav class="footer-group" aria-label="Navegar">
-          <ul class="footer-links">
-            <li><a href="#noticias">Notícias</a></li>
-            <li><a href="#ranking">Ranking</a></li>
-            <li><a href="#eventos">Eventos</a></li>
-            <li><a href="#vip">VIP</a></li>
-            <li><a href="#faq">FAQ</a></li>
-          </ul>
+        <a class="footer-wordmark" href="/" aria-label="MUCURA — início">MUCURA</a>
+        <nav class="footer-nav" aria-label="Navegar">
+          <a href="/noticias">Notícias</a>
+          <a href="/#ranking">Ranking</a>
+          <a href="/#eventos">Eventos</a>
+          <a href="/#vip">VIP</a>
+          <a href="/faq">FAQ</a>
+          <a id="footer-discord" href="#" hidden>Discord</a>
         </nav>
-        <nav class="footer-group" aria-label="Conecte-se">
-          <ul class="footer-links">
-            <li><a href="#vip">VIP</a></li>
-            <li><a href="/painel">Painel</a></li>
-          </ul>
-          <div class="social-icons" id="social-icons" aria-label="Redes sociais (em breve)"></div>
-          <p class="fineprint">Os ícones serão ativados em breve.</p>
-        </nav>
-      </div>
-      <div class="container footer-bottom">
-        <span>© <span id="year"></span> MUCURA · Season 6 Episode 3</span>
-        <span class="footer-legal">
-          <a href="/termos">Termos</a>
-          <a href="/privacidade">Privacidade</a>
-        </span>
+        <p class="footer-copy">© <span id="year"></span> MUCURA · Season 6 Episode 3</p>
       </div>
     </footer>
 

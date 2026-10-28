@@ -13,6 +13,7 @@ const state = {
   player: null,
   playerPanel: null,
   pendingPlanId: null,
+  vipPlansOpen: false,
 };
 
 function escapeHtml(value) {
@@ -150,12 +151,15 @@ function closeAuthModal() {
 
 function updateVipAccess() {
   const logged = Boolean(state.player);
+  const open = state.vipPlansOpen;
   const gate = $('#vip-gate');
   const grid = $('#vip-grid');
   const note = $('#vip-note');
-  if (gate) gate.hidden = logged;
-  if (grid) grid.hidden = !logged;
-  if (note) note.hidden = !logged;
+  const planos = $('#vip-planos');
+  if (gate) gate.hidden = !open || logged;
+  if (grid) grid.hidden = !open || !logged;
+  if (note) note.hidden = !open || !logged;
+  if (planos) planos.hidden = !open;
 }
 
 function closeUserPanel() {
@@ -568,7 +572,7 @@ function renderOnline(online) {
 
 function renderHero(data) {
   setText('#brand-name', data.site.name);
-  setText('#brand-tagline', data.site.tagline);
+  setText('#brand-tagline', String(data.site.tagline || '').split('•')[0].trim() || data.site.tagline);
   setText('#hero-eyebrow', data.site.eyebrow);
   setText('#hero-title', data.site.title);
   setText('#hero-subtitle', data.site.subtitle);
@@ -596,16 +600,19 @@ function renderHero(data) {
   }
 
   const rates = data.server.rates || {};
+  const maxLevel =
+    facts.find(fact => /n[ií]vel|level/i.test(fact.label || ''))?.value || '400 + Master';
   const strip = $('#rate-strip');
   if (strip) {
     strip.innerHTML = [
-      ['EXP', rates.exp || '—'],
+      ['Experiência', rates.exp || '—'],
       ['Drop', rates.drop || '—'],
       ['Master EXP', rates.master || '—'],
+      ['Nível máximo', maxLevel],
     ]
       .map(
         ([label, value]) =>
-          `<div class="rate"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`
+          `<div class="rate"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`
       )
       .join('');
   }
@@ -663,11 +670,12 @@ function renderRankings(rankings) {
         .map(entry => {
           const position = entry.position;
           const rankClass = position === 1 ? 'gold' : position === 2 ? 'silver' : position === 3 ? 'bronze' : '';
+          const vip = entry.vip ? '<span class="rank-vip">VIP</span>' : '';
           return `
             <div class="rank-row">
-              <span class="rank-cell"><span class="rank ${rankClass}">${escapeHtml(position)}</span><strong>${escapeHtml(entry.name)}</strong></span>
+              <span class="rank-cell"><span class="rank ${rankClass}">${escapeHtml(position)}</span><strong>${escapeHtml(entry.name)}${vip}</strong></span>
               <span class="rank-class">${escapeHtml(entry.className || '—')}</span>
-              <span class="rank-value">${escapeHtml(formatNumber(entry.experience))}</span>
+              <span class="rank-value">${escapeHtml(entry.resets ?? '—')}</span>
             </div>`;
         })
         .join('')
@@ -846,6 +854,13 @@ const SOCIALS = [
 ];
 
 function renderSocial() {
+  const discord = safeUrl(state.data?.social?.discord);
+  const footerDiscord = $('#footer-discord');
+  if (footerDiscord) {
+    footerDiscord.hidden = !discord;
+    if (discord) footerDiscord.href = discord;
+  }
+
   const box = $('#social-icons');
   if (!box) return;
   box.innerHTML = SOCIALS.map(
@@ -1281,18 +1296,32 @@ function hideMainSections(keep) {
   });
 }
 
+const HOME_SECTIONS = new Set(['inicio', 'classes', 'eventos', 'comecar', 'vip']);
+
 function showHome() {
   if (returnPollStop) {
     returnPollStop();
     returnPollStop = null;
   }
   $$('main > section').forEach(section => {
-    if (section.id !== 'article' && section.id !== 'return') section.hidden = false;
+    section.hidden = !HOME_SECTIONS.has(section.id);
   });
   const article = $('#article');
   const ret = $('#return');
   if (article) article.hidden = true;
   if (ret) ret.hidden = true;
+}
+
+function showOnlySections(...ids) {
+  if (returnPollStop) {
+    returnPollStop();
+    returnPollStop = null;
+  }
+  const keep = new Set(ids);
+  $$('main > section').forEach(section => {
+    section.hidden = !keep.has(section.id);
+  });
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 async function refreshOnline() {
@@ -1320,6 +1349,12 @@ function bindNavigation() {
 }
 
 function bindVip() {
+  $('#vip-plans-toggle')?.addEventListener('click', event => {
+    event.preventDefault();
+    state.vipPlansOpen = true;
+    updateVipAccess();
+    $('#vip-planos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   const grid = $('#vip-grid');
   if (grid) {
     grid.addEventListener('click', event => {
@@ -1352,6 +1387,15 @@ async function init() {
   bindUserPanel();
   renderSocial();
   setText('#year', new Date().getFullYear());
+
+  // Pick the route before the API call: a slow or failed request must not flash the extra
+  // home sections, and the page must still look right when the API is unavailable.
+  const path = window.location.pathname;
+  if (path === '/noticias') showOnlySections('noticias');
+  else if (path === '/regras') showOnlySections('servidor', 'links');
+  else if (path === '/faq') showOnlySections('faq');
+  else if (!path.startsWith('/noticias/') && path !== '/vip/retorno') showHome();
+
   try {
     const data = await api('/api/site');
     renderSite(data);
@@ -1382,18 +1426,14 @@ async function init() {
     }
   }
 
-  const path = window.location.pathname;
   if (path.startsWith('/noticias/')) {
     await showArticle(decodeURIComponent(path.slice('/noticias/'.length)));
   } else if (path === '/vip/retorno') {
     await showReturn();
-  } else {
-    showHome();
-    if (path === '/vip') document.getElementById('vip')?.scrollIntoView({ behavior: 'smooth' });
-    if (path === '/ranking') document.getElementById('ranking')?.scrollIntoView({ behavior: 'smooth' });
-    if (path === '/regras') document.getElementById('servidor')?.scrollIntoView({ behavior: 'smooth' });
-    if (path === '/faq') document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' });
-    if (path === '/noticias') document.getElementById('noticias')?.scrollIntoView({ behavior: 'smooth' });
+  } else if (path === '/vip') {
+    document.getElementById('vip')?.scrollIntoView({ behavior: 'smooth' });
+  } else if (path === '/ranking') {
+    document.getElementById('ranking')?.scrollIntoView({ behavior: 'smooth' });
   }
 
   setInterval(refreshOnline, 60_000);

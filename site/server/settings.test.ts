@@ -8,7 +8,7 @@ describe('site copy', () => {
   const vip = site.vip as { notice: string; support_email: string };
 
   it('invites people to VIP instead of describing how benefits are configured', () => {
-    expect(vip.notice).toContain('ajuda a manter o servidor online');
+    expect(vip.notice).toMatch(/ajuda a manter o servidor (online|no ar)/);
     expect(vip.notice).not.toMatch(/cadastrad|administra/i);
     expect(JSON.stringify(site.faq)).not.toMatch(/cadastrad|administra/i);
   });

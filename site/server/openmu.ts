@@ -13,6 +13,7 @@ export type OpenMuCharacter = {
   resets: number | null;
   classId: string | null;
   className: string;
+  vip: boolean;
 };
 
 /** `Stats.Level` and `Stats.Resets` in OpenMU (src/GameLogic/Attributes/Stats.cs). */
@@ -41,6 +42,7 @@ type CharacterRow = {
   resets: number | null;
   class_id: string | null;
   class_name: string | null;
+  vip: boolean;
 };
 
 function localizedName(raw: string | null): string {
@@ -69,6 +71,7 @@ function toCharacter(row: CharacterRow): OpenMuCharacter {
     resets: row.resets === null ? null : Math.round(Number(row.resets)),
     classId: row.class_id,
     className: localizedName(row.class_name),
+    vip: Boolean(row.vip),
   };
 }
 
@@ -77,6 +80,7 @@ function toCharacter(row: CharacterRow): OpenMuCharacter {
  * one row per attribute, so they are pivoted out of the character's own attribute rows.
  */
 export async function fetchCharacters(limit = 1000): Promise<OpenMuCharacter[]> {
+  await ensureVipTablesOnce();
   const rows = await connection()<CharacterRow[]>`
     SELECT
       c."Name" AS name,
@@ -85,7 +89,13 @@ export async function fetchCharacters(limit = 1000): Promise<OpenMuCharacter[]> 
       MAX(CASE WHEN sa."DefinitionId" = ${LEVEL_ID}::uuid THEN sa."Value" END) AS level,
       MAX(CASE WHEN sa."DefinitionId" = ${RESETS_ID}::uuid THEN sa."Value" END) AS resets,
       c."CharacterClassId" AS class_id,
-      cc."Name" AS class_name
+      cc."Name" AS class_name,
+      EXISTS (
+        SELECT 1
+        FROM mu_plugins.vip_plan_account v
+        WHERE lower(v.account) = lower(a."LoginName")
+          AND v.expires_at > now()
+      ) AS vip
     FROM data."Character" c
     LEFT JOIN data."StatAttribute" sa ON sa."CharacterId" = c."Id"
     LEFT JOIN config."CharacterClass" cc ON cc."Id" = c."CharacterClassId"
@@ -93,7 +103,7 @@ export async function fetchCharacters(limit = 1000): Promise<OpenMuCharacter[]> 
     WHERE c."CharacterStatus" = 0
       AND a."State" <> 4
       AND c."AccountId" IS NOT NULL
-    GROUP BY c."Id", c."Name", c."Experience", c."MasterExperience", c."CharacterClassId", cc."Name"
+    GROUP BY c."Id", c."Name", c."Experience", c."MasterExperience", c."CharacterClassId", cc."Name", a."LoginName"
     ORDER BY c."Experience" DESC
     LIMIT ${limit}
   `;
@@ -190,6 +200,14 @@ async function ensureVipTables(): Promise<void> {
       expires_at timestamptz NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now());
   `);
+}
+
+let vipTablesReady = false;
+
+async function ensureVipTablesOnce(): Promise<void> {
+  if (vipTablesReady) return;
+  await ensureVipTables();
+  vipTablesReady = true;
 }
 
 export type VipGamePlan = {

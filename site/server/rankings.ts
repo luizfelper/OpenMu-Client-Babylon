@@ -85,7 +85,11 @@ async function load(): Promise<Rankings> {
   try {
     const current = await fetchCharacters(10_000);
     captureBaseline(week, current);
-    const top = current.slice(0, 10).map((entry, index) => ({ ...entry, position: index + 1 }));
+    const top = current
+      .slice()
+      .sort((a, b) => (b.resets ?? 0) - (a.resets ?? 0) || b.experience - a.experience)
+      .slice(0, 10)
+      .map((entry, index) => ({ ...entry, position: index + 1 }));
     const weekly = weeklyFrom(week, current);
     return {
       top,

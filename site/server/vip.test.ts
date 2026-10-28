@@ -8,6 +8,7 @@ const DAY = 86_400_000;
 
 describe('VIP status and history', () => {
   it('the newest unexpired entitlement is the active plan, old ones stay in the history', () => {
+    db.exec("DELETE FROM vip_entitlements WHERE lower(account) = 'histuser'");
     const now = Date.now();
     db.exec(`INSERT INTO vip_entitlements (account, plan_id, plan_name, starts_at, expires_at, source_order, created_at)
       VALUES ('HistUser', 'bronze', 'VIP Bronze', ${now - 5 * DAY}, ${now - DAY}, 'h1', ${now - 5 * DAY})`);
