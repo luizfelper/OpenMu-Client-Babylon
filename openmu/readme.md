@@ -103,6 +103,11 @@ touching the shared configuration; the elements are removed when the player leav
 outlives the session. A free account gets nothing added. A database that is down costs nothing:
 the player runs with the game's own rates until the next read works.
 
+The plan's `jewel_drop_percent` (default 5 on every plan, set in the site's admin) is the chance of one
+extra jewel (Bless, Soul or Life) per monster the VIP player kills: `VipJewelDropPlugIn`
+(`IAttackableGotKilledPlugIn`) rolls it and drops the jewel where the monster died, owned like the
+monster's own drops. It is an extra drop, not a multiplier of the monster's drop groups.
+
 The plan's `drop_multiplier` is stored, shown to players and editable, but **not applied by the
 game**. OpenMU rolls a monster's drop groups inside `DefaultDropGenerator`, and its only per-kill
 hooks (`IMonsterItemDropPlugIn`, `IMonsterItemDroppedPlugIn`) receive the result and can cancel a

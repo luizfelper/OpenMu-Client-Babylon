@@ -63,8 +63,14 @@ public sealed class VipTierStore
         using var connection = new NpgsqlConnection(this.ConnectionString);
         connection.Open();
 
+        // The site creates this column too; adding it here keeps the game working if it starts first.
+        using (var command = new NpgsqlCommand("ALTER TABLE IF EXISTS mu_plugins.vip_plan ADD COLUMN IF NOT EXISTS jewel_drop_percent numeric(6,2) NOT NULL DEFAULT 0", connection))
+        {
+            command.ExecuteNonQuery();
+        }
+
         var plans = new Dictionary<string, VipPlanTier>(StringComparer.OrdinalIgnoreCase);
-        using (var command = new NpgsqlCommand("SELECT id, xp_multiplier, master_xp_multiplier, drop_multiplier, zen_multiplier FROM mu_plugins.vip_plan", connection))
+        using (var command = new NpgsqlCommand("SELECT id, xp_multiplier, master_xp_multiplier, drop_multiplier, zen_multiplier, jewel_drop_percent FROM mu_plugins.vip_plan", connection))
         using (var reader = command.ExecuteReader())
         {
             while (reader.Read())
@@ -74,7 +80,8 @@ public sealed class VipTierStore
                     reader.GetDecimal(1),
                     reader.GetDecimal(2),
                     reader.GetDecimal(3),
-                    reader.GetDecimal(4));
+                    reader.GetDecimal(4),
+                    reader.GetDecimal(5));
                 plans[plan.Id] = plan;
             }
         }

@@ -265,13 +265,14 @@ function planTemplate(plan, index) {
       <fieldset class="plan-game">
         <legend>Benefícios no jogo</legend>
         <p class="admin-hint">Multiplicador aplicado pelo servidor do jogo. 1 = sem bônus, 2 = dobrado.
-          XP de up, XP Master e zen valem no jogo. Drop e XP em party ficam guardados e exibidos, mas o
+          XP de up, XP Master, zen e a chance de jóia extra valem no jogo. Drop e XP em party ficam guardados e exibidos, mas o
           OpenMU ainda não tem um gancho por jogador para aplicá-los.</p>
         <div class="plan-grid">
           <label>XP de UP (x)<input class="plan-xp" type="number" min="0.1" max="100" step="0.1" value="${number('xp_multiplier', 1)}" /></label>
           <label>XP Master (x)<input class="plan-master-xp" type="number" min="0.1" max="100" step="0.1" value="${number('master_xp_multiplier', 1)}" /></label>
           <label>Zen (x)<input class="plan-zen" type="number" min="0.1" max="100" step="0.1" value="${number('zen_multiplier', 1)}" /></label>
           <label>Drop (x, guardado)<input class="plan-drop" type="number" min="0.1" max="100" step="0.1" value="${number('drop_multiplier', 1)}" /></label>
+          <label>Jóia extra por monstro (%)<input class="plan-jewel" type="number" min="0" max="100" step="0.1" value="${number('jewel_drop_percent', 5)}" /></label>
           <label>XP em party (x, guardado)<input class="plan-party-xp" type="number" min="0.1" max="100" step="0.1" value="${number('party_xp_multiplier', 1)}" /></label>
         </div>
       </fieldset>
@@ -306,6 +307,7 @@ function gatherPlans() {
       master_xp_multiplier: Number($('.plan-master-xp', row)?.value || 1),
       drop_multiplier: Number($('.plan-drop', row)?.value || 1),
       zen_multiplier: Number($('.plan-zen', row)?.value || 1),
+      jewel_drop_percent: Number($('.plan-jewel', row)?.value || 0),
       party_xp_multiplier: Number($('.plan-party-xp', row)?.value || 1),
     },
   }));
@@ -321,7 +323,7 @@ function addPlan() {
     description: '',
     benefits: [],
     highlight: false,
-    game: { xp_multiplier: 1, master_xp_multiplier: 1, drop_multiplier: 1, zen_multiplier: 1, party_xp_multiplier: 1 },
+    game: { xp_multiplier: 1, master_xp_multiplier: 1, drop_multiplier: 1, zen_multiplier: 1, jewel_drop_percent: 5, party_xp_multiplier: 1 },
   });
   renderPlans(plans);
 }

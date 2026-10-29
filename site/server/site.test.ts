@@ -163,9 +163,18 @@ describe('VIP plans', () => {
       master_xp_multiplier: 2,
       drop_multiplier: 4,
       zen_multiplier: 2,
+      jewel_drop_percent: 5,
       party_xp_multiplier: 2,
     });
     expect(parsed[1].game.xp_multiplier).toBe(100);
+  });
+
+  it('reads the jewel drop chance as a percent from 0 to 100', () => {
+    const plan = (jewel: unknown) => ({ id: 'vip1', name: 'VIP 1', days: 30, price_cents: 1990, game: { jewel_drop_percent: jewel } });
+    expect(parsePlans([plan(0)])[0].game.jewel_drop_percent).toBe(0);
+    expect(parsePlans([plan('12.5')])[0].game.jewel_drop_percent).toBe(12.5);
+    expect(() => parsePlans([plan(101)])).toThrow(/entre 0% e 100%/);
+    expect(() => parsePlans([plan(-1)])).toThrow(/entre 0% e 100%/);
   });
 
   it('rejects a multiplier outside 0.1x to 100x', () => {

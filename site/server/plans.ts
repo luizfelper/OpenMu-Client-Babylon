@@ -18,11 +18,19 @@ export type VipBenefits = {
   /** Multiplier on the zen a killed monster pays out. */
   zen_multiplier: number;
   /**
+   * Percent chance (0 to 100) that a monster the player kills drops one extra jewel. The game server's
+   * VIP plugin rolls it on each kill.
+   */
+  jewel_drop_percent: number;
+  /**
    * Multiplier on the experience a party member's kill passes on. Stored and shown; OpenMU has no
    * per-player hook for it yet.
    */
   party_xp_multiplier: number;
 };
+
+/** The extra jewel chance every plan starts with, in percent. */
+export const DEFAULT_JEWEL_DROP_PERCENT = 5;
 
 export type VipPlan = {
   id: string;
@@ -41,6 +49,7 @@ export const DEFAULT_BENEFITS: VipBenefits = {
   master_xp_multiplier: 2,
   drop_multiplier: 2,
   zen_multiplier: 2,
+  jewel_drop_percent: DEFAULT_JEWEL_DROP_PERCENT,
   party_xp_multiplier: 2,
 };
 
@@ -49,6 +58,7 @@ const tier = (multiplier: number) => ({
   master_xp_multiplier: multiplier,
   drop_multiplier: multiplier,
   zen_multiplier: multiplier,
+  jewel_drop_percent: DEFAULT_JEWEL_DROP_PERCENT,
   party_xp_multiplier: multiplier,
 });
 
@@ -150,10 +160,24 @@ function multiplier(value: unknown, name: string, fallback: number): number {
   return Math.round(parsed * 100) / 100;
 }
 
+/** Reads one percent chance; 0 turns the benefit off. */
+function percent(value: unknown, name: string, fallback: number): number {
+  if (value === undefined || value === null || value === '') return fallback;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+    throw new HttpError(400, `A chance de ${name} deve ficar entre 0% e 100%.`);
+  }
+  return Math.round(parsed * 100) / 100;
+}
+
 export function parseBenefits(value: unknown, fallback: VipBenefits = DEFAULT_BENEFITS): VipBenefits {
   const raw = value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
   const result = { ...fallback };
-  for (const key of BENEFIT_KEYS) result[key] = multiplier(raw[key], key, fallback[key]);
+  for (const key of BENEFIT_KEYS) {
+    result[key] = key === 'jewel_drop_percent'
+      ? percent(raw[key], key, fallback[key])
+      : multiplier(raw[key], key, fallback[key]);
+  }
   return result;
 }
 

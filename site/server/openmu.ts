@@ -194,6 +194,7 @@ async function ensureVipTables(): Promise<void> {
       drop_multiplier numeric(6,2) NOT NULL DEFAULT 1,
       zen_multiplier numeric(6,2) NOT NULL DEFAULT 1,
       updated_at timestamptz NOT NULL DEFAULT now());
+    ALTER TABLE mu_plugins.vip_plan ADD COLUMN IF NOT EXISTS jewel_drop_percent numeric(6,2) NOT NULL DEFAULT 0;
     CREATE TABLE IF NOT EXISTS mu_plugins.vip_plan_account (
       account text PRIMARY KEY,
       plan_id text NOT NULL,
@@ -216,6 +217,7 @@ export type VipGamePlan = {
   master_xp_multiplier: number;
   drop_multiplier: number;
   zen_multiplier: number;
+  jewel_drop_percent: number;
 };
 
 /** Replaces the plans the game applies. Plans removed from the site stop applying at once. */
@@ -226,9 +228,9 @@ export async function syncVipPlans(plans: VipGamePlan[]): Promise<void> {
     await transaction.unsafe('DELETE FROM mu_plugins.vip_plan');
     for (const plan of plans) {
       await transaction.unsafe(
-        `INSERT INTO mu_plugins.vip_plan (id, xp_multiplier, master_xp_multiplier, drop_multiplier, zen_multiplier, updated_at)
-         VALUES ($1, $2, $3, $4, $5, now())`,
-        [plan.id, plan.xp_multiplier, plan.master_xp_multiplier, plan.drop_multiplier, plan.zen_multiplier]
+        `INSERT INTO mu_plugins.vip_plan (id, xp_multiplier, master_xp_multiplier, drop_multiplier, zen_multiplier, jewel_drop_percent, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, now())`,
+        [plan.id, plan.xp_multiplier, plan.master_xp_multiplier, plan.drop_multiplier, plan.zen_multiplier, plan.jewel_drop_percent]
       );
     }
   });

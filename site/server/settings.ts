@@ -147,6 +147,18 @@ export function ensureDefaults(): void {
   }
   upgradeHomeCopy();
   upgradeTierPlans();
+  syncGamePlansOnBoot();
+}
+
+/**
+ * Sends the saved plans to the game at boot. A plan saved before the game had a column (the jewel
+ * chance) would otherwise keep the column's zero until the admin saves the plans again.
+ */
+function syncGamePlansOnBoot(): void {
+  const plans = getPlans();
+  syncVipPlans(plans.map(plan => ({ id: plan.id, ...plan.game }))).catch(error =>
+    console.warn(`VIP plan sync failed: ${(error as Error).message}`)
+  );
 }
 
 /** Replaces old default copy without touching text the admin wrote. */
