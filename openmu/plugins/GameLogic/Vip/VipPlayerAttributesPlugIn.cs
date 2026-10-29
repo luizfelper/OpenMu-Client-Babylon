@@ -9,6 +9,7 @@ using MUnique.OpenMU.AttributeSystem;
 using MUnique.OpenMU.GameLogic.Attributes;
 using MUnique.OpenMU.GameLogic.PlugIns;
 using MUnique.OpenMU.PlugIns;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Applies a VIP plan's multipliers to the attributes OpenMU already reads when it pays experience,
