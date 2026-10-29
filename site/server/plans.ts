@@ -241,6 +241,11 @@ export function findPlan(plans: VipPlan[], id: string): VipPlan | undefined {
   return plans.find(plan => plan.id === id);
 }
 
+/** The line the game's admin panel shows per plan: "VIP Bronze: 5%". Read by the VIP jewel plug-in's screen. */
+export function jewelDropSummary(plans: VipPlan[]): string {
+  return plans.map(plan => `${plan.name}: ${plan.game.jewel_drop_percent}%`).join(' | ');
+}
+
 function sameBenefitList(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((item, index) => item === b[index]);
 }

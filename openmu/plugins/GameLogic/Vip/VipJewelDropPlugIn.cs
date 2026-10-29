@@ -26,10 +26,16 @@ using MUnique.OpenMU.PlugIns;
 [PlugIn]
 [Display(Name = "VIP Jewel Drop", Description = "Drops an extra jewel for a VIP player when a monster dies, at the plan's chance.")]
 [Guid("8f1d3c52-6a4e-4b7d-9e21-3c5a7f0b9d14")]
-public class VipJewelDropPlugIn : IAttackableGotKilledPlugIn
+public class VipJewelDropPlugIn : IAttackableGotKilledPlugIn, ISupportCustomConfiguration<VipJewelDropPlugInConfiguration>, ISupportDefaultCustomConfiguration
 {
     /// <summary>Jewel of Bless, Jewel of Soul and Jewel of Life (item group 14).</summary>
     private static readonly (byte Group, short Number)[] ExtraJewels = [(14, 13), (14, 14), (14, 16)];
+
+    /// <inheritdoc />
+    public VipJewelDropPlugInConfiguration? Configuration { get; set; }
+
+    /// <inheritdoc />
+    public object CreateDefaultConfig() => new VipJewelDropPlugInConfiguration();
 
     /// <inheritdoc />
     public async ValueTask AttackableGotKilledAsync(IAttackable killed, IAttacker? killer)

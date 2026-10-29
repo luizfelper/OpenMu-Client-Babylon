@@ -9,6 +9,7 @@ import {
   DEFAULT_PLANS,
   findPlan,
   formatBrl,
+  jewelDropSummary,
   parsePlans,
   renameTierPlans,
   upgradeTierBenefits,
@@ -167,6 +168,14 @@ describe('VIP plans', () => {
       party_xp_multiplier: 2,
     });
     expect(parsed[1].game.xp_multiplier).toBe(100);
+  });
+
+  it('summarizes each plan\'s jewel chance for the game\'s admin panel', () => {
+    const plans = parsePlans([
+      { id: 'bronze', name: 'VIP Bronze', days: 30, price_cents: 1990, game: { jewel_drop_percent: 5 } },
+      { id: 'ouro', name: 'VIP Ouro', days: 30, price_cents: 4990, game: { jewel_drop_percent: 12.5 } },
+    ]);
+    expect(jewelDropSummary(plans)).toBe('VIP Bronze: 5% | VIP Ouro: 12.5%');
   });
 
   it('reads the jewel drop chance as a percent from 0 to 100', () => {

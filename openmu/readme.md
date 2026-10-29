@@ -108,6 +108,12 @@ extra jewel (Bless, Soul or Life) per monster the VIP player kills: `VipJewelDro
 (`IAttackableGotKilledPlugIn`) rolls it and drops the jewel where the monster died, owned like the
 monster's own drops. It is an extra drop, not a multiplier of the monster's drop groups.
 
+The site is the only place the chances are edited. It also writes a summary of them ("VIP Bronze: 5% |
+...") into this plug-in's configuration (`PlansSummary`, in `config."PlugInConfiguration"`, the row of
+the plug-in's `[Guid]`), so the admin panel's plug-in screen shows each plan's chance. The game reads
+the chances from `mu_plugins.vip_plan`, not from that summary, and saving the plug-in's screen in the
+admin panel overwrites the summary until the next plan save on the site.
+
 The plan's `drop_multiplier` is stored, shown to players and editable, but **not applied by the
 game**. OpenMU rolls a monster's drop groups inside `DefaultDropGenerator`, and its only per-kill
 hooks (`IMonsterItemDropPlugIn`, `IMonsterItemDroppedPlugIn`) receive the result and can cancel a

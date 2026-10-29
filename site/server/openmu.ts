@@ -236,6 +236,23 @@ export async function syncVipPlans(plans: VipGamePlan[]): Promise<void> {
   });
 }
 
+/** The VIP jewel plug-in's id (its `[Guid]`): the row of its configuration in OpenMU's database. */
+const VIP_JEWEL_PLUGIN_ID = '8f1d3c52-6a4e-4b7d-9e21-3c5a7f0b9d14';
+
+/**
+ * Writes the plans' summary into the VIP jewel plug-in's configuration, so the game's admin panel
+ * shows the values. Only the `PlansSummary` key is set; the row is left alone when OpenMU has not
+ * created it yet (the plug-in's first start does that).
+ */
+export async function syncJewelDropSummary(summary: string): Promise<void> {
+  await connection().unsafe(
+    `UPDATE config."PlugInConfiguration"
+     SET "CustomConfiguration" = jsonb_set(COALESCE("CustomConfiguration"::jsonb, '{}'::jsonb), '{PlansSummary}', to_jsonb($2::text))::text
+     WHERE "TypeId" = $1::uuid`,
+    [VIP_JEWEL_PLUGIN_ID, summary]
+  );
+}
+
 /** Points an account at a plan until it expires; a date in the past removes the row. */
 export async function syncVipAccount(account: string, planId: string, expiresAt: number | null): Promise<void> {
   await ensureVipTables();

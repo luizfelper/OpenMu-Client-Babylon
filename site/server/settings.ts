@@ -10,8 +10,8 @@ import {
 } from './config';
 import { getSetting, setSetting } from './db';
 import { HttpError, booleanField, numberField, optionalString, safeHttpUrl, stringField } from './http';
-import { syncVipPlans } from './openmu';
-import { DEFAULT_PLANS, parsePlans, renameTierPlans, upgradeTierBenefits, type VipPlan } from './plans';
+import { syncJewelDropSummary, syncVipPlans } from './openmu';
+import { DEFAULT_PLANS, jewelDropSummary, parsePlans, renameTierPlans, upgradeTierBenefits, type VipPlan } from './plans';
 
 export type ServerFact = { label: string; value: string };
 export type EventItem = { title: string; schedule: string; description: string };
@@ -155,10 +155,14 @@ export function ensureDefaults(): void {
  * chance) would otherwise keep the column's zero until the admin saves the plans again.
  */
 function syncGamePlansOnBoot(): void {
-  const plans = getPlans();
-  syncVipPlans(plans.map(plan => ({ id: plan.id, ...plan.game }))).catch(error =>
-    console.warn(`VIP plan sync failed: ${(error as Error).message}`)
-  );
+  syncGamePlans(getPlans());
+}
+
+/** Sends the plans to the game (the numbers) and their summary to the game's admin panel. */
+function syncGamePlans(plans: VipPlan[]): void {
+  syncVipPlans(plans.map(plan => ({ id: plan.id, ...plan.game })))
+    .then(() => syncJewelDropSummary(jewelDropSummary(plans)))
+    .catch(error => console.warn(`VIP plan sync failed: ${(error as Error).message}`));
 }
 
 /** Replaces old default copy without touching text the admin wrote. */
@@ -499,9 +503,7 @@ export function saveAdminSettings(body: unknown): AdminSettings {
   const plans = parsePlans(root.vip_plans);
   setSetting('vip_plans', JSON.stringify(plans));
   // The game applies the same numbers the site shows: one row per plan, written on every save.
-  syncVipPlans(plans.map(plan => ({ id: plan.id, ...plan.game }))).catch(error =>
-    console.warn(`VIP plan sync failed: ${(error as Error).message}`)
-  );
+  syncGamePlans(plans);
 
   setSetting('user_panel_vip_only', booleanField(playerPanel.vip_only, true) ? 'on' : 'off');
 

@@ -722,7 +722,11 @@ function renderPlans(plans, payments) {
   const canBuy = Boolean(payments && payments.enabled && payments.configured);
   grid.innerHTML = state.plans
     .map(plan => {
-      const benefits = (plan.benefits || [])
+      const jewel = Number(plan.game?.jewel_drop_percent || 0);
+      const lines = jewel > 0
+        ? [...(plan.benefits || []), `${jewel.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% de chance de jóia extra por monstro`]
+        : plan.benefits || [];
+      const benefits = lines
         .map(item => `<li>${escapeHtml(item)}</li>`)
         .join('');
       return `
