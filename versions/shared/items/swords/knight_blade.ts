@@ -4,7 +4,7 @@ export default defineItem({
   Group: 0,
   Index: 20,
   ItemSlot: 0,
-  Skill: 22,
+  Skill: 56,
   X: 1,
   Y: 4,
   Serial: 1,

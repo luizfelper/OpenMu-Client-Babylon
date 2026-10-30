@@ -2,6 +2,11 @@
  * Skill definitions as configured by the OpenMU server we play against
  * (src/Persistence/Initialization/VersionSeasonSix/SkillsInitializer.cs).
  * Generated - do not edit by hand. Numbers are the wire SkillNumber.
+ *
+ * Local change: Power Slash (56) lists `AllKnights` too, so Dark Knight, Blade
+ * Knight and Blade Master can use it. The Knight Blade grants it
+ * (items/swords/knight_blade.ts, `Skill: 56`); the server must list the same
+ * classes in the skill's Qualified Characters.
  */
 
 export type SkillType =
@@ -91,7 +96,7 @@ export const SKILL_DEFINITIONS: readonly SkillDefinition[] = [
   {"num":51,"name":"Ice Arrow","classes":"MuseElfAndHighElf","damageType":"Physical","damage":105,"distance":8,"ag":12,"mana":10,"level":0,"energy":0,"type":"DirectHit","target":"Explicit","range":0},
   {"num":52,"name":"Penetration","classes":"AllElfs","damageType":"Physical","damage":70,"distance":6,"ag":9,"mana":7,"level":130,"energy":0,"type":"AreaSkillAutomaticHits","target":"Explicit","range":0},
   {"num":55,"name":"Fire Slash","classes":"AllMGs","damageType":"Physical","damage":80,"distance":2,"ag":20,"mana":15,"level":0,"energy":0,"type":"AreaSkillAutomaticHits","target":"Explicit","range":0},
-  {"num":56,"name":"Power Slash","classes":"AllMGs","damageType":"Physical","damage":0,"distance":5,"ag":0,"mana":15,"level":0,"energy":0,"type":"AreaSkillAutomaticHits","target":"Explicit","range":0},
+  {"num":56,"name":"Power Slash","classes":"AllKnights|AllMGs","damageType":"Physical","damage":0,"distance":5,"ag":0,"mana":15,"level":0,"energy":0,"type":"AreaSkillAutomaticHits","target":"Explicit","range":0},
   {"num":57,"name":"Spiral Slash","classes":"AllMGs","damageType":"Physical","damage":75,"distance":5,"ag":15,"mana":20,"level":0,"energy":0,"type":"DirectHit","target":"Explicit","range":0},
   {"num":58,"name":"Nova (Start)","classes":"SoulMasterAndGrandMaster","damageType":"None","damage":0,"distance":0,"ag":45,"mana":0,"level":100,"energy":1052,"type":"Other","target":"Explicit","range":0},
   {"num":60,"name":"Force","classes":"AllLords","damageType":"Physical","damage":10,"distance":4,"ag":0,"mana":10,"level":0,"energy":0,"type":"DirectHit","target":"Explicit","range":0},
