@@ -1417,6 +1417,7 @@ async function init() {
   if (path === '/noticias') showOnlySections('noticias');
   else if (path === '/regras') showOnlySections('servidor', 'links');
   else if (path === '/faq') showOnlySections('faq');
+  else if (path === '/wiki') showOnlySections('wiki');
   else if (!path.startsWith('/noticias/') && path !== '/vip/retorno') showHome();
 
   try {

@@ -153,6 +153,7 @@ async function staticFile(pathname: string): Promise<Response | null> {
     pathname === '/ranking' ||
     pathname === '/regras' ||
     pathname === '/faq' ||
+    pathname === '/wiki' ||
     pathname === '/noticias' ||
     pathname.startsWith('/noticias/') ||
     pathname === '/termos' ||

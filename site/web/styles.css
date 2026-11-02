@@ -756,6 +756,12 @@ button, input, textarea, select { font: inherit; }
 .faq-item p { padding: 0 20px 18px; color: var(--muted); font-size: 0.9rem; }
 
 .links-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.wiki-text { padding: 0 20px 14px; color: var(--muted); font-size: 0.9rem; }
+.wiki-table-wrap { overflow-x: auto; padding: 0 20px 20px; }
+.wiki-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.wiki-table th, .wiki-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; white-space: nowrap; }
+.wiki-table th { color: var(--muted-2); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.wiki-table td { color: var(--text); }
 .link-card {
   display: flex;
   flex-direction: column;
